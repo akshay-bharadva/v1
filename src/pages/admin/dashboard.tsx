@@ -54,7 +54,7 @@ export default function AdminDashboardPage() {
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).toISOString();
 
         const [
-         { count: totalPosts, error: tpError },
+          { count: totalPosts, error: tpError },
           { count: portfolioSections, error: psError },
           { count: portfolioItems, error: piError },
           { data: recentPostsData, error: rpError },
@@ -74,7 +74,7 @@ export default function AdminDashboardPage() {
           supabase.from("notes").select("*", { count: "exact", head: true }),
           supabase.from("notes").select("id, title, content").eq("is_pinned", true).limit(5),
           supabase.from("transactions").select("type, amount").gte('date', firstDayOfMonth),
-        // New Queries execution
+          // New Queries execution
           supabase.rpc('get_total_blog_views'),
           supabase.from("tasks").select("*", { count: "exact", head: true }).eq("status", "done").gte("updated_at", startOfWeek),
         ]);
@@ -155,6 +155,9 @@ export default function AdminDashboardPage() {
           variants={pageVariants}
           className="flex min-h-screen items-center justify-center bg-zinc-900 font-sans"
         >
+          <pre>
+          {JSON.stringify({ isLoading, session, dashboardData }, null, 2)}
+        </pre>
           <div className="rounded-lg border border-zinc-700 bg-zinc-800 p-8 text-center">
             <div className="mx-auto mb-4 w-12 h-12 animate-spin rounded-full border-4 border-accent border-l-transparent"></div>
             <p className="font-semibold text-slate-200">Loading Dashboard...</p>
@@ -174,6 +177,9 @@ export default function AdminDashboardPage() {
         variants={pageVariants}
         className="font-sans"
       >
+        <pre>
+          {JSON.stringify({ isLoading, session, dashboardData }, null, 2)}
+        </pre>
         <AdminDashboardComponent onLogout={handleLogout} dashboardData={dashboardData} />
       </motion.div>
     </Layout>
