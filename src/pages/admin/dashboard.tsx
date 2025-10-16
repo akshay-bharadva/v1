@@ -5,6 +5,7 @@ import AdminDashboardComponent from "@/components/admin/admin-dashboard";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout";
 import type { BlogPost, Note, Transaction, Task } from "@/types";
+import { PostgrestError } from '@supabase/supabase-js';
 
 // ... (your DashboardData interface remains the same)
 export interface DashboardData {
@@ -87,10 +88,15 @@ export default function AdminDashboardPage() {
           supabase.from("tasks").select("*", { count: "exact", head: true }).eq("status", "done").gte("updated_at", startOfWeek),
         ]);
         
-        // Example of more robust error handling
-        const errors = [rpdError, pndError, mtdError, tvdError].filter(Boolean);
-        if (errors.length > 0) {
-            throw new Error(`Failed to fetch dashboard data: ${errors.map(e => e.message).join(', ')}`);
+        const potentialErrors = [rpdError, pndError, mtdError, tvdError];
+        
+        // Use a type guard to filter out nulls and correctly type the resulting array
+        const actualErrors = potentialErrors.filter(
+          (error): error is PostgrestError => error !== null
+        );
+        
+        if (actualErrors.length > 0) {
+            throw new Error(`Failed to fetch dashboard data: ${actualErrors.map(e => e.message).join(', ')}`);
         }
 
         let monthlyEarnings = 0;
