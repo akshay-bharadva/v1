@@ -1,0 +1,58 @@
+/*
+This file is updated to import the new 'Inter' font and set the base theme.
+- 'Space Mono' font import is removed.
+- Base styles are simplified for the dark, minimalist theme.
+- The custom '.prose-nb' class is removed in favor of configuring Tailwind's default 'prose' styles for dark mode.
+*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #111111;
+    --foreground: #EAEAEA;
+    --card: #1C1C1C;
+    --card-foreground: #EAEAEA;
+    --popover: #1C1C1C;
+    --popover-foreground: #EAEAEA;
+    --primary: #EAEAEA;
+    --primary-foreground: #111111;
+    --secondary: #333333;
+    --secondary-foreground: #EAEAEA;
+    --muted: #222222;
+    --muted-foreground: #A0A0A0;
+    --accent: #ABFF4F;
+    --accent-foreground: #111111;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: #EAEAEA;
+    --border: 255 255 255 / 0.1;
+    --input: 255 255 255 / 0.1;
+    --ring: 171 255 79;
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Remove default focus rings in favor of Tailwind's focus-visible utilities */
+  *:focus {
+    outline: none;
+  }
+
+  ::selection {
+    @apply bg-accent text-accent-foreground;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
