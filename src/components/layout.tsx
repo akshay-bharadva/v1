@@ -52,7 +52,6 @@ export default function Layout({ children }: LayoutProps) {
           sizes="16x16"
           href="/favicon-16x16.png"
         />
-        <link rel="manifest" href="/site.webmanifest" />
         <meta property="og:title" content={DEFAULT_OG_TITLE} />
         <meta property="og:description" content={DEFAULT_OG_DESCRIPTION} />
         <meta property="og:type" content="website" />
@@ -65,18 +64,6 @@ export default function Layout({ children }: LayoutProps) {
         <meta name="twitter:title" content={DEFAULT_OG_TITLE} />
         <meta name="twitter:description" content={DEFAULT_OG_DESCRIPTION} />
         <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
-        <link
-          rel="alternate"
-          type="application/rss+xml"
-          title="Akshay Bharadva Blog RSS Feed"
-          href="/feed.xml"
-        />
-        <link
-          rel="sitemap"
-          type="application/xml"
-          title="Sitemap"
-          href="/sitemap.xml"
-        />
       </Head>
       <div className="flex min-h-screen flex-col justify-between font-sans selection:bg-accent selection:text-accent-foreground">
         <Header />

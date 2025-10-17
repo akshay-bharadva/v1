@@ -18,12 +18,16 @@ export default function AdminIndexPage() {
     const checkAuthStateAndRedirect = async () => {
       const { data: { session } } = await supabase.auth.getSession();
 
+      console.log("###session", session)
+
       if (!session) {
         router.replace("/admin/login");
         return;
       }
 
       const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+      console.log("####aalData", aalData)
 
       if (aalData?.currentLevel === "aal2") {
         router.replace("/admin/dashboard");

@@ -1,5 +1,9 @@
-// In src/pages/admin/dashboard.tsx
-
+/*
+This file for the admin dashboard page is updated for the new design.
+- The loading state is simplified to a cleaner, more minimal spinner, removing the neo-brutalist box.
+- The main layout component no longer needs a specific `font-space` class, as `font-sans` is now the global default.
+- The `Layout` component is retained to provide consistent page structure (header/footer, etc.), even for the admin area.
+*/
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase, Session } from "@/supabase/client";
@@ -38,69 +42,72 @@ export default function AdminDashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-        const now = new Date();
-        const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
-        const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).toISOString();
+      const now = new Date();
+      const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
+      const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).toISOString();
 
-        const [{ count: totalPosts }, { count: portfolioSections }, { count: portfolioItems }, { data: recentPostsData }, { count: pendingTasksCount }, { count: totalNotesCount }, { data: pinnedNotesData }, { data: monthlyTransactionsData }, { data: totalViewsData }, { count: tasksCompletedCount }] = await Promise.all([
-          supabase.from("blog_posts").select("*", { count: "exact", head: true }),
-          supabase.from("portfolio_sections").select("*", { count: "exact", head: true }),
-          supabase.from("portfolio_items").select("*", { count: "exact", head: true }),
-          supabase.from("blog_posts").select("id, title, updated_at, slug").order("updated_at", { ascending: false }).limit(3),
-          supabase.from("tasks").select("*", { count: "exact", head: true }).neq("status", "done"),
-          supabase.from("notes").select("*", { count: "exact", head: true }),
-          supabase.from("notes").select("id, title, content").eq("is_pinned", true).limit(3),
-          supabase.from("transactions").select("type, amount").gte('date', firstDayOfMonth),
-          supabase.rpc('get_total_blog_views'),
-          supabase.from("tasks").select("*", { count: "exact", head: true }).eq("status", "done").gte("updated_at", startOfWeek),
-        ]);
+      const [{ count: totalPosts }, { count: portfolioSections }, { count: portfolioItems }, { data: recentPostsData }, { count: pendingTasksCount }, { count: totalNotesCount }, { data: pinnedNotesData }, { data: monthlyTransactionsData }, { data: totalViewsData }, { count: tasksCompletedCount }] = await Promise.all([
+        supabase.from("blog_posts").select("*", { count: "exact", head: true }),
+        supabase.from("portfolio_sections").select("*", { count: "exact", head: true }),
+        supabase.from("portfolio_items").select("*", { count: "exact", head: true }),
+        supabase.from("blog_posts").select("id, title, updated_at, slug").order("updated_at", { ascending: false }).limit(3),
+        supabase.from("tasks").select("*", { count: "exact", head: true }).neq("status", "done"),
+        supabase.from("notes").select("*", { count: "exact", head: true }),
+        supabase.from("notes").select("id, title, content").eq("is_pinned", true).limit(3),
+        supabase.from("transactions").select("type, amount").gte('date', firstDayOfMonth),
+        supabase.rpc('get_total_blog_views'),
+        supabase.from("tasks").select("*", { count: "exact", head: true }).eq("status", "done").gte("updated_at", startOfWeek),
+      ]);
 
-        let monthlyEarnings = 0;
-        let monthlyExpenses = 0;
-        monthlyTransactionsData?.forEach(t => {
-            if (t.type === 'earning') monthlyEarnings += t.amount;
-            else if (t.type === 'expense') monthlyExpenses += t.amount;
-        });
+      let monthlyEarnings = 0;
+      let monthlyExpenses = 0;
+      monthlyTransactionsData?.forEach(t => {
+        if (t.type === 'earning') monthlyEarnings += t.amount;
+        else if (t.type === 'expense') monthlyExpenses += t.amount;
+      });
 
-        setDashboardData({
-          stats: {
-            totalPosts: totalPosts || 0,
-            portfolioSections: portfolioSections || 0,
-            portfolioItems: portfolioItems || 0,
-            pendingTasks: pendingTasksCount || 0,
-            totalNotes: totalNotesCount || 0,
-            monthlyEarnings,
-            monthlyExpenses,
-            monthlyNet: monthlyEarnings - monthlyExpenses,
-            totalBlogViews: totalViewsData || 0,
-            tasksCompletedThisWeek: tasksCompletedCount || 0,
-          },
-          recentPosts: recentPostsData || [],
-          pinnedNotes: pinnedNotesData || [],
-        });
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      }
+      setDashboardData({
+        stats: {
+          totalPosts: totalPosts || 0,
+          portfolioSections: portfolioSections || 0,
+          portfolioItems: portfolioItems || 0,
+          pendingTasks: pendingTasksCount || 0,
+          totalNotes: totalNotesCount || 0,
+          monthlyEarnings,
+          monthlyExpenses,
+          monthlyNet: monthlyEarnings - monthlyExpenses,
+          totalBlogViews: totalViewsData || 0,
+          tasksCompletedThisWeek: tasksCompletedCount || 0,
+        },
+        recentPosts: recentPostsData || [],
+        pinnedNotes: pinnedNotesData || [],
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+    }
   };
 
   useEffect(() => {
     // This function now only checks authorization status.
     const checkAuthorization = async () => {
       const { data: { session } } = await supabase.auth.getSession();
+      console.log("#####session",session)
       if (!session) {
         router.replace("/admin/login");
         return;
       }
-
-      const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       
+      const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      console.log("#####aalData",aalData)
+      console.log("#####aalError",aalError)
+
       if (aalError || aalData.currentLevel !== 'aal2') {
         // If not aal2, it might be aal1 needing a challenge, or no session.
         // The /admin index will handle this redirection logic.
         router.replace("/admin");
         return;
       }
-      
+
       // If we are here, the user is authorized.
       setIsAuthorized(true);
       setIsLoading(false);
@@ -143,6 +150,13 @@ export default function AdminDashboardPage() {
   if (isLoading || !isAuthorized) {
     return (
       <Layout>
+        <pre>
+          {JSON.stringify({
+            isLoading,
+            isAuthorized,
+            dashboardData
+          }, null, 2)}
+        </pre>
         <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">
           <motion.div
             key="dashboard-loading"
@@ -169,6 +183,13 @@ export default function AdminDashboardPage() {
         animate="animate"
         exit="exit"
       >
+        <pre>
+          {JSON.stringify({
+            isLoading,
+            isAuthorized,
+            dashboardData
+          }, null, 2)}
+        </pre>
         <AdminDashboardComponent onLogout={handleLogout} dashboardData={dashboardData} />
       </motion.div>
     </Layout>

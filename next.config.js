@@ -1,26 +1,24 @@
-// next.config.js
 /** @type {import('next').NextConfig} */
+
+// This line dynamically gets the repository name from the GitHub Actions environment.
+// It will be an empty string during local development, which is correct.
+const repoName = process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split('/')[1] : '';
+
 const nextConfig = {
   reactStrictMode: true,
   trailingSlash: true,
   images: {
     unoptimized: true,
   },
-  // Add this section to ensure API routes are treated correctly during export
-  // For sitemap.xml and feed.xml to be generated as static files.
-  // This part is more relevant if your routes don't end with .xml or .json
-  // For routes like /api/sitemap.xml, Next.js export usually handles it.
-  // However, to be explicit or for custom paths:
-  // exportPathMap: async function (
-  //   defaultPathMap,
-  //   { dev, dir, outDir, distDir, buildId }
-  // ) {
-  //   return {
-  //     ...defaultPathMap,
-  //     '/sitemap.xml': { page: '/api/sitemap.xml' },
-  //     '/feed.xml': { page: '/api/feed.xml' },
-  //   };
-  // },
+  
+  // START: CRITICAL GITHUB PAGES CONFIGURATION
+  // basePath tells Next.js's router that all pages are under this path.
+  // E.g., '/admin/login' becomes '/<repo-name>/admin/login'.
+  basePath: repoName ? `/${repoName}` : '',
+
+  // assetPrefix tells Next.js where to load its assets (JS, CSS) from.
+  assetPrefix: repoName ? `/${repoName}/` : '/',
+  // END: CRITICAL GITHUB PAGES CONFIGURATION
 };
 
 module.exports = nextConfig;
