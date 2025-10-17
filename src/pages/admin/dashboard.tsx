@@ -91,20 +91,18 @@ export default function AdminDashboardPage() {
     // This function now only checks authorization status.
     const checkAuthorization = async () => {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log("#####session",session)
+      
       if (!session) {
         router.replace("/admin/login");
         return;
       }
       
       const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      console.log("#####aalData",aalData)
-      console.log("#####aalError",aalError)
 
       if (aalError || aalData.currentLevel !== 'aal2') {
         // If not aal2, it might be aal1 needing a challenge, or no session.
-        // The /admin index will handle this redirection logic.
-        router.replace("/admin");
+        // Redirect to login to break any potential loops.
+        router.replace("/admin/login"); // ✅ CORRECTED REDIRECT
         return;
       }
 
@@ -150,13 +148,7 @@ export default function AdminDashboardPage() {
   if (isLoading || !isAuthorized) {
     return (
       <Layout>
-        <pre>
-          {JSON.stringify({
-            isLoading,
-            isAuthorized,
-            dashboardData
-          }, null, 2)}
-        </pre>
+        {/* You can remove the <pre> block used for debugging */}
         <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">
           <motion.div
             key="dashboard-loading"
@@ -183,13 +175,7 @@ export default function AdminDashboardPage() {
         animate="animate"
         exit="exit"
       >
-        <pre>
-          {JSON.stringify({
-            isLoading,
-            isAuthorized,
-            dashboardData
-          }, null, 2)}
-        </pre>
+        {/* You can remove the <pre> block used for debugging */}
         <AdminDashboardComponent onLogout={handleLogout} dashboardData={dashboardData} />
       </motion.div>
     </Layout>
