@@ -39,6 +39,7 @@ import {
 import Link from "next/link";
 import { DashboardData } from "@/pages/admin/dashboard";
 import { Skeleton } from "../ui/skeleton";
+import { FaChartLine } from "react-icons/fa";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -73,7 +74,7 @@ export default function AdminDashboard({
   }, []);
 
   const tabs = [
-    { id: "dashboard", label: "Overview", icon: <LayoutTemplate /> },
+    { id: "dashboard", label: "Overview", icon: <FaChartLine /> },
     { id: "blogs", label: "Blog", icon: <BookText /> },
     { id: "content", label: "Content", icon: <LayoutTemplate /> },
     { id: "tasks", label: "Tasks", icon: <ListTodo /> },
