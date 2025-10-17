@@ -6,8 +6,8 @@ import Head from "next/head";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { dark } from "react-syntax-highlighter/dist/esm/styles/prism";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout";
@@ -143,7 +143,15 @@ const PostHeader = ({ post }: { post: BlogPost }) => (
   </header>
 );
 
-const AuthorInfo = ({ author, postDate, views }: { author: string; postDate: string | Date; views: number }) => (
+const AuthorInfo = ({
+  author,
+  postDate,
+  views,
+}: {
+  author: string;
+  postDate: string | Date;
+  views: number;
+}) => (
   <div className="flex items-center gap-3">
     {/* <Avatar>
       <AvatarImage src="https://avatars.githubusercontent.com/u/52954931?v=4" alt={author} />
@@ -153,7 +161,7 @@ const AuthorInfo = ({ author, postDate, views }: { author: string; postDate: str
       <p className="font-bold text-black">{author}</p>
       <div className="flex items-center gap-2 text-gray-500">
         <time dateTime={new Date(postDate).toISOString()}>
-          {formatDate(postDate, { month: 'short', day: 'numeric' })}
+          {formatDate(postDate, { month: "short", day: "numeric" })}
         </time>
         <span>·</span>
         <span>{views} views</span>
@@ -176,7 +184,9 @@ const PostContent = ({ content }: { content: string }) => (
 
 const PostTagsSidebar = ({ tags }: { tags: string[] }) => (
   <div>
-    <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-black">Tags</h3>
+    <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-black">
+      Tags
+    </h3>
     <div className="flex flex-wrap gap-2">
       {tags.map((tag) => (
         <Link
@@ -191,15 +201,28 @@ const PostTagsSidebar = ({ tags }: { tags: string[] }) => (
   </div>
 );
 
-
 const NotFoundDisplay = () => (
   <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center bg-yellow-100 p-4 font-space">
-    <Head><title>Post Not Found | Blog</title><meta name="robots" content="noindex" /></Head>
+    <Head>
+      <title>Post Not Found | Blog</title>
+      <meta name="robots" content="noindex" />
+    </Head>
     <div className="rounded-none border-2 border-black bg-white p-8 text-center shadow-[8px_8px_0_#000] sm:p-12">
-      <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-none border-2 border-black bg-red-500 text-4xl font-black text-white">!</div>
-      <h1 className="mb-2 text-3xl font-black text-black">404 - Post Not Found</h1>
-      <p className="mb-8 text-lg text-gray-700">The page you seek is lost in the digital ether.</p>
-      <Link href="/blog" className="inline-flex items-center rounded-none border-2 border-black bg-black px-6 py-3 font-bold text-white shadow-[4px_4px_0px_#333] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-gray-800 hover:shadow-[2px_2px_0px_#333] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">Back to Blog</Link>
+      <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-none border-2 border-black bg-red-500 text-4xl font-black text-white">
+        !
+      </div>
+      <h1 className="mb-2 text-3xl font-black text-black">
+        404 - Post Not Found
+      </h1>
+      <p className="mb-8 text-lg text-gray-700">
+        The page you seek is lost in the digital ether.
+      </p>
+      <Link
+        href="/blog"
+        className="inline-flex items-center rounded-none border-2 border-black bg-black px-6 py-3 font-bold text-white shadow-[4px_4px_0px_#333] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-gray-800 hover:shadow-[2px_2px_0px_#333] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+      >
+        Back to Blog
+      </Link>
     </div>
   </div>
 );
@@ -219,11 +242,19 @@ export default function BlogPostPage() {
         setLoading(true);
         setError(null);
         try {
-          const { data, error: fetchError } = await supabase.from("blog_posts").select("*").eq("slug", slug).eq("published", true).single();
+          const { data, error: fetchError } = await supabase
+            .from("blog_posts")
+            .select("*")
+            .eq("slug", slug)
+            .eq("published", true)
+            .single();
           if (fetchError) {
-            if (fetchError.code === "PGRST116") setPost(null); else setError(fetchError.message);
+            if (fetchError.code === "PGRST116") setPost(null);
+            else setError(fetchError.message);
           } else setPost(data);
-        } catch (e: any) { setError(e.message || "An unexpected error occurred"); }
+        } catch (e: any) {
+          setError(e.message || "An unexpected error occurred");
+        }
         setLoading(false);
       };
       fetchPostData();
@@ -236,17 +267,51 @@ export default function BlogPostPage() {
   useEffect(() => {
     if (post?.id && process.env.NODE_ENV === "production") {
       const incrementViewCount = async () => {
-        try { await supabase.rpc("increment_blog_post_view", { post_id_to_increment: post.id }); }
-        catch (rpcError) { console.error("Failed to increment view count", rpcError); }
+        try {
+          await supabase.rpc("increment_blog_post_view", {
+            post_id_to_increment: post.id,
+          });
+        } catch (rpcError) {
+          console.error("Failed to increment view count", rpcError);
+        }
       };
       const timeoutId = setTimeout(incrementViewCount, 2000);
       return () => clearTimeout(timeoutId);
     }
   }, [post?.id]);
 
-  if (loading) { return <Layout><div className="flex min-h-screen items-center justify-center bg-gray-100 font-space"><div className="rounded-none border-2 border-black bg-white p-6 text-lg font-bold">Loading Post...</div></div></Layout>; }
-  if (error) { return <Layout><div className="flex min-h-screen items-center justify-center bg-red-100 p-4 font-space"><div className="rounded-none border-2 border-red-500 bg-white p-6 font-semibold text-red-700">Error: {error}. <Link href="/blog" className="underline hover:text-black">Back to blog</Link></div></div></Layout>; }
-  if (!post) { return <Layout><NotFoundDisplay /></Layout>; }
+  if (loading) {
+    return (
+      <Layout>
+        <div className="flex min-h-screen items-center justify-center bg-gray-100 font-space">
+          <div className="rounded-none border-2 border-black bg-white p-6 text-lg font-bold">
+            Loading Post...
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+  if (error) {
+    return (
+      <Layout>
+        <div className="flex min-h-screen items-center justify-center bg-red-100 p-4 font-space">
+          <div className="rounded-none border-2 border-red-500 bg-white p-6 font-semibold text-red-700">
+            Error: {error}.{" "}
+            <Link href="/blog" className="underline hover:text-black">
+              Back to blog
+            </Link>
+          </div>
+        </div>
+      </Layout>
+    );
+  }
+  if (!post) {
+    return (
+      <Layout>
+        <NotFoundDisplay />
+      </Layout>
+    );
+  }
 
   const postUrl = `${siteConfig.url}/blog/${post.slug}/`;
   const metaDescription = post.excerpt || post.title.substring(0, 160);
@@ -260,21 +325,39 @@ export default function BlogPostPage() {
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={postUrl} />
-        {post.cover_image_url ? (<><meta property="og:image" content={post.cover_image_url} /><meta name="twitter:image" content={post.cover_image_url} /></>) : (<><meta property="og:image" content={siteConfig.defaultOgImage} /><meta name="twitter:image" content={siteConfig.defaultOgImage} /></>)}
+        {post.cover_image_url ? (
+          <>
+            <meta property="og:image" content={post.cover_image_url} />
+            <meta name="twitter:image" content={post.cover_image_url} />
+          </>
+        ) : (
+          <>
+            <meta property="og:image" content={siteConfig.defaultOgImage} />
+            <meta name="twitter:image" content={siteConfig.defaultOgImage} />
+          </>
+        )}
         <meta name="twitter:card" content="summary_large_image" />
         <link rel="canonical" href={postUrl} />
       </Head>
 
       <main className="bg-white py-8 font-space md:py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto max-w-7xl px-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="mx-auto max-w-7xl px-4"
+        >
           <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-x-12">
-
             <article className="lg:col-span-9">
               <PostHeader post={post} />
               <hr className="my-8 border-gray-200" />
               {post.cover_image_url && (
                 <div className="my-8">
-                  <img src={post.cover_image_url} alt={post.title} className="w-full h-auto rounded-none border-2 border-black object-cover" />
+                  <img
+                    src={post.cover_image_url}
+                    alt={post.title}
+                    className="w-full h-auto rounded-none border-2 border-black object-cover"
+                  />
                 </div>
               )}
               {post.content && <PostContent content={post.content} />}
@@ -282,11 +365,16 @@ export default function BlogPostPage() {
 
             <aside className="hidden lg:block lg:col-span-3">
               <div className="sticky top-28 space-y-8">
-                <AuthorInfo author={siteConfig.author} postDate={post.published_at || post.created_at || new Date()} views={post.views || 0} />
-                {post.tags && post.tags.length > 0 && <PostTagsSidebar tags={post.tags} />}
+                <AuthorInfo
+                  author={siteConfig.author}
+                  postDate={post.published_at || post.created_at || new Date()}
+                  views={post.views || 0}
+                />
+                {post.tags && post.tags.length > 0 && (
+                  <PostTagsSidebar tags={post.tags} />
+                )}
               </div>
             </aside>
-
           </div>
         </motion.div>
       </main>

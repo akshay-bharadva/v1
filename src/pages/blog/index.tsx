@@ -7,9 +7,7 @@ import { useEffect, useState } from "react";
 import Layout from "@/components/layout";
 import { config as appConfig } from "@/lib/config";
 import { formatDate } from "@/lib/utils";
-import {
-  Eye
-} from "lucide-react";
+import { Eye } from "lucide-react";
 
 // Helper function to calculate read time
 const calculateReadTime = (content: string = ""): number => {
@@ -93,7 +91,7 @@ export default function BlogIndexPage() {
           <link rel="canonical" href={`${siteConfig.url}/blog/`} />
         </Head>
         <main className="mx-auto max-w-4xl px-4 py-8 md:py-12">
-           <motion.header
+          <motion.header
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -140,35 +138,37 @@ export default function BlogIndexPage() {
                     className="group block rounded-none border-2 border-black bg-white shadow-[6px_6px_0px_#000] transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-100 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#4f46e5] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0px_#4f46e5]"
                   >
                     <div className="p-6 sm:p-8">
-                        <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
-                          <div className="md:col-span-8">
-                            <h2
-                              id={`post-title-${post.id}`}
-                              className="mb-2 text-2xl font-black text-black transition-colors group-hover:text-indigo-700 md:text-3xl"
-                            >
-                              {post.title}
-                            </h2>
-                            <p className="mb-4 font-medium leading-relaxed text-gray-600">
-                              {post.excerpt || "Click to read more..."}
-                            </p>
-                          </div>
-                          <div className="md:col-span-4">
-                            {post.cover_image_url && (
-                              <div className="relative aspect-video w-full overflow-hidden rounded-none border-2 border-black bg-gray-200">
-                                <img
-                                  src={post.cover_image_url}
-                                  alt={`Cover image for ${post.title}`}
-                                  className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
-                                  loading="lazy"
-                                />
-                              </div>
-                            )}
-                          </div>
+                      <div className="grid grid-cols-1 items-start gap-6 md:grid-cols-12">
+                        <div className="md:col-span-8">
+                          <h2
+                            id={`post-title-${post.id}`}
+                            className="mb-2 text-2xl font-black text-black transition-colors group-hover:text-indigo-700 md:text-3xl"
+                          >
+                            {post.title}
+                          </h2>
+                          <p className="mb-4 font-medium leading-relaxed text-gray-600">
+                            {post.excerpt || "Click to read more..."}
+                          </p>
                         </div>
+                        <div className="md:col-span-4">
+                          {post.cover_image_url && (
+                            <div className="relative aspect-video w-full overflow-hidden rounded-none border-2 border-black bg-gray-200">
+                              <img
+                                src={post.cover_image_url}
+                                alt={`Cover image for ${post.title}`}
+                                className="size-full object-cover transition-transform duration-300 group-hover:scale-105"
+                                loading="lazy"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    
+
                     <div className="mt-4 flex items-center gap-x-4 border-t-2 border-black p-6 text-sm font-medium text-gray-500 sm:p-8 sm:pt-6">
-                      <time dateTime={post.published_at || post.created_at || ""}>
+                      <time
+                        dateTime={post.published_at || post.created_at || ""}
+                      >
                         {formatDate(
                           post.published_at || post.created_at || new Date(),
                           { month: "short", day: "numeric" },
@@ -187,9 +187,9 @@ export default function BlogIndexPage() {
                       )}
                       <div className="ml-auto flex items-center gap-x-4">
                         <span className="flex items-center gap-1 text-gray-400">
-                        <Eye className="size-4" />
-                        {post.views || 0}
-                      </span>
+                          <Eye className="size-4" />
+                          {post.views || 0}
+                        </span>
                       </div>
                     </div>
                   </Link>

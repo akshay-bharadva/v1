@@ -28,6 +28,7 @@ $$ language 'plpgsql';
 These tables store the main content for the public-facing portfolio and blog.
 
 #### `portfolio_sections` Table
+
 Stores the main sections of the website, like "Work Experience", "Projects", "Services", etc.
 
 ```sql
@@ -64,6 +65,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 ```
 
 #### `portfolio_items` Table
+
 Stores individual items within a `list_items` section (e.g., a specific job in "Experience", or a specific project in "Projects").
 
 ```sql
@@ -105,6 +107,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 ```
 
 #### `blog_posts` Table
+
 Stores all blog articles and their content.
 
 ```sql

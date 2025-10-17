@@ -4,6 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import type { BlogPost } from "@/types";
 import BlogEditor from "./blog-editor";
 import { supabase } from "@/supabase/client";
+import { Button } from "../ui/button";
+import { Edit, Loader2, MoreHorizontal, PlusCircle, ToggleLeft, ToggleRight, Trash } from "lucide-react";
+import { Input } from "../ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../ui/select";
+import { Card, CardContent } from "../ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../ui/table";
+import { Badge } from "../ui/badge";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "../ui/dropdown-menu";
 
 const inputClass =
   "w-full px-3 py-2 border-2 border-black rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 font-space";
@@ -23,7 +31,10 @@ interface BlogManagerProps {
   onActionHandled?: () => void;
 }
 
-export default function BlogManager({ startInCreateMode, onActionHandled }: BlogManagerProps) {
+export default function BlogManager({
+  startInCreateMode,
+  onActionHandled,
+}: BlogManagerProps) {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [editingPost, setEditingPost] = useState<BlogPost | null>(null);
   const [isCreating, setIsCreating] = useState(false);
@@ -182,7 +193,13 @@ export default function BlogManager({ startInCreateMode, onActionHandled }: Blog
     setIsLoading(false);
   };
 
-  if (isLoading && posts.length === 0 && !isCreating && !editingPost && !error) {
+  if (
+    isLoading &&
+    posts.length === 0 &&
+    !isCreating &&
+    !editingPost &&
+    !error
+  ) {
     return (
       <div className="p-4 font-space font-semibold text-black">
         Loading blog posts...
@@ -207,164 +224,143 @@ export default function BlogManager({ startInCreateMode, onActionHandled }: Blog
     );
   }
 
-  return (
-    <div className="space-y-6 font-space">
+   return (
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-black">Blog Posts</h2>
-          <p className="text-gray-700">Manage your blog content</p>
+          <h2 className="text-2xl font-bold">Blog Posts</h2>
+          <p className="text-muted-foreground">Manage your blog content.</p>
         </div>
-        <button
-          onClick={handleCreatePost}
-          className={`${buttonPrimaryClass()} flex items-center space-x-2`}
+        <Button onClick={handleCreatePost}>
+          <PlusCircle className="mr-2 size-4" /> Create New Post
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-4 sm:flex-row">
+        <Input
+          placeholder="Search posts by title..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="flex-1"
+        />
+        <Select
+          value={filterStatus}
+          onValueChange={(value: "all" | "published" | "draft") =>
+            setFilterStatus(value)
+          }
         >
-          <span className="text-xl leading-none">+</span>
-          <span>Create New Post</span>
-        </button>
+          <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Posts</SelectItem>
+            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="draft">Drafts</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="rounded-none border-2 border-black bg-white p-4 md:p-6">
-        <div className="flex flex-col gap-4 sm:flex-row">
-          <div className="flex-1">
-            <input
-              type="text"
-              placeholder="Search posts by title..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className={inputClass}
-            />
-          </div>
-          <select
-            value={filterStatus}
-            onChange={(e) =>
-              setFilterStatus(e.target.value as "all" | "published" | "draft")
-            }
-            className={selectClass}
-          >
-            <option value="all">All Posts</option>
-            <option value="published">Published</option>
-            <option value="draft">Drafts</option>
-          </select>
-        </div>
-      </div>
-
-      {isLoading && (
-        <p className="font-semibold text-black">Fetching posts...</p>
-      )}
-      {!isLoading && posts.length === 0 ? (
-        <div className="rounded-none border-2 border-black bg-white py-12 text-center">
-          <div className="mb-4 text-6xl text-gray-500">📝</div>
-          <h3 className="mb-2 text-lg font-bold text-black">No posts found</h3>
-          <p className="text-gray-600">
-            Try adjusting your filters or create a new post.
-          </p>
-        </div>
-      ) : (
-        <div className="overflow-hidden rounded-none border-2 border-black bg-white">
-          <div className="divide-y-2 divide-black">
-            <AnimatePresence>
-              {posts.map((post) => (
-                <motion.div
-                  key={post.id}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="p-4 hover:bg-yellow-50 md:p-6"
-                >
-                  <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                    <div className="min-w-0 flex-1 md:mr-4">
-                      <div className="mb-2 flex items-center space-x-3">
-                        <h3
-                          className="truncate text-lg font-bold text-black"
-                          title={post.title}
-                        >
-                          {post.title}
-                        </h3>
-                        <span
-                          className={`inline-flex items-center rounded-none border-2 border-black px-2 py-0.5 font-space text-xs font-bold ${post.published
-                            ? "bg-green-300 text-black"
-                            : "bg-yellow-300 text-black"
-                            }`}
-                        >
-                          {post.published ? "Published" : "Draft"}
-                        </span>
-                      </div>
-                      <p className="mb-3 line-clamp-2 text-gray-700">
-                        {post.excerpt || (
-                          <span className="italic">No excerpt.</span>
-                        )}
-                      </p>
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-600">
-                        {post.created_at && (
-                          <span>
-                            Created:{" "}
-                            {new Date(post.created_at).toLocaleDateString()}
-                          </span>
-                        )}
-                        <span>Slug: /{post.slug}</span>
-                        <span>Views: {post.views || 0}</span>
-                      </div>
-                      {post.tags && post.tags.length > 0 && (
-                        <div className="mt-2 flex flex-wrap gap-1">
-                          {post.tags.map((tag: string) => (
-                              <span
-                                key={tag}
-                                className="inline-flex items-center rounded-none border border-black bg-gray-200 px-2 py-1 font-space text-xs text-black"
-                              >
-                                {tag}
-                              </span>
-                            ),
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex w-full shrink-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:space-x-2">
-                      <button
-                        onClick={() =>
-                          togglePostStatus(post.id, post.published || false)
+      <Card>
+        <CardContent className="p-0">
+          {isLoading && (
+            <div className="p-6 text-center text-muted-foreground">
+              {" "}
+              <Loader2 className="mx-auto size-6 animate-spin" />{" "}
+            </div>
+          )}
+          {!isLoading && error && (
+            <div className="p-6 text-center text-destructive">{error}</div>
+          )}
+          {!isLoading && !error && posts.length === 0 ? (
+            <div className="p-12 text-center">
+              <h3 className="text-lg font-bold">No posts found</h3>
+              <p className="text-muted-foreground">
+                Try adjusting your filters or create a new post.
+              </p>
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead className="hidden sm:table-cell">Status</TableHead>
+                  <TableHead className="hidden md:table-cell">
+                    Created
+                  </TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {posts.map((post) => (
+                  <TableRow key={post.id}>
+                    <TableCell className="font-medium">{post.title}</TableCell>
+                    <TableCell className="hidden sm:table-cell">
+                      <Badge
+                        variant={post.published ? "default" : "secondary"}
+                        className={
+                          post.published
+                            ? "bg-green-500/20 text-green-400 border-green-500/30 hover:bg-green-500/30"
+                            : ""
                         }
-                        disabled={isLoading}
-                        className={buttonActionClass(
-                          post.published ? "bg-yellow-400" : "bg-green-400",
-                          post.published ? "bg-yellow-500" : "bg-green-500",
-                        )}
                       >
-                        {isLoading
-                          ? "..."
-                          : post.published
-                            ? "Unpublish"
-                            : "Publish"}
-                      </button>
-                      <button
-                        onClick={() => handleEditPost(post)}
-                        disabled={isLoading}
-                        className={buttonActionClass(
-                          "bg-blue-400",
-                          "bg-blue-500",
-                        )}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDeletePost(post.id)}
-                        disabled={isLoading}
-                        className={buttonActionClass(
-                          "bg-red-400",
-                          "bg-red-500",
-                          "text-white",
-                        )}
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
-      )}
+                        {post.published ? "Published" : "Draft"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell text-muted-foreground text-xs">
+                      {new Date(post.created_at || "").toLocaleDateString()}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="size-8"
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            onClick={() =>
+                              togglePostStatus(post.id, post.published || false)
+                            }
+                          >
+                            {post.published ? (
+                              <ToggleLeft className="mr-2 size-4" />
+                            ) : (
+                              <ToggleRight className="mr-2 size-4" />
+                            )}
+                            <span>
+                              {post.published ? "Unpublish" : "Publish"}
+                            </span>
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => handleEditPost(post)}
+                          >
+                            <Edit className="mr-2 size-4" />
+                            <span>Edit</span>
+                          </DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem
+                            className="text-destructive"
+                            onClick={() => handleDeletePost(post.id)}
+                          >
+                            <Trash className="mr-2 size-4" />
+                            <span>Delete</span>
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

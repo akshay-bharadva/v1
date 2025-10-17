@@ -6,6 +6,14 @@ import type { BlogPost } from "@/types";
 import AdvancedMarkdownEditor from "@/components/admin/AdvancedMarkdownEditor";
 import { supabase } from "@/supabase/client";
 import imageCompression from "browser-image-compression";
+import { Switch } from "../ui/switch";
+import { Label } from "../ui/label";
+import { Separator } from "../ui/separator";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
 
 interface BlogEditorProps {
   post: BlogPost | null;
@@ -110,7 +118,7 @@ export default function BlogEditor({
       tags: tagsArray.length > 0 ? tagsArray : null,
       published: formData.published,
       cover_image_url: formData.cover_image_url || null,
-      internal_notes: formData.internal_notes || null
+      internal_notes: formData.internal_notes || null,
     };
     await onSave(postDataToSave);
     setIsSaving(false);
@@ -194,256 +202,225 @@ export default function BlogEditor({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-6xl font-space"
+      className="font-sans"
     >
-      <div className="overflow-hidden rounded-none border-2 border-black bg-white">
-        <div className="border-b-2 border-black bg-gray-100 px-4 py-4 sm:px-6">
-          <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-bold text-black">
-              {post?.id ? "Edit Post" : "Create New Post"}
-            </h2>
-            <label className="flex cursor-pointer items-center">
+      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+        <h2 className="text-2xl font-bold text-foreground">
+          {post?.id ? "Edit Post" : "Create New Post"}
+        </h2>
+        <div className="flex items-center space-x-2">
+          <Switch
+            id="published-status"
+            checked={formData.published}
+            onCheckedChange={(checked) =>
+              setFormData((prev) => ({ ...prev, published: checked }))
+            }
+          />
+          <Label htmlFor="published-status" className="font-semibold">
+            {formData.published ? "Published" : "Draft"}
+          </Label>
+        </div>
+      </div>
+      <Separator className="my-6" />
+
+      <form onSubmit={handleSubmit}>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+          <div className="space-y-6 lg:col-span-2">
+            <div>
+              <Label htmlFor="title" className="mb-2 block">
+                Title *
+              </Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => handleTitleChange(e.target.value)}
+                className={errors.title ? "border-destructive" : ""}
+              />
+              {errors.title && (
+                <p className="mt-1 text-xs text-destructive">{errors.title}</p>
+              )}
+            </div>
+
+            <div>
+              <Label className="mb-2 block">Content (Markdown) *</Label>
+              <AdvancedMarkdownEditor
+                value={formData.content}
+                onChange={(newContent) =>
+                  setFormData((prev) => ({ ...prev, content: newContent }))
+                }
+                onImageUploadRequest={() => fileInputRef.current?.click()}
+                minHeight="400px"
+              />
               <input
-                type="checkbox"
-                checked={formData.published}
+                type="file"
+                ref={fileInputRef}
+                onChange={(e) => onFileSelected(e, false)}
+                accept="image/*"
+                className="hidden"
+              />
+              {errors.content && (
+                <p className="mt-1 text-xs text-destructive">
+                  {errors.content}
+                </p>
+              )}
+              {errors.image_upload && (
+                <p className="mt-1 text-xs text-destructive">
+                  {errors.image_upload}
+                </p>
+              )}
+              {isUploading && (
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Uploading image...
+                </p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="internal_notes" className="mb-2 block">
+                Internal Notes (Admin only)
+              </Label>
+              <Textarea
+                id="internal_notes"
+                rows={3}
+                value={formData.internal_notes}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    published: e.target.checked,
+                    internal_notes: e.target.value,
                   }))
                 }
-                className="relative size-5 cursor-pointer appearance-none border-2 border-black bg-white checked:border-indigo-500 checked:bg-indigo-500"
               />
-              <span className="ml-2 text-sm font-semibold text-black">
-                Published
-              </span>
-            </label>
+            </div>
+          </div>
+
+          <div className="space-y-6 lg:sticky lg:top-24 h-fit">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Post Details</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label htmlFor="slug" className="mb-2 block">
+                    Slug *
+                  </Label>
+                  <Input
+                    id="slug"
+                    value={formData.slug}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        slug: e.target.value
+                          .toLowerCase()
+                          .replace(/[^a-z0-9-]/g, "")
+                          .replace(/\s+/g, "-"),
+                      }))
+                    }
+                    className={errors.slug ? "border-destructive" : ""}
+                  />
+                  {errors.slug && (
+                    <p className="mt-1 text-xs text-destructive">
+                      {errors.slug}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <Label htmlFor="excerpt" className="mb-2 block">
+                    Excerpt (Short summary)
+                  </Label>
+                  <Textarea
+                    id="excerpt"
+                    rows={3}
+                    value={formData.excerpt}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        excerpt: e.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="tags" className="mb-2 block">
+                    Tags (comma-separated)
+                  </Label>
+                  <Input
+                    id="tags"
+                    value={formData.tags}
+                    onChange={(e) =>
+                      setFormData((prev) => ({ ...prev, tags: e.target.value }))
+                    }
+                  />
+                </div>
+                <div>
+                  <Label
+                    htmlFor="cover_image_url_display"
+                    className="mb-2 block"
+                  >
+                    Cover Image
+                  </Label>
+                  <Input
+                    id="cover_image_url_display"
+                    value={formData.cover_image_url}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        cover_image_url: e.target.value,
+                      }))
+                    }
+                    placeholder="Paste image URL or upload"
+                    className="mb-2"
+                  />
+                  <Input
+                    id="cover_image_file_input"
+                    ref={coverImageFileInputRef}
+                    accept="image/*"
+                    onChange={(e) => onFileSelected(e, true)}
+                    type="file"
+                  />
+                  {formData.cover_image_url && (
+                    <img
+                      src={formData.cover_image_url}
+                      alt="Cover preview"
+                      className="mt-2 max-h-40 w-full rounded-md border border-border object-contain"
+                    />
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            <div className="space-y-6 lg:col-span-2">
-              <div>
-                <label
-                  htmlFor="title"
-                  className="mb-1 block text-sm font-bold text-black"
-                >
-                  Title *
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => handleTitleChange(e.target.value)}
-                  className={inputClass(!!errors.title)}
-                />
-                {errors.title && (
-                  <p className="mt-1 text-xs font-semibold text-red-600">
-                    {errors.title}
-                  </p>
-                )}
-              </div>
-
-              <div>
-                <label className="mb-1 block text-sm font-bold text-black">
-                  Content (Markdown) *
-                </label>
-                <AdvancedMarkdownEditor
-                  value={formData.content}
-                  onChange={(newContent) =>
-                    setFormData((prev) => ({ ...prev, content: newContent }))
-                  }
-                  onImageUploadRequest={() => fileInputRef.current?.click()}
-                  minHeight="400px"
-                />
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={(e) => onFileSelected(e, false)}
-                  accept="image/*"
-                  className="hidden"
-                  id="content_image_file_input"
-                />
-                {errors.content && (
-                  <p className="mt-1 text-xs font-semibold text-red-600">
-                    {errors.content}
-                  </p>
-                )}
-                {errors.image_upload && (
-                  <p className="mt-1 text-xs font-semibold text-red-600">
-                    {errors.image_upload}
-                  </p>
-                )}
-                {isUploading && (
-                  <p className="text-sm font-semibold text-blue-600">
-                    Uploading image...
-                  </p>
-                )}
-              </div>
-              <div>
-                <label
-                  htmlFor="internal_notes"
-                  className="mb-1 block text-sm font-bold text-black"
-                >
-                  Internal Notes (Admin only)
-                </label>
-                <textarea
-                  id="internal_notes"
-                  rows={3}
-                  value={formData.internal_notes}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      internal_notes: e.target.value,
-                    }))
-                  }
-                  className={`${inputClass(false)} resize-y`}
-                />
-              </div>
-            </div>
-
-            <div className="space-y-6 rounded-none border-2 border-black bg-gray-50 p-4">
-              <div>
-                <label
-                  htmlFor="slug"
-                  className="mb-1 block text-sm font-bold text-black"
-                >
-                  Slug *
-                </label>
-                <input
-                  type="text"
-                  id="slug"
-                  value={formData.slug}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      slug: e.target.value
-                        .toLowerCase()
-                        .replace(/[^a-z0-9-]/g, "")
-                        .replace(/\s+/g, "-"),
-                    }))
-                  }
-                  className={inputClass(!!errors.slug)}
-                />
-                {errors.slug && (
-                  <p className="mt-1 text-xs font-semibold text-red-600">
-                    {errors.slug}
-                  </p>
-                )}
-              </div>
-              <div>
-                <label
-                  htmlFor="excerpt"
-                  className="mb-1 block text-sm font-bold text-black"
-                >
-                  Excerpt (Short summary)
-                </label>
-                <textarea
-                  id="excerpt"
-                  rows={3}
-                  value={formData.excerpt}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      excerpt: e.target.value,
-                    }))
-                  }
-                  className={`${inputClass(false)} resize-none`}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="tags"
-                  className="mb-1 block text-sm font-bold text-black"
-                >
-                  Tags (comma-separated)
-                </label>
-                <input
-                  type="text"
-                  id="tags"
-                  value={formData.tags}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, tags: e.target.value }))
-                  }
-                  className={inputClass(false)}
-                />
-              </div>
-              <div>
-                <label
-                  htmlFor="cover_image_url_display"
-                  className="mb-1 block text-sm font-bold text-black"
-                >
-                  Cover Image
-                </label>
-                <input
-                  type="text"
-                  id="cover_image_url_display"
-                  value={formData.cover_image_url}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      cover_image_url: e.target.value,
-                    }))
-                  }
-                  className={`${inputClass(!!errors.cover_image_url)} mb-2`}
-                  placeholder="Paste image URL or upload"
-                />
-                <input
-                  type="file"
-                  id="cover_image_file_input"
-                  ref={coverImageFileInputRef}
-                  accept="image/*"
-                  onChange={(e) => onFileSelected(e, true)}
-                  className="w-full rounded-none border-2 border-black p-2 font-space text-sm file:mr-2 file:border-0 file:bg-indigo-100 file:px-2 file:py-1 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-200"
-                />
-                {formData.cover_image_url && (
-                  <img
-                    src={formData.cover_image_url}
-                    alt="Cover preview"
-                    className="mt-2 max-h-40 w-full rounded-none border-2 border-black object-contain"
-                  />
-                )}
-                {errors.cover_image_url && (
-                  <p className="mt-1 text-xs font-semibold text-red-600">
-                    {errors.cover_image_url}
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col justify-end gap-3 border-t-2 border-black pt-6 sm:flex-row sm:space-x-3">
-            <button
-              type="button"
-              onClick={onCancel}
-              className={buttonSecondaryClass}
-              disabled={isSaving || isUploading}
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={
-                isSaving ||
-                isUploading ||
-                !formData.title ||
-                !formData.slug ||
-                !formData.content
-              }
-              className={buttonPrimaryClass}
-            >
-              {isSaving
-                ? "Saving..."
-                : isUploading
-                  ? "Processing Image..."
-                  : post?.id
-                    ? "Update Post"
-                    : "Create Post"}
-            </button>
-          </div>
-        </form>
-      </div>
+        <div className="mt-8 flex flex-col justify-end gap-3 border-t border-border pt-6 sm:flex-row sm:space-x-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            disabled={isSaving || isUploading}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="submit"
+            disabled={
+              isSaving ||
+              isUploading ||
+              !formData.title ||
+              !formData.slug ||
+              !formData.content
+            }
+          >
+            {(isSaving || isUploading) && (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            )}
+            {isSaving
+              ? "Saving..."
+              : isUploading
+                ? "Uploading..."
+                : post?.id
+                  ? "Update Post"
+                  : "Create Post"}
+          </Button>
+        </div>
+      </form>
     </motion.div>
   );
 }

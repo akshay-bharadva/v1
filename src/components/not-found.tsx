@@ -2,32 +2,36 @@ import { PropsWithChildren } from "react";
 import Link from "next/link";
 import { BsArrowUpRight } from "react-icons/bs";
 import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 type NotFoundProps = PropsWithChildren;
 
 export default function NotFound({ children }: NotFoundProps) {
-return (
-<section className="my-8 rounded-none border-2 border-black bg-white p-8 py-12 text-center font-space shadow-[8px_8px_0px_#000]">
-<div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-none border-2 border-black bg-red-500 text-5xl font-black text-white shadow-[2px_2px_0px_#000]">
-!
-</div>
-<h1 className="mb-3 text-4xl font-black text-black">
-<span className="text-red-600">404</span> | PAGE NOT FOUND
-</h1>
-<p className="mb-4 text-lg leading-relaxed text-gray-700">
-Whoops! Looks like this page took a wrong turn at Albuquerque.
-</p>
-<p className="mb-8 text-gray-700">Let's get you back on track.</p>
+  return (
+    <motion.section
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="my-16 flex min-h-[50vh] flex-col items-center justify-center text-center"
+    >
+      <h1 className="text-8xl font-black tracking-tighter text-foreground sm:text-9xl">
+        404
+      </h1>
+      <p className="mt-4 text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+        Page Not Found
+      </p>
+      <p className="mt-6 max-w-md text-base text-muted-foreground">
+        Whoops! Looks like this page took a wrong turn at Albuquerque. Let's get
+        you back on track.
+      </p>
 
-{children && <div className="mb-8">{children}</div>}
-  
-  <Link href="/" passHref legacyBehavior>
-    <Button asChild variant="default" size="lg">
-      <a>Go Home <BsArrowUpRight className="ml-1.5 inline" /></a>
-    </Button>
-  </Link>
-</section>
+      {children && <div className="my-8">{children}</div>}
 
-
-);
+      <Button asChild className="mt-8">
+        <Link href="/">
+          Go Home <BsArrowUpRight className="ml-1.5 inline" />
+        </Link>
+      </Button>
+    </motion.section>
+  );
 }
