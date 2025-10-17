@@ -11,16 +11,16 @@ export interface DashboardData {
     totalPosts: number;
     portfolioSections: number;
     portfolioItems: number;
-    pendingTasks: number;
-    totalNotes: number;
-    monthlyEarnings: number;
-    monthlyExpenses: number;
-    monthlyNet: number;
+    pendingTasks: number; // New
+    totalNotes: number;   // New
+    monthlyEarnings: number; // New
+    monthlyExpenses: number; // New
+    monthlyNet: number; // New
     totalBlogViews: number;
     tasksCompletedThisWeek: number;
   } | null;
   recentPosts: Pick<BlogPost, "id" | "title" | "updated_at" | "slug">[];
-  pinnedNotes: Pick<Note, 'id' | 'title' | 'content'>[];
+  pinnedNotes: Pick<Note, 'id' | 'title' | 'content'>[]; // New
 }
 
 export default function AdminDashboardPage() {
@@ -43,11 +43,12 @@ export default function AdminDashboardPage() {
 
       const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       if (aalError || aalData?.currentLevel !== 'aal2') {
-        router.replace("/admin/login");
+        router.replace("/admin/login"); // Simplified redirect logic
         return;
       }
       setIsLoading(false);
 
+      // Fetch dashboard data
       try {
         const now = new Date();
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
@@ -84,6 +85,7 @@ export default function AdminDashboardPage() {
           console.error("Dashboard data fetching errors:", errors);
           throw new Error("Failed to fetch some dashboard data.");
         }
+
         let monthlyEarnings = 0;
         let monthlyExpenses = 0;
         if (monthlyTransactionsData) {
@@ -153,14 +155,11 @@ export default function AdminDashboardPage() {
           animate="animate"
           exit="exit"
           variants={pageVariants}
-          className="flex min-h-screen items-center justify-center bg-zinc-900 font-sans"
+          className="flex min-h-screen items-center justify-center bg-indigo-100 font-space"
         >
-          <pre>
-          {JSON.stringify({ isLoading, session, dashboardData }, null, 2)}
-        </pre>
-          <div className="rounded-lg border border-zinc-700 bg-zinc-800 p-8 text-center">
-            <div className="mx-auto mb-4 w-12 h-12 animate-spin rounded-full border-4 border-accent border-l-transparent"></div>
-            <p className="font-semibold text-slate-200">Loading Dashboard...</p>
+          <div className="rounded-none border-2 border-black bg-white p-8 text-center">
+            <div className="mx-auto mb-4 size-12 animate-spin rounded-none border-y-4 border-indigo-600"></div>
+            <p className="font-semibold text-gray-700">Loading Dashboard...</p>
           </div>
         </motion.div>
       </Layout>
@@ -175,11 +174,8 @@ export default function AdminDashboardPage() {
         animate="animate"
         exit="exit"
         variants={pageVariants}
-        className="font-sans"
+        className="font-space"
       >
-        <pre>
-          {JSON.stringify({ isLoading, session, dashboardData }, null, 2)}
-        </pre>
         <AdminDashboardComponent onLogout={handleLogout} dashboardData={dashboardData} />
       </motion.div>
     </Layout>

@@ -83,11 +83,11 @@ export default function AdminIndexPage() {
         animate="animate"
         exit="exit"
         variants={pageVariants}
-        className="flex min-h-screen items-center justify-center bg-zinc-900 font-sans"
+        className="flex min-h-screen items-center justify-center bg-indigo-100 font-space"
       >
-        <div className="rounded-lg border border-zinc-700 bg-zinc-800 p-8 text-center">
-          <div className="mx-auto mb-4 w-12 h-12 animate-spin rounded-full border-4 border-l-transparent border-accent"></div>
-          <p className="font-semibold text-slate-200">Loading Admin Area...</p>
+        <div className="rounded-none border-2 border-black bg-white p-8 text-center">
+          <div className="mx-auto mb-4 size-12 animate-spin rounded-none border-y-4 border-indigo-600"></div>
+          <p className="font-semibold text-gray-700">Loading Admin Area...</p>
         </div>
       </motion.div>
     </Layout>
