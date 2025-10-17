@@ -1,9 +1,13 @@
-// The admin dashboard is updated to match the dark theme for consistency.
-// - Backgrounds are changed to dark colors (e.g., bg-zinc-900).
-// - Text is changed to light colors (e.g., text-slate-200).
-// - Borders are made more subtle (e.g., border-zinc-700).
-// - The font is changed from 'font-space' to the default 'font-sans' (Inter).
-
+/*
+This file is completely redesigned to match the new kinetic typography and dark theme.
+- All neo-brutalist styles (`border-2`, `shadow-[...]`, `rounded-none`, `font-space`) have been removed.
+- The layout is now cleaner, using modern spacing and the redesigned `Card` component for stats.
+- The tab navigation has been replaced with the redesigned `Tabs` component for a more integrated feel.
+- The custom `StatCard` component is removed; `Card` and standard flexbox are used instead for a consistent look.
+- The header is simplified, and the "MFA Enabled" badge uses the redesigned `Badge` component.
+- The logout button now uses the redesigned `Button` component with a destructive variant.
+- All components now inherit the global `font-sans` (Inter).
+*/
 "use client";
 
 import { useState, useEffect } from "react";
@@ -16,207 +20,244 @@ import NotesManager from "@/components/admin/notes-manager";
 import FinanceManager from "@/components/admin/finance-manager";
 import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Edit3, BarChart2, ExternalLink, ListTodo, StickyNote, Banknote, TrendingUp, TrendingDown, CheckCircle, Eye } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Banknote,
+  BookText,
+  CheckCircle,
+  Eye,
+  LayoutTemplate,
+  ListTodo,
+  Lock,
+  LogOut,
+  TrendingDown,
+  TrendingUp,
+  StickyNote,
+  ExternalLink,
+} from "lucide-react";
 import Link from "next/link";
 import { DashboardData } from "@/pages/admin/dashboard";
+import { Skeleton } from "../ui/skeleton";
 
 interface AdminDashboardProps {
   onLogout: () => void;
   dashboardData: DashboardData;
 }
 
-type ActiveTab = "blogs" | "content" | "security" | "dashboard" | "tasks" | "notes" | "finance";
+type ActiveTab =
+  | "blogs"
+  | "content"
+  | "security"
+  | "dashboard"
+  | "tasks"
+  | "notes"
+  | "finance";
 type InitialAction = "createBlogPost" | "createPortfolioSection" | null;
 
-export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboardProps) {
+export default function AdminDashboard({
+  onLogout,
+  dashboardData,
+}: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
   const [initialAction, setInitialAction] = useState<InitialAction>(null);
 
   useEffect(() => {
     const checkMfaStatus = async () => {
-      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aalData?.currentLevel === "aal2") {
-        setIsMfaEnabled(true);
-      } else {
-        setIsMfaEnabled(false);
-      }
+      const { data: aalData } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      setIsMfaEnabled(aalData?.currentLevel === "aal2");
     };
     checkMfaStatus();
   }, []);
 
   const tabs = [
-    { id: "dashboard", label: "Overview", icon: "📊" },
-    { id: "blogs", label: "Blog Posts", icon: "📝" },
-    { id: "content", label: "Website Content", icon: "🏠" },
-    { id: "tasks", label: "Tasks", icon: "✅" },
-    { id: "notes", label: "Notes", icon: "🗒️" },
-    { id: "finance", label: "Finance", icon: "💰" },
-    { id: "security", label: "Security", icon: "🔒" },
+    { id: "dashboard", label: "Overview", icon: <LayoutTemplate /> },
+    { id: "blogs", label: "Blog", icon: <BookText /> },
+    { id: "content", label: "Content", icon: <LayoutTemplate /> },
+    { id: "tasks", label: "Tasks", icon: <ListTodo /> },
+    { id: "notes", label: "Notes", icon: <StickyNote /> },
+    { id: "finance", label: "Finance", icon: <Banknote /> },
+    { id: "security", label: "Security", icon: <Lock /> },
   ];
 
-  const StatCard: React.FC<{ title: string; value: string | number; icon?: JSX.Element, bgColor?: string }> = ({ title, value, icon, bgColor = "bg-zinc-800" }) => (
-    <div className={`rounded-lg border border-zinc-700 p-4 ${bgColor}`}>
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">{title}</h3>
-        {icon && <div className="text-zinc-500">{icon}</div>}
-      </div>
-      <p className="mt-1 text-3xl font-black text-slate-100">{value}</p>
-    </div>
+  const handleActionCompleted = () => {
+    setInitialAction(null);
+  };
+
+  const StatCard: React.FC<{
+    title: string;
+    value: string | number;
+    icon?: JSX.Element;
+    className?: string;
+  }> = ({ title, value, icon, className }) => (
+    <Card className={className}>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
+          {title}
+        </CardTitle>
+        {icon && <div className="text-muted-foreground">{icon}</div>}
+      </CardHeader>
+      <CardContent>
+        <div className="text-2xl font-bold">{value}</div>
+      </CardContent>
+    </Card>
   );
 
   return (
-    <div className="min-h-screen bg-zinc-900 text-slate-200 font-sans">
-      <header className="border-b border-zinc-700 bg-zinc-900">
+    <div className="min-h-screen bg-background font-sans">
+      <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-start gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl font-bold text-slate-100 sm:text-3xl">Admin Dashboard</h1>
-            <div className="flex w-full items-center justify-between sm:w-auto sm:justify-end sm:space-x-4">
+          <div className="flex h-16 items-center justify-between">
+            <h1 className="text-xl font-bold text-foreground sm:text-2xl">
+              Admin
+            </h1>
+            <div className="flex items-center gap-4">
               {isMfaEnabled && (
-                <span className="rounded-md border border-green-500/50 bg-green-500/10 px-2 py-1 text-xs font-semibold text-green-300 sm:text-sm">
-                  🔒 MFA Enabled
-                </span>
+                <Badge variant="secondary" className="border-green-500/50">
+                  <Lock className="mr-1.5 size-3" /> MFA Enabled
+                </Badge>
               )}
-              <Button onClick={onLogout} variant="destructive">Logout</Button>
+              <Button variant="destructive" size="sm" onClick={onLogout}>
+                <LogOut className="mr-1.5 size-4" /> Logout
+              </Button>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <nav className="flex flex-wrap gap-1 border-b border-zinc-700 pb-px sm:space-x-1">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as ActiveTab)}
-                className={`flex items-center space-x-2 rounded-t-md border-x border-t px-3 py-2 text-sm font-bold sm:px-4
-                  ${activeTab === tab.id
-                    ? "border-zinc-700 bg-zinc-800 text-slate-100"
-                    : "border-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-slate-200"
-                  } transition-colors`}
-              >
-                <span>{tab.icon}</span>
-                <span>{tab.label}</span>
-              </button>
-            ))}
-          </nav>
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+            <p className="text-muted-foreground">
+              Manage your portfolio and content.
+            </p>
+          </div>
         </div>
 
-        {activeTab === "dashboard" && (
-          <motion.section
-            key="dashboard-overview"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.3 }}
-            className="space-y-8"
-          >
-            <div>
-              <h2 className="mb-4 text-2xl font-black text-slate-100">This Month's Summary</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {!dashboardData.stats ? (
-                  Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-lg border border-zinc-700 bg-zinc-800"></div>)
-                ) : (
-                  <>
-                    <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<TrendingUp />} bgColor="bg-green-900/20 border-green-500/30" />
-                    <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<TrendingDown />} bgColor="bg-red-900/20 border-red-500/30" />
-                    <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<Banknote />} bgColor={dashboardData.stats.monthlyNet >= 0 ? "bg-blue-900/20 border-blue-500/30" : "bg-orange-900/20 border-orange-500/30"} />
-                  </>
-                )}
-              </div>
-            </div>
+        <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
+          <nav className="flex flex-row gap-1 lg:w-48 lg:flex-col">
+            {tabs.map((tab) => (
+              <Button
+                key={tab.id}
+                variant={activeTab === tab.id ? "secondary" : "ghost"}
+                className="justify-start gap-2"
+                onClick={() => {
+                  setActiveTab(tab.id as ActiveTab);
+                  setInitialAction(null);
+                }}
+              >
+                {tab.icon}
+                <span className="hidden lg:inline">{tab.label}</span>
+              </Button>
+            ))}
+          </nav>
 
-            <div>
-              <h2 className="mb-4 text-2xl font-black text-slate-100">At a Glance</h2>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {!dashboardData.stats ? (
-                  Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-lg border border-zinc-700 bg-zinc-800"></div>)
-                ) : (
-                  <>
-                    <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo />} bgColor="bg-purple-900/20 border-purple-500/30" />
-                    <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle />} bgColor="bg-green-900/20 border-green-500/30" />
-                    <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote />} bgColor="bg-orange-900/20 border-orange-500/30" />
-                    <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye />} bgColor="bg-yellow-900/20 border-yellow-500/30" />
-                  </>
-                )}
-              </div>
-            </div>
-
-            {dashboardData.pinnedNotes.length > 0 && (
-              <div>
-                <h3 className="mb-3 text-xl font-bold text-slate-100">Pinned Notes</h3>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  {dashboardData.pinnedNotes.map(note => (
-                    <div key={note.id} className="rounded-lg border border-yellow-500/30 bg-yellow-900/20 p-4">
-                      <h4 className="truncate font-bold text-slate-100">{note.title || "Untitled Note"}</h4>
-                      <p className="mt-1 line-clamp-3 text-xs text-zinc-400">{note.content}</p>
-                      <Button size="sm" variant="outline" className="mt-3 text-xs" onClick={() => setActiveTab('notes')}>
-                        Edit
-                      </Button>
-                    </div>
-                  ))}
+          <main className="flex-1">
+            {activeTab === "dashboard" && (
+              <motion.section
+                key="dashboard-overview"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                className="space-y-8"
+              >
+                <div>
+                  <h3 className="mb-4 text-xl font-bold">This Month's Summary</h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                    {!dashboardData.stats ? (
+                      Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
+                    ) : (
+                      <>
+                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4" />} />
+                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4" />} />
+                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} />
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
+
+                <div>
+                  <h3 className="mb-4 text-xl font-bold">At a Glance</h3>
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {!dashboardData.stats ? (
+                      Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
+                    ) : (
+                      <>
+                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />} />
+                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} />
+                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} />
+                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} />
+                      </>
+                    )}
+                  </div>
+                </div>
+
+                {dashboardData.pinnedNotes.length > 0 && (
+                  <div>
+                    <h3 className="mb-3 text-xl font-bold">Pinned Notes</h3>
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                      {dashboardData.pinnedNotes.map((note) => (
+                        <Card key={note.id}>
+                          <CardHeader><CardTitle className="truncate text-base">{note.title || "Untitled Note"}</CardTitle></CardHeader>
+                          <CardContent>
+                            <p className="line-clamp-3 text-sm text-muted-foreground">{note.content}</p>
+                            <Button size="sm" variant="secondary" className="mt-4 text-xs" onClick={() => setActiveTab("notes")}>Go to Note</Button>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {dashboardData.recentPosts.length > 0 && (
+                  <div>
+                    <h3 className="mb-3 text-xl font-bold">Recently Updated Blog Posts</h3>
+                    <Card>
+                      <CardContent className="p-4 space-y-3">
+                        {dashboardData.recentPosts.map((post) => (
+                          <div key={post.id} className="flex flex-col items-start gap-2 rounded-lg p-3 hover:bg-secondary sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                              <button onClick={() => setActiveTab("blogs")} className="text-left font-semibold text-foreground hover:text-accent hover:underline">{post.title}</button>
+                              <p className="text-xs text-muted-foreground">Updated: {new Date(post.updated_at || "").toLocaleDateString()}</p>
+                            </div>
+                            <div className="flex w-full shrink-0 space-x-2 sm:w-auto">
+                              <Button asChild variant="ghost" size="sm" className="flex-1">
+                                <Link href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer" aria-label={`View post: ${post.title}`}>
+                                  <ExternalLink className="mr-1 size-3.5" /> View
+                                </Link>
+                              </Button>
+                              <Button size="sm" variant="outline" className="flex-1" onClick={() => setActiveTab("blogs")}>Edit</Button>
+                            </div>
+                          </div>
+                        ))}
+                      </CardContent>
+                    </Card>
+                  </div>
+                )}
+              </motion.section>
             )}
 
-            {dashboardData.recentPosts.length > 0 && (
-              <div>
-                <h3 className="mb-3 text-xl font-bold text-slate-100">Recently Updated Blog Posts</h3>
-                <div className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-800 p-4">
-                  {dashboardData.recentPosts.map(post => (
-                    <div key={post.id} className="flex flex-col items-start gap-2 rounded-md border border-zinc-700 bg-zinc-900/50 p-3 hover:bg-zinc-700/50 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <button
-                          onClick={() => setActiveTab('blogs')}
-                          className="text-left font-semibold text-slate-100 hover:text-accent hover:underline"
-                        >
-                          {post.title}
-                        </button>
-                        <p className="text-xs text-zinc-400">
-                          Updated: {new Date(post.updated_at || "").toLocaleDateString()}
-                        </p>
-                      </div>
-                      <div className="flex w-full shrink-0 space-x-2 sm:w-auto">
-                        <Link href={`/blog/${post.slug}`} passHref legacyBehavior>
-                          <Button asChild variant="ghost" size="sm" className="flex-1 px-2 py-1 text-xs">
-                            <a target="_blank" rel="noopener noreferrer" aria-label={`View post: ${post.title}`}>
-                              <ExternalLink className="mr-1 size-3.5" /> View
-                            </a>
-                          </Button>
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="flex-1 px-2 py-1 text-xs"
-                          onClick={() => setActiveTab('blogs')}
-                        >
-                          Edit
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {activeTab !== "dashboard" && (
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-lg border border-border bg-card p-4 sm:p-6"
+              >
+                {activeTab === "blogs" && <BlogManager startInCreateMode={initialAction === "createBlogPost"} onActionHandled={handleActionCompleted} />}
+                {activeTab === "content" && <ContentManager startInCreateMode={initialAction === "createPortfolioSection"} onActionHandled={handleActionCompleted} />}
+                {activeTab === "tasks" && <TaskManager />}
+                {activeTab === "notes" && <NotesManager />}
+                {activeTab === "finance" && <FinanceManager />}
+                {activeTab === "security" && <SecuritySettings />}
+              </motion.div>
             )}
-          </motion.section>
-        )}
-
-        {activeTab !== "dashboard" && (
-          <motion.div
-            key={activeTab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.2 }}
-            className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-4 sm:p-6"
-          >
-            {activeTab === "blogs" && <BlogManager />}
-            {activeTab === "content" && <ContentManager />}
-            {activeTab === "tasks" && <TaskManager />}
-            {activeTab === "notes" && <NotesManager />}
-            {activeTab === "finance" && <FinanceManager />}
-            {activeTab === "security" && <SecuritySettings />}
-          </motion.div>
-        )}
+          </main>
+        </div>
       </div>
     </div>
   );

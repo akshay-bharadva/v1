@@ -1,7 +1,10 @@
-// This form component is updated for the dark theme.
-// - It now uses the themed <Input>, <Textarea>, and <Button> components for a consistent look.
-// - All functionality remains identical.
-
+/*
+This file is updated to align with the new kinetic typography design system.
+- The layout is now built using standard UI components like `Card`, `Label`, `Input`, `Textarea`, and `Button`.
+- Removed all custom styling classes and adopted the theme-aware design of the UI kit.
+- The structure is cleaner, with a distinct header and a form body, improving visual hierarchy.
+- The save/cancel actions are placed in a consistent footer position.
+*/
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -9,7 +12,9 @@ import type { Note } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 
 interface NoteEditorProps {
   note: Note | null;
@@ -18,7 +23,7 @@ interface NoteEditorProps {
 }
 
 export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) {
-const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     title: "",
     content: "",
     tags: "",
@@ -49,54 +54,59 @@ const [formData, setFormData] = useState({
     await onSave(noteDataToSave);
     setIsSaving(false);
   };
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-4xl font-sans"
+      className="mx-auto max-w-4xl"
     >
-      <div className="rounded-lg border border-zinc-700 bg-zinc-800">
-        <div className="border-b border-zinc-700 bg-zinc-900/50 px-4 py-4">
-          <h2 className="text-xl font-bold text-slate-100">
-            {note?.id ? "Edit Note" : "Create New Note"}
-          </h2>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-6 p-6">
-          <div>
-            <Label htmlFor="title" className="mb-1 block text-sm font-bold text-slate-200">Title (Optional)</Label>
-            <Input
-              id="title"
-              value={formData.title}
-              onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
-              placeholder="A title for your note"
-            />
-          </div>
-          <div>
-            <Label htmlFor="content" className="mb-1 block text-sm font-bold text-slate-200">Content</Label>
-            <Textarea
-              id="content"
-              value={formData.content}
-              onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
-              placeholder="Jot down your thoughts..."
-              rows={10}
-            />
-          </div>
-          <div>
-            <Label htmlFor="tags" className="mb-1 block text-sm font-bold text-slate-200">Tags (comma-separated)</Label>
-            <Input
-              id="tags"
-              value={formData.tags}
-              onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
-              placeholder="idea, to-do, reminder"
-            />
-          </div>
-          <div className="flex justify-end gap-3 border-t border-zinc-700 pt-4">
-            <Button type="button" variant="secondary" onClick={onCancel} disabled={isSaving}>Cancel</Button>
-            <Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : "Save Note"}</Button>
-          </div>
-        </form>
-      </div>
+      <form onSubmit={handleSubmit}>
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-2xl">
+              {note?.id ? "Edit Note" : "Create New Note"}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <Label htmlFor="title">Title (Optional)</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="A title for your note"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                value={formData.content}
+                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="Jot down your thoughts..."
+                rows={10}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags (comma-separated)</Label>
+              <Input
+                id="tags"
+                value={formData.tags}
+                onChange={(e) => setFormData(prev => ({ ...prev, tags: e.target.value }))}
+                placeholder="idea, to-do, reminder"
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving}>Cancel</Button>
+            <Button type="submit" disabled={isSaving}>
+              {isSaving && <Loader2 className="mr-2 size-4 animate-spin"/>}
+              {isSaving ? "Saving..." : "Save Note"}
+            </Button>
+          </CardFooter>
+        </Card>
+      </form>
     </motion.div>
   );
 }

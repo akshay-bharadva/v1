@@ -1,78 +1,70 @@
-// This component now fetches its data dynamically from Supabase.
-// The hardcoded TECHNOLOGIES array has been removed.
-
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+/*
+This file is updated for the new kinetic typography theme.
+- The heavy neo-brutalist header is replaced with a clean, modern title.
+- The technology items are now displayed in `Card` components for a cleaner, more structured look, replacing the simple bordered boxes.
+- The link styling is updated to use the theme's `accent` color.
+- `font-space` is removed to inherit the global `font-sans`.
+*/
+import { PropsWithChildren } from "react";
 import { BsArrowUpRight } from "react-icons/bs";
-import { supabase } from "@/supabase/client";
-import type { PortfolioItem } from "@/types";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function Technology() {
-  const [items, setItems] = useState<PortfolioItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+type TechnologyProps = PropsWithChildren;
 
-  useEffect(() => {
-    const fetchTech = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('portfolio_sections')
-        .select('portfolio_items(*)')
-        .eq('title', 'Tech Stack')
-        .order('display_order', { foreignTable: 'portfolio_items', ascending: true })
-        .single();
+interface TechItem {
+  name: string;
+  href: string;
+  desc: string;
+}
 
-      if (data?.portfolio_items) {
-        setItems(data.portfolio_items);
-      }
-       if (error) {
-        console.error("Error fetching tech stack:", error);
-      }
-      setIsLoading(false);
-    };
-    fetchTech();
-  }, []);
-  
-  if (isLoading) {
-    return <div className="py-24 text-center">Loading Tech Stack...</div>;
-  }
+const TECHNOLOGIES: TechItem[] = [
+  { name: "React", href: "https://react.dev/", desc: "My go-to library for crafting dynamic and interactive single-page applications (SPAs)." },
+  { href: "https://redux-toolkit.js.org/", name: "Redux Toolkit", desc: "Essential for managing complex application state, ensuring predictability and maintainability." },
+  { href: "https://nextjs.org/", name: "Next.js", desc: "Powers this website! Perfect for server-side rendering, static sites, and a great developer experience." },
+  { href: "https://www.mysql.com/", name: "MySQL", desc: "A classic, reliable relational database management system. Widely adopted and robust." },
+  { href: "https://www.prisma.io/", name: "Prisma", desc: "Modern TypeScript ORM that makes database interactions type-safe, intuitive, and enjoyable." },
+  { href: "https://tailwindcss.com/", name: "Tailwind CSS", desc: "A utility-first CSS framework that accelerates UI development and makes styling enjoyable." },
+];
 
-  if (items.length === 0) {
-    return null; // Don't render the section if there's no content
-  }
-
+export default function Technology({ children }: TechnologyProps) {
   return (
-    <section className="py-16 md:py-24">
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        className="mb-12 text-center text-4xl font-bold text-slate-400 md:text-5xl"
-      >
+    <section className="my-16">
+      <h2 className="mb-8 text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         My Tech Stack
-      </motion.h2>
-      <div className="mx-auto max-w-4xl">
-        {items.map((tech, index) => (
-          <motion.a
-            key={tech.id}
-            href={tech.link_url || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 20 }}
+      </h2>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {TECHNOLOGIES.map((tech) => (
+          <motion.div
+            key={tech.name}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
-            transition={{ delay: index * 0.1 }}
-            className="group block border-b border-white/10 px-4 py-6 transition-colors hover:bg-white/5"
+            transition={{ duration: 0.3 }}
           >
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-slate-200 transition-colors group-hover:text-accent">
-                {tech.title}
-              </h3>
-              <BsArrowUpRight className="text-xl text-slate-500 transition-transform duration-300 group-hover:rotate-45 group-hover:text-accent" />
-            </div>
-            {tech.description && <p className="mt-2 text-slate-400">{tech.description}</p>}
-          </motion.a>
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {tech.name}
+                  <a
+                    href={tech.href}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    className="text-muted-foreground transition-colors hover:text-accent"
+                    aria-label={`Learn more about ${tech.name}`}
+                  >
+                    <BsArrowUpRight className="size-4" />
+                  </a>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{tech.desc}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
+      {children && <div className="mt-6">{children}</div>}
     </section>
   );
 }

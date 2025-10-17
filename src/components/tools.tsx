@@ -1,78 +1,70 @@
-// This component now fetches its data dynamically from Supabase.
-// The hardcoded USED_TOOLS array has been removed.
-
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+/*
+This file is updated for the new kinetic typography theme.
+- The neo-brutalist header and card styles are removed.
+- The section now has a clean, modern title.
+- The tool items are displayed in the redesigned `Card` component for consistency with the `Technology` section.
+- Link styling and fonts are updated to match the new theme.
+*/
+import { PropsWithChildren } from "react";
 import { BsArrowUpRight } from "react-icons/bs";
-import { supabase } from "@/supabase/client";
-import type { PortfolioItem } from "@/types";
+import { motion } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-export default function Tools() {
-  const [items, setItems] = useState<PortfolioItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+type ToolsProps = PropsWithChildren;
 
-  useEffect(() => {
-    const fetchTools = async () => {
-      setIsLoading(true);
-      const { data, error } = await supabase
-        .from('portfolio_sections')
-        .select('portfolio_items(*)')
-        .eq('title', 'Tools')
-        .order('display_order', { foreignTable: 'portfolio_items', ascending: true })
-        .single();
+interface ToolItem {
+  name: string;
+  href: string;
+  desc: string;
+}
 
-      if (data?.portfolio_items) {
-        setItems(data.portfolio_items);
-      }
-      if (error) {
-        console.error("Error fetching tools:", error);
-      }
-      setIsLoading(false);
-    };
-    fetchTools();
-  }, []);
+const USED_TOOLS: ToolItem[] = [
+  { name: "Visual Studio Code", href: "https://code.visualstudio.com/", desc: "My all-time favorite text editor with superpowers. Indispensable for daily coding tasks." },
+  { name: "Figma", href: "https://www.figma.com/", desc: "For turning UI/UX designs into real, functional products. Excellent for collaboration." },
+  { name: "GitHub", href: "https://github.com/", desc: "Essential for version control, remote backups, and collaborating with other developers." },
+  { name: "Slack", href: "https://slack.com/", desc: "Communication is key. Also, many Open-Source communities use it for interaction." },
+  { name: "Discord", href: "https://discord.com/", desc: "Initially joined for gaming, but later discovered many awesome developer communities." },
+  { name: "Postman", href: "https://www.postman.com/", desc: "The go-to tool for API testing and development. Simplifies debugging endpoints significantly." },
+];
 
-  if (isLoading) {
-    return <div className="py-24 text-center">Loading Tools...</div>;
-  }
-
-  if (items.length === 0) {
-    return null; // Don't render the section if there's no content
-  }
-
+export default function Tools({ children }: ToolsProps) {
   return (
-    <section className="border-t border-white/10 py-16 md:py-24">
-      <motion.h2
-        initial={{ opacity: 0, y: 20 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.5 }}
-        className="mb-12 text-center text-4xl font-bold text-slate-400 md:text-5xl"
-      >
+    <section className="my-16">
+      <h2 className="mb-8 text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
         Tools I Use
-      </motion.h2>
-      <div className="mx-auto max-w-4xl">
-        {items.map((tool, index) => (
-          <motion.a
-            key={tool.id}
-            href={tool.link_url || "#"}
-            target="_blank"
-            rel="noopener noreferrer"
-            initial={{ opacity: 0, y: 20 }}
+      </h2>
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {USED_TOOLS.map((tool) => (
+          <motion.div
+            key={tool.name}
+            initial={{ opacity: 0, y: 10 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, amount: 0.5 }}
-            transition={{ delay: index * 0.1 }}
-            className="group block border-b border-white/10 px-4 py-6 transition-colors hover:bg-white/5"
+            transition={{ duration: 0.3 }}
           >
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold text-slate-200 transition-colors group-hover:text-accent">
-                {tool.title}
-              </h3>
-              <BsArrowUpRight className="text-xl text-slate-500 transition-transform duration-300 group-hover:rotate-45 group-hover:text-accent" />
-            </div>
-            {tool.description && <p className="mt-2 text-slate-400">{tool.description}</p>}
-          </motion.a>
+            <Card className="h-full">
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  {tool.name}
+                  <a
+                    href={tool.href}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                    className="text-muted-foreground transition-colors hover:text-accent"
+                    aria-label={`Learn more about ${tool.name}`}
+                  >
+                    <BsArrowUpRight className="size-4" />
+                  </a>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-muted-foreground">{tool.desc}</p>
+              </CardContent>
+            </Card>
+          </motion.div>
         ))}
       </div>
+      {children && <div className="mt-6">{children}</div>}
     </section>
   );
 }

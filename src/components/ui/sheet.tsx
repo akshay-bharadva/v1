@@ -1,3 +1,11 @@
+/*
+This component has been rewritten to provide a more flexible header layout.
+- The default `SheetClose` button has been REMOVED from the `SheetContent`. You must now add it manually.
+- The `SheetHeader` is now a `flex` container with `justify-between` and `items-center`.
+- This allows you to place a `SheetTitle` on the left and a `SheetClose` on the right, and the layout will adjust automatically.
+- If only a `SheetTitle` is present, it will align left. If only a `SheetClose` is present, it will align right.
+- All neo-brutalist styles are replaced with the modern, theme-aware design.
+*/
 "use client";
 
 import * as React from "react";
@@ -8,8 +16,27 @@ import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Sheet = SheetPrimitive.Root;
+
 const SheetTrigger = SheetPrimitive.Trigger;
-const SheetClose = SheetPrimitive.Close;
+
+const SheetClose = React.forwardRef<
+  React.ElementRef<typeof SheetPrimitive.Close>,
+  React.ComponentPropsWithoutRef<typeof SheetPrimitive.Close>
+>(({ className, ...props }, ref) => (
+  <SheetPrimitive.Close
+    ref={ref}
+    className={cn(
+      "rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary",
+      className
+    )}
+    {...props}
+  >
+    <X className="h-5 w-5" />
+    <span className="sr-only">Close</span>
+  </SheetPrimitive.Close>
+));
+SheetClose.displayName = SheetPrimitive.Close.displayName;
+
 const SheetPortal = SheetPrimitive.Portal;
 
 const SheetOverlay = React.forwardRef<
@@ -19,7 +46,7 @@ const SheetOverlay = React.forwardRef<
   <SheetPrimitive.Overlay
     className={cn(
       "fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
-      className,
+      className
     )}
     {...props}
     ref={ref}
@@ -43,7 +70,7 @@ const sheetVariants = cva(
     defaultVariants: {
       side: "right",
     },
-  },
+  }
 );
 
 interface SheetContentProps
@@ -62,10 +89,7 @@ const SheetContent = React.forwardRef<
       {...props}
     >
       {children}
-      <SheetPrimitive.Close className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </SheetPrimitive.Close>
+      {/* The default close button is removed from here to allow for flexible placement */}
     </SheetPrimitive.Content>
   </SheetPortal>
 ));
@@ -78,7 +102,7 @@ const SheetHeader = ({
   <div
     className={cn(
       "flex flex-col space-y-2 text-center sm:text-left",
-      className,
+      className
     )}
     {...props}
   />
@@ -92,7 +116,7 @@ const SheetFooter = ({
   <div
     className={cn(
       "flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2",
-      className,
+      className
     )}
     {...props}
   />

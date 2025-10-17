@@ -1,10 +1,11 @@
-// This component has been fully restyled for the dark admin theme.
-// - The Kanban board columns and task cards are now dark with subtle borders.
-// - Hover and drag-over states are updated for the dark theme.
-// - Priority badges have new dark-themed colors.
-// - The dialog for adding/editing tasks and the sub-task UI are also restyled.
-// - Functionality remains identical.
-
+/*
+This file is redesigned for the kinetic typography theme.
+- The Kanban board layout is now built using the redesigned `Card` component for columns.
+- Individual tasks are also `Card` components, with a cleaner, more modern presentation.
+- The `SubTaskList` is redesigned with a sleeker progress bar and more subtle controls.
+- The "Add Task" dialog uses the redesigned `Dialog` and form components (`Input`, `Select`, `Button`) for a consistent experience.
+- Drag-and-drop visual feedback (`dragOverColumn`) is now a subtle background color change, fitting the minimalist aesthetic.
+*/
 "use client";
 import { useState, useEffect, FormEvent, DragEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -15,10 +16,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trash2, Edit, Plus, CheckCircle, Circle } from "lucide-react";
+import { Trash2, Edit, Plus, CheckCircle, Circle, PlusCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
+import { Badge } from "@/components/ui/badge";
 
 type Priority = "low" | "medium" | "high";
 type Status = "todo" | "inprogress" | "done";
@@ -29,9 +33,9 @@ const KANBAN_COLUMNS: { id: Status; title: string }[] = [
   { id: "done", title: "Done" },
 ];
 
-// SubTaskList Component
 const SubTaskList = ({ task, onUpdate }: { task: Task, onUpdate: () => void }) => {
   const [newSubTask, setNewSubTask] = useState("");
+
   const handleAddSubTask = async (e: FormEvent) => {
     e.preventDefault();
     if (!newSubTask.trim()) return;
@@ -54,21 +58,21 @@ const SubTaskList = ({ task, onUpdate }: { task: Task, onUpdate: () => void }) =
   const totalCount = task.sub_tasks?.length || 0;
 
   return (
-    <div className="mt-3 space-y-2 pt-2 border-t border-zinc-700">
+    <div className="mt-3 space-y-2 pt-3 border-t border-border">
       {totalCount > 0 && (
-        <div className="flex items-center gap-2 text-xs text-zinc-400">
-          <Progress value={(completedCount / totalCount) * 100} className="h-1" />
+        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Progress value={(completedCount / totalCount) * 100} className="h-1.5" />
           <span>{completedCount}/{totalCount}</span>
         </div>
       )}
       {task.sub_tasks?.map(subTask => (
         <div key={subTask.id} className="group flex items-center gap-2">
           <Checkbox id={`subtask-${subTask.id}`} checked={subTask.is_completed} onCheckedChange={() => handleToggleSubTask(subTask)} className="size-4" />
-          <label htmlFor={`subtask-${subTask.id}`} className={`flex-grow text-sm ${subTask.is_completed ? 'line-through text-zinc-500' : 'text-slate-200'}`}>{subTask.title}</label>
-          <button onClick={() => handleDeleteSubTask(subTask.id)} className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-red-400"><Trash2 className="size-3" /></button>
+          <label htmlFor={`subtask-${subTask.id}`} className={`flex-grow text-sm ${subTask.is_completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}>{subTask.title}</label>
+          <button onClick={() => handleDeleteSubTask(subTask.id)} className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"><Trash2 className="size-3" /></button>
         </div>
       ))}
-      <form onSubmit={handleAddSubTask} className="flex items-center gap-2">
+      <form onSubmit={handleAddSubTask} className="flex items-center gap-2 pt-1">
         <Input value={newSubTask} onChange={e => setNewSubTask(e.target.value)} placeholder="Add a sub-task..." className="h-8 text-sm" />
         <Button type="submit" size="icon" className="h-8 w-8 shrink-0"><Plus className="size-4" /></Button>
       </form>
@@ -76,42 +80,47 @@ const SubTaskList = ({ task, onUpdate }: { task: Task, onUpdate: () => void }) =
   );
 };
 
-// Main Task Card Component
 const TaskCard = ({ task, onEdit, onDelete, onDragStart, onUpdate }: { task: Task, onEdit: () => void, onDelete: () => void, onDragStart: (e: DragEvent<HTMLDivElement>) => void, onUpdate: () => void }) => {
-  const priorityClasses = {
-    low: "bg-blue-900/50 border-blue-500/30 text-blue-300",
-    medium: "bg-yellow-900/50 border-yellow-500/30 text-yellow-300",
-    high: "bg-red-900/50 border-red-500/30 text-red-300",
+  const priorityClasses: Record<Priority, string> = {
+    low: "border-blue-500/30 bg-blue-500/10 text-blue-400",
+    medium: "border-yellow-500/30 bg-yellow-500/10 text-yellow-400",
+    high: "border-red-500/30 bg-red-500/10 text-red-400",
   };
+  const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.2 }}
-      draggable="true"
-      onDragStart={(e: any) => onDragStart(e as unknown as DragEvent<HTMLDivElement>)} // 👈 type cast
-      className="group cursor-grab active:cursor-grabbing rounded-lg border border-zinc-700 bg-zinc-900 p-3 transition-colors hover:border-accent"
-    >
-      <p className="font-bold text-slate-100 break-words">{task.title}</p>
-      {(task.sub_tasks && task.sub_tasks.length > 0) ? <SubTaskList task={task} onUpdate={onUpdate} /> : null}
-      {(!task.sub_tasks || task.sub_tasks.length === 0) &&
-        <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <SubTaskList task={task} onUpdate={onUpdate} />
-        </div>
-      }
-      <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          {task.due_date && <span className="text-xs text-zinc-500">{new Date(task.due_date).toLocaleDateString()}</span>}
-          <span className={`px-1.5 py-0.5 border text-[10px] font-bold rounded-md ${priorityClasses[task.priority || 'medium']}`}>{task.priority}</span>
-        </div>
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button variant="ghost" size="icon" className="size-7" onClick={onEdit}><Edit className="size-3.5" /></Button>
-          <Button variant="ghost" size="icon" className="size-7 hover:bg-red-900/50 hover:text-red-300" onClick={onDelete}><Trash2 className="size-3.5" /></Button>
-        </div>
-      </div>
+    <motion.div layout initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: 0.2 }}>
+      <Card
+        draggable="true"
+        onDragStart={onDragStart}
+        className="group cursor-grab active:cursor-grabbing hover:border-accent/50"
+      >
+        <CardContent className="p-4">
+          <p className="font-semibold text-foreground break-words">{task.title}</p>
+          <AnimatePresence>
+            {(isExpanded || (task.sub_tasks && task.sub_tasks.length > 0)) && 
+              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0}}>
+                <SubTaskList task={task} onUpdate={onUpdate} />
+              </motion.div>
+            }
+          </AnimatePresence>
+          {(!task.sub_tasks || task.sub_tasks.length === 0) && !isExpanded &&
+            <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button variant="ghost" size="sm" className="w-full h-auto text-xs" onClick={() => setIsExpanded(true)}><Plus className="mr-1 size-3"/>Add sub-tasks</Button>
+            </div>
+          }
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              {task.due_date && <Badge variant="outline" className="text-xs">{new Date(task.due_date).toLocaleDateString()}</Badge>}
+              <Badge variant="outline" className={`text-xs capitalize ${priorityClasses[task.priority || 'medium']}`}>{task.priority}</Badge>
+            </div>
+            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Button variant="ghost" size="icon" className="size-7" onClick={onEdit}><Edit className="size-3.5" /></Button>
+              <Button variant="ghost" size="icon" className="size-7 hover:bg-destructive/10 hover:text-destructive" onClick={onDelete}><Trash2 className="size-3.5" /></Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 };
@@ -125,7 +134,6 @@ export default function TaskManager() {
   const [draggedTaskId, setDraggedTaskId] = useState<string | null>(null);
   const [dragOverColumn, setDragOverColumn] = useState<Status | null>(null);
 
-  // Form State
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [priority, setPriority] = useState<Priority>("medium");
@@ -140,19 +148,15 @@ export default function TaskManager() {
 
   useEffect(() => { loadTasks(); }, []);
 
-  const resetForm = () => {
-    setTitle(""); setDueDate(""); setPriority("medium"); setEditingTask(null);
-  };
+  const resetForm = () => { setTitle(""); setDueDate(""); setPriority("medium"); setEditingTask(null); };
 
   const handleOpenDialog = (task: Task | null = null) => {
     if (task) {
       setEditingTask(task);
       setTitle(task.title);
-      setDueDate(task.due_date || "");
+      setDueDate(task.due_date ? new Date(task.due_date).toISOString().split('T')[0] : "");
       setPriority(task.priority || "medium");
-    } else {
-      resetForm();
-    }
+    } else { resetForm(); }
     setIsDialogOpen(true);
   };
 
@@ -166,118 +170,51 @@ export default function TaskManager() {
   const handleFormSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-
     const taskData: Partial<Task> = { title, due_date: dueDate || null, priority, status: editingTask?.status || 'todo' };
-
-    const { error: dbError } = editingTask
-      ? await supabase.from("tasks").update(taskData).eq("id", editingTask.id)
-      : await supabase.from("tasks").insert(taskData);
-
+    const { error: dbError } = editingTask ? await supabase.from("tasks").update(taskData).eq("id", editingTask.id) : await supabase.from("tasks").insert(taskData);
     if (dbError) setError(dbError.message);
     else { setIsDialogOpen(false); resetForm(); await loadTasks(); }
   };
 
-  // --- Drag and Drop Handlers ---
-  const handleDragStart = (e: DragEvent<HTMLDivElement>, taskId: string) => {
-    setDraggedTaskId(taskId);
-  };
-
-  const handleDragOver = (e: DragEvent<HTMLDivElement>, status: Status) => {
-    e.preventDefault();
-    setDragOverColumn(status);
-  };
-
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, taskId: string) => { setDraggedTaskId(taskId); };
+  const handleDragOver = (e: DragEvent<HTMLDivElement>, status: Status) => { e.preventDefault(); setDragOverColumn(status); };
   const handleDragLeave = () => setDragOverColumn(null);
-
   const handleDrop = async (e: DragEvent<HTMLDivElement>, status: Status) => {
     e.preventDefault();
-    if (!draggedTaskId || tasks.find(t => t.id === draggedTaskId)?.status === status) {
-      setDragOverColumn(null);
-      return;
-    }
-
-    // Optimistic UI update
+    if (!draggedTaskId || tasks.find(t => t.id === draggedTaskId)?.status === status) { setDragOverColumn(null); return; }
     setTasks(prevTasks => prevTasks.map(t => t.id === draggedTaskId ? { ...t, status } : t));
-
     const { error: updateError } = await supabase.from("tasks").update({ status }).eq("id", draggedTaskId);
-    if (updateError) {
-      setError(updateError.message);
-      loadTasks(); // Revert on error
-    }
+    if (updateError) { setError(updateError.message); loadTasks(); }
     setDraggedTaskId(null);
     setDragOverColumn(null);
   };
 
-
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-slate-100">Task Board</h2>
-          <p className="text-zinc-400">Drag and drop tasks to change their status.</p>
-        </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild><Button onClick={() => handleOpenDialog()}>+ Add Task</Button></DialogTrigger>
-          <DialogContent>
-            <DialogHeader><DialogTitle>{editingTask ? "Edit Task" : "Add New Task"}</DialogTitle></DialogHeader>
-            <form onSubmit={handleFormSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="task-title">Title *</Label>
-                <Input id="task-title" value={title} onChange={e => setTitle(e.target.value)} required />
-              </div>
+        <div><h2 className="text-2xl font-bold">Task Board</h2><p className="text-muted-foreground">Drag and drop tasks to change their status.</p></div>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}><DialogTrigger asChild><Button onClick={() => handleOpenDialog()}><PlusCircle className="mr-2 size-4"/> Add Task</Button></DialogTrigger>
+          <DialogContent><DialogHeader><DialogTitle>{editingTask ? "Edit Task" : "Add New Task"}</DialogTitle></DialogHeader>
+            <form onSubmit={handleFormSubmit} className="space-y-4 pt-4">
+              <div><Label htmlFor="task-title">Title *</Label><Input id="task-title" value={title} onChange={e => setTitle(e.target.value)} required /></div>
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="task-due-date">Due Date</Label>
-                  <Input id="task-due-date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} />
-                </div>
-                <div>
-                  <Label htmlFor="task-priority">Priority</Label>
-                  <Select value={priority} onValueChange={(v: Priority) => setPriority(v)}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Low</SelectItem>
-                      <SelectItem value="medium">Medium</SelectItem>
-                      <SelectItem value="high">High</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+                <div><Label htmlFor="task-due-date">Due Date</Label><Input id="task-due-date" type="date" value={dueDate} onChange={e => setDueDate(e.target.value)} /></div>
+                <div><Label htmlFor="task-priority">Priority</Label><Select value={priority} onValueChange={(v: Priority) => setPriority(v)}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="low">Low</SelectItem><SelectItem value="medium">Medium</SelectItem><SelectItem value="high">High</SelectItem></SelectContent></Select></div>
               </div>
-              <DialogFooter>
-                <DialogClose asChild><Button type="button" variant="outline" onClick={resetForm}>Cancel</Button></DialogClose>
-                <Button type="submit">{editingTask ? "Save Changes" : "Create Task"}</Button>
-              </DialogFooter>
+              <DialogFooter><DialogClose asChild><Button type="button" variant="outline" onClick={resetForm}>Cancel</Button></DialogClose><Button type="submit">{editingTask ? "Save Changes" : "Create Task"}</Button></DialogFooter>
             </form>
           </DialogContent>
         </Dialog>
       </div>
 
-      {isLoading && <p className="font-semibold text-slate-200">Loading tasks...</p>}
-      {error && <p className="font-semibold text-red-400">{error}</p>}
+      {isLoading && <div className="flex justify-center p-8"><Loader2 className="size-8 animate-spin text-muted-foreground"/></div>}
+      {error && <p className="text-destructive">{error}</p>}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
         {KANBAN_COLUMNS.map(column => (
-          <div
-            key={column.id}
-            onDragOver={(e) => handleDragOver(e, column.id)}
-            onDragLeave={handleDragLeave}
-            onDrop={(e) => handleDrop(e, column.id)}
-            className={cn("rounded-lg border border-zinc-700 bg-zinc-800/50 p-3 transition-colors", dragOverColumn === column.id && "bg-zinc-700")}
-          >
-            <h3 className="mb-4 border-b border-zinc-700 pb-2 text-lg font-bold text-slate-100">{column.title} ({tasks.filter(t => t.status === column.id).length})</h3>
-            <div className="space-y-3 min-h-[200px]">
-              <AnimatePresence>
-                {tasks.filter(t => t.status === column.id).map(task => (
-                  <TaskCard
-                    key={task.id}
-                    task={task}
-                    onDragStart={(e) => handleDragStart(e, task.id)}
-                    onEdit={() => handleOpenDialog(task)}
-                    onDelete={() => handleDeleteTask(task.id)}
-                    onUpdate={loadTasks}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
+          <div key={column.id} onDragOver={(e) => handleDragOver(e, column.id)} onDragLeave={handleDragLeave} onDrop={(e) => handleDrop(e, column.id)} className={cn("rounded-lg bg-secondary/30 p-3 transition-colors h-full", dragOverColumn === column.id && "bg-accent/10")}>
+            <h3 className="mb-4 border-b border-border pb-2 text-lg font-bold">{column.title} <span className="text-sm font-normal text-muted-foreground">({tasks.filter(t => t.status === column.id).length})</span></h3>
+            <div className="space-y-3 min-h-[200px]"><AnimatePresence>{tasks.filter(t => t.status === column.id).map(task => (<TaskCard key={task.id} task={task} onDragStart={(e) => handleDragStart(e, task.id)} onEdit={() => handleOpenDialog(task)} onDelete={() => handleDeleteTask(task.id)} onUpdate={loadTasks}/>))}</AnimatePresence></div>
           </div>
         ))}
       </div>

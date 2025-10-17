@@ -1,6 +1,13 @@
+/*
+This file is updated to adopt the new minimalist design system.
+- The heavy neo-brutalist styles (`border-2`, `shadow-[...]`) are replaced with subtle borders and theme-based colors.
+- The custom buttons are replaced with the redesigned `Button` component for consistency.
+- The font is updated to `font-sans` for the controls, while the editor itself (`MarkdownEditor`) will use a mono font.
+- The fullscreen mode now uses a `bg-card` background for a seamless look within the dark theme.
+*/
 import React, { useState, useEffect } from "react";
 import MarkdownEditor from "@/components/admin/markdown-editor";
-import { Expand, Shrink, Image as ImageIcon } from "lucide-react";
+import { Expand, Shrink, ImageUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -40,31 +47,31 @@ export default function AdvancedMarkdownEditor({
   return (
     <div
       className={cn(
-        "rounded-md border border-zinc-700 bg-zinc-900 font-sans",
+        "rounded-lg border border-border bg-card font-sans",
         isFullScreen && "fixed inset-0 z-50 flex flex-col",
       )}
     >
-      <div className="flex flex-col items-stretch gap-2 border-b border-zinc-700 bg-zinc-800/50 p-2 sm:flex-row sm:items-center sm:justify-between">
-        <span className="text-xs font-semibold text-slate-300">
+      <div className="flex flex-col items-stretch gap-2 border-b border-border bg-secondary/50 p-2 sm:flex-row sm:items-center sm:justify-between">
+        <span className="text-xs font-semibold text-muted-foreground">
           Markdown Editor
         </span>
         <div className="flex w-full items-center justify-end gap-2 sm:w-auto">
           <Button
             type="button"
-            onClick={onImageUploadRequest}
-            variant="outline"
+            variant="ghost"
             size="sm"
+            onClick={onImageUploadRequest}
           >
-            <ImageIcon className="mr-2 size-4" />
+            <ImageUp className="mr-2 size-4" />
             Upload Image
           </Button>
           <Button
             type="button"
-            onClick={() => setIsFullScreen(!isFullScreen)}
-            title={isFullScreen ? "Exit Fullscreen" : "Enter Fullscreen"}
             variant="ghost"
             size="icon"
-            className="size-8"
+            onClick={() => setIsFullScreen(!isFullScreen)}
+            title={isFullScreen ? "Exit Fullscreen (Esc)" : "Enter Fullscreen"}
+            className="h-8 w-8"
           >
             {isFullScreen ? (
               <Shrink className="size-4" />

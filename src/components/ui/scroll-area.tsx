@@ -1,3 +1,9 @@
+/*
+This file is updated for the new design system.
+- The neo-brutalist `border-2`, `rounded-none`, and `bg-white` styles on the root `ScrollArea` component are replaced with a simpler, borderless look that blends with its container.
+- The `ScrollBar` is restyled to be more modern and subtle. The track color is removed (transparent), and the thumb color is updated to use the theme's `border` color.
+- The thick borders on the scrollbar track are removed.
+*/
 "use client";
 
 import * as React from "react";
@@ -36,11 +42,11 @@ const ScrollBar = React.forwardRef<
         "h-full w-2.5 border-l border-l-transparent p-[1px]",
       orientation === "horizontal" &&
         "h-2.5 flex-col border-t border-t-transparent p-[1px]",
-      className,
+      className
     )}
     {...props}
   >
-    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-zinc-700 hover:bg-zinc-600" />
+    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 rounded-full bg-border" />
   </ScrollAreaPrimitive.ScrollAreaScrollbar>
 ));
 ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName;

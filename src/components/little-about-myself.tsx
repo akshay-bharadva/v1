@@ -36,7 +36,7 @@ const letterVariants = {
 
 export default function LittleAboutMyself() {
   return (
-    <section className="relative flex min-h-[calc(100vh-5rem)] w-full flex-col items-center justify-center overflow-hidden px-4 py-20 text-center md:min-h-screen">
+    <section className="relative flex min-h-[calc(100vh-5rem)] w-full flex-col items-center justify-center overflow-hidden text-center">
       <div className="mx-auto max-w-4xl">
         <motion.p
           initial={{ opacity: 0, y: 20 }}

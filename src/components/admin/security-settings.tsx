@@ -1,9 +1,12 @@
-// This component's styling is updated to match the dark admin theme.
-// - All hard-coded style classes and neo-brutalist styles are replaced.
-// - Backgrounds, borders, text colors, and form elements are updated.
-// - The font is changed to 'font-sans' (Inter).
-// - All functionality for managing security settings remains identical.
-
+/*
+This file is updated to align with the new minimalist, dark-themed design.
+- All custom CSS classes (`buttonPrimaryClass`, `buttonDangerClass`) are removed.
+- Standard UI components (`Input`, `Label`, `Button`, `Card`) are used throughout, ensuring a consistent look and feel.
+- The layout is structured into distinct `Card` components for MFA settings, password change, and security tips, improving readability.
+- Success and error messages are now displayed in the redesigned `Alert` component.
+- The MFA status indicator is now a `Badge`, consistent with the rest of the dashboard.
+- The "Security Tips" section is styled as a simple list within a `Card` for a clean presentation.
+*/
 "use client";
 import type React from "react";
 import { useState, useEffect, FormEvent } from "react";
@@ -14,6 +17,10 @@ import { useRouter } from "next/router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Loader2, ShieldCheck, Terminal, PlusCircle, Trash2 } from "lucide-react";
 
 export default function SecuritySettings() {
   const [factors, setFactors] = useState<Factor[]>([]);
@@ -26,7 +33,7 @@ export default function SecuritySettings() {
   const [passwordSuccess, setPasswordSuccess] = useState("");
   const [isUpdatingPassword, setIsUpdatingPassword] = useState(false);
   const router = useRouter();
-  
+
   const loadFactors = async () => {
     setIsLoading(true);
     setError(null);
@@ -41,24 +48,16 @@ export default function SecuritySettings() {
     setIsLoading(false);
   };
 
-  useEffect(() => {
-    loadFactors();
-  }, []);
+  useEffect(() => { loadFactors(); }, []);
 
   const handleUnenroll = async (factorId: string) => {
-    if (
-      !confirm(
-        "Are you sure you want to remove this MFA method? You might be logged out or lose access if it's your only method.",
-      )
-    ) {
+    if (!confirm("Are you sure you want to remove this MFA method? You might be logged out or lose access if it's your only method.")) {
       return;
     }
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-    const { error: unenrollError } = await supabase.auth.mfa.unenroll({
-      factorId,
-    });
+    const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId });
 
     if (unenrollError) {
       setError("Failed to unenroll MFA: " + unenrollError.message);
@@ -66,126 +65,103 @@ export default function SecuritySettings() {
     } else {
       setSuccess("MFA method removed successfully.");
       await loadFactors();
-      const { data: aalData } =
-        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aalData?.currentLevel !== "aal2") {
-        router.push("/admin/login");
-      } else {
-        setIsLoading(false);
-      }
+      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalData?.currentLevel !== "aal2") { router.push("/admin/login"); }
+      else { setIsLoading(false); }
     }
   };
 
-  const mfaEnabled = factors.some((f) => f.status === "verified");
-
-   const handlePasswordChange = async (e: FormEvent) => {
+  const handlePasswordChange = async (e: FormEvent) => {
     e.preventDefault();
     setPasswordError("");
     setPasswordSuccess("");
 
-    if (newPassword.length < 6) {
-      setPasswordError("Password must be at least 6 characters long.");
-      return;
-    }
-    if (newPassword !== confirmPassword) {
-      setPasswordError("Passwords do not match.");
-      return;
-    }
+    if (newPassword.length < 6) { setPasswordError("Password must be at least 6 characters long."); return; }
+    if (newPassword !== confirmPassword) { setPasswordError("Passwords do not match."); return; }
     
     setIsUpdatingPassword(true);
     const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
     setIsUpdatingPassword(false);
 
-    if (updateError) {
-      setPasswordError("Failed to update password: " + updateError.message);
-    } else {
-      setPasswordSuccess("Password updated successfully!");
-      setNewPassword("");
-      setConfirmPassword("");
-    }
+    if (updateError) { setPasswordError("Failed to update password: " + updateError.message); }
+    else { setPasswordSuccess("Password updated successfully!"); setNewPassword(""); setConfirmPassword(""); }
   };
-  
+
+  const mfaEnabled = factors.some((f) => f.status === "verified");
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-4xl font-sans"
-    >
-      <div className="rounded-lg border border-zinc-700 bg-zinc-800">
-        <div className="border-b border-zinc-700 bg-zinc-900/50 px-6 py-4">
-          <h2 className="text-xl font-bold text-slate-100">Security Settings</h2>
-          <p className="mt-1 text-sm text-zinc-400">
-            Manage your account security and two-factor authentication
-          </p>
-        </div>
-
-        <div className="space-y-8 p-4 sm:p-6">
-          {success && (
-            <div className="rounded-md border border-green-500/30 bg-green-900/20 p-4">
-              <p className="text-sm font-semibold text-green-300">{success}</p>
-            </div>
-          )}
-          {error && (
-            <div className="rounded-md border border-red-500/30 bg-red-900/20 p-4">
-              <p className="text-sm font-semibold text-red-300">{error}</p>
-            </div>
-          )}
-
-          <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-4 sm:p-6">
-            <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h3 className="text-lg font-bold text-slate-100">
-                  Two-Factor Authentication (TOTP)
-                </h3>
-                <p className="text-sm text-zinc-400">
-                  {mfaEnabled ? "MFA is currently active on your account." : "Add an extra layer of security."}
-                </p>
-              </div>
-              <span className={`inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-bold ${ mfaEnabled ? "bg-green-500/10 text-green-300" : "bg-yellow-500/10 text-yellow-300"}`}>
-                {mfaEnabled ? "AAL2 Active" : "Not Fully Active"}
-              </span>
-            </div>
-            
-            {!isLoading && factors.length > 0 && (
-              <div className="space-y-3">
-                <h4 className="text-md font-semibold text-slate-200">Registered Authenticators:</h4>
-                {factors.map((factor) => (
-                  <div key={factor.id} className="flex flex-col items-start gap-2 rounded-md border border-zinc-700 bg-zinc-800 p-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm font-semibold">{factor.friendly_name || `Authenticator (...${factor.id.slice(-6)})`}</p>
-                      <p className="text-xs text-zinc-400">Status: {factor.status}</p>
-                    </div>
-                    <Button onClick={() => handleUnenroll(factor.id)} variant="destructive" size="sm" disabled={isLoading}>{isLoading ? "Removing..." : "Remove"}</Button>
-                  </div>
-                ))}
-              </div>
-            )}
-            
-            <Button onClick={() => router.push("/admin/setup-mfa")} className="mt-4" disabled={isLoading}>
-              {factors.length > 0 ? "Add Another Authenticator" : "Set Up MFA Now"}
-            </Button>
-          </div>
-
-          <div className="rounded-lg border border-zinc-700 bg-zinc-900/50 p-4 sm:p-6">
-            <h3 className="mb-4 text-lg font-bold text-slate-100">Change Password</h3>
-            <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
-              <div>
-                <Label htmlFor="new-password">New Password</Label>
-                <Input id="new-password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
-              </div>
-              <div>
-                <Label htmlFor="confirm-password">Confirm New Password</Label>
-                <Input id="confirm-password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={6} />
-              </div>
-              {passwordError && <p className="text-sm font-semibold text-red-400">{passwordError}</p>}
-              {passwordSuccess && <p className="text-sm font-semibold text-green-400">{passwordSuccess}</p>}
-              <Button type="submit" disabled={isUpdatingPassword || !newPassword || !confirmPassword}>
-                {isUpdatingPassword ? "Updating..." : "Update Password"}
-              </Button>
-            </form>
-          </div>
-        </div>
+    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-bold">Security Settings</h2>
+        <p className="text-muted-foreground">Manage your account security and two-factor authentication.</p>
       </div>
+
+      {success && <Alert><Terminal className="size-4" /><AlertTitle>Success</AlertTitle><AlertDescription>{success}</AlertDescription></Alert>}
+      {error && <Alert variant="destructive"><Terminal className="size-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
+      
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Two-Factor Authentication (MFA)</CardTitle>
+              <CardDescription>Add an extra layer of security to your account.</CardDescription>
+            </div>
+            <Badge variant={mfaEnabled ? "default" : "secondary"} className={mfaEnabled ? "border-green-500/50 bg-green-500/10 text-green-400" : ""}>
+              <ShieldCheck className="mr-1.5 size-3" />
+              {mfaEnabled ? "Enabled" : "Not Enabled"}
+            </Badge>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {isLoading ? (<Loader2 className="animate-spin text-muted-foreground" />) : (
+            <>
+              {factors.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold">Registered Authenticators:</h4>
+                  {factors.map((factor) => (
+                    <div key={factor.id} className="flex items-center justify-between rounded-md border bg-secondary/50 p-3">
+                      <div>
+                        <p className="text-sm font-medium">{factor.friendly_name || `Authenticator ID: ...${factor.id.slice(-6)}`}</p>
+                        <p className="text-xs text-muted-foreground">Status: {factor.status}</p>
+                      </div>
+                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleUnenroll(factor.id)} disabled={isLoading}><Trash2 className="size-4" /></Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <Button onClick={() => router.push("/admin/setup-mfa")} disabled={isLoading}><PlusCircle className="mr-2 size-4"/> {factors.length > 0 ? "Add Another Authenticator" : "Set Up MFA Now"}</Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader><CardTitle>Change Password</CardTitle><CardDescription>Update your login password. We recommend a long, unique password.</CardDescription></CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+            <div className="space-y-2"><Label htmlFor="new-password">New Password</Label><Input id="new-password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} /></div>
+            <div className="space-y-2"><Label htmlFor="confirm-password">Confirm New Password</Label><Input id="confirm-password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={6} /></div>
+            {passwordError && <p className="text-sm font-medium text-destructive">{passwordError}</p>}
+            {passwordSuccess && <p className="text-sm font-medium text-accent">{passwordSuccess}</p>}
+            <Button type="submit" disabled={isUpdatingPassword || !newPassword || !confirmPassword}>
+              {isUpdatingPassword && <Loader2 className="mr-2 size-4 animate-spin"/>}
+              {isUpdatingPassword ? "Updating..." : "Update Password"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader><CardTitle>Security Tips</CardTitle></CardHeader>
+        <CardContent>
+          <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
+            <li>Keep your authenticator app secure and backed up.</li>
+            <li>Do not share your password or MFA codes.</li>
+            <li>Use a strong, unique password for admin access.</li>
+            <li>Log out when you finish managing your site.</li>
+          </ul>
+        </CardContent>
+      </Card>
     </motion.div>
   );
 }

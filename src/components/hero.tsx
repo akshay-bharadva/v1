@@ -1,21 +1,36 @@
-// This component is simplified and refactored for the new design.
-// The blocky, neo-brutalist styling is removed.
-// Framer Motion is used for a subtle scroll-triggered animation.
-
+/*
+This file has been redesigned to fit the new kinetic typography theme.
+- The neo-brutalist `border-2`, `rounded-none`, `shadow-[...]`, and yellow background are removed.
+- The component is now a clean, text-focused section.
+- The text is styled using the Tailwind Typography plugin (`prose dark:prose-invert`) for consistency and theme support.
+- A `motion.div` is added for a subtle fade-in animation.
+*/
+import { PropsWithChildren } from "react";
 import { motion } from "framer-motion";
 
-export default function Hero() {
+type HeroProps = PropsWithChildren;
+
+export default function Hero({ children }: HeroProps) {
   return (
     <motion.section
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="mx-auto max-w-3xl px-4 py-20 text-center sm:py-32"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.2, duration: 0.5 }}
+      className="my-16"
     >
-      <p className="text-xl leading-relaxed text-slate-300 md:text-2xl md:leading-loose">
-        I'm a full-stack developer and life-long learner from India, currently based in ON, Canada. I thrive on learning new technologies and collaborating with teams to transform ideas into reality. I also have a passion for open-source, dedicating time to explore projects, understand their architecture, and contribute back to the community.
-      </p>
+      <div className="prose prose-lg dark:prose-invert mx-auto max-w-3xl">
+        <p>
+          Bonjour! I'm a full-stack developer and life-long learner from India,
+          currently living in ON, Canada. I enjoy learning new technologies and
+          collaborating with other developers to make products a reality.
+        </p>
+        <p>
+          I also enjoy open-source; despite having a full-time job, I devote
+          time to exploring open-source projects and studying their tech stack
+          and coding conventions.
+        </p>
+        {children && <div className="mt-4">{children}</div>}
+      </div>
     </motion.section>
   );
 }

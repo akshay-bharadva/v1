@@ -1,7 +1,10 @@
-// This file is updated to use a simpler, more elegant page transition.
-// The font variable for 'tahu' is removed as we are standardizing on 'Inter'.
-// The primary font class is no longer needed on the main element.
-
+/*
+This file is updated to refine the page transition animations for a more 'kinetic' feel.
+- The ThemeProvider from next-themes is now configured with `defaultTheme="dark"` and `enableSystem={false}` for a consistent, dark-first experience.
+- The `framer-motion` variants are adjusted for a faster, more fluid horizontal slide transition.
+- The old local font import for 'Tahu' is removed.
+- The main `font-space` class is replaced with `font-sans` to apply the new 'Inter' font globally.
+*/
 import "@/styles/globals.css";
 import type { AppProps } from "next/app";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,39 +17,49 @@ export default function App({ Component, pageProps }: AppProps) {
   const pageVariants = {
     initial: {
       opacity: 0,
+      x: "-20px",
     },
     animate: {
       opacity: 1,
+      x: "0px",
       transition: {
         duration: 0.4,
-        ease: "easeInOut",
+        ease: "easeOut",
       },
     },
     exit: {
       opacity: 0,
+      x: "20px",
       transition: {
         duration: 0.2,
-        ease: "easeInOut",
+        ease: "easeIn",
       },
     },
   };
 
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+    <ThemeProvider
+      attribute="class"
+      defaultTheme="dark"
+      enableSystem={false}
+      storageKey="portfolio-theme"
+    >
       <AnimatePresence
         mode="wait"
         initial={false}
         onExitComplete={() => window.scrollTo(0, 0)}
       >
-        <motion.div
-          key={router.asPath}
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          variants={pageVariants}
-        >
-          <Component {...pageProps} />
-        </motion.div>
+        <main className="font-sans">
+          <motion.div
+            key={router.asPath}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            variants={pageVariants}
+          >
+            <Component {...pageProps} />
+          </motion.div>
+        </main>
       </AnimatePresence>
     </ThemeProvider>
   );

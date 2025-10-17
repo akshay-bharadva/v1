@@ -1,109 +1,101 @@
-// This component is heavily refactored for the new interactive design.
-// - It now fetches project cover images from a hypothetical field `cover_image_url` in the database. 
-//   You'll need to add this field to your `portfolio_items` table. For now, I will use placeholder images.
-// - The grid layout is replaced with a list.
-// - A hover effect is implemented where a project image appears in a fixed container.
-// - Scroll-triggered animations are added to each project item.
-
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+/*
+This file is updated for the new kinetic typography theme.
+- The heavy neo-brutalist header is replaced with a clean, modern typographic header.
+- The project grid now uses the redesigned `ProjectCard` component.
+- The "More on GitHub" link is now a standard `Button` component.
+- The loading and error/empty states are redesigned to be minimal and consistent with the new theme, using a `Loader2` spinner and clean text.
+*/
+import Link from "next/link";
+import { PropsWithChildren, useState, useEffect } from "react";
 import { BsArrowUpRight } from "react-icons/bs";
+import ProjectCard from "./project-card";
+import { Button } from "@/components/ui/button";
 import type { GitHubRepo } from "@/types";
+import { motion } from "framer-motion";
+import { Loader2 } from "lucide-react";
+
+type ProjectsProps = PropsWithChildren;
 
 const GITHUB_USERNAME = `akshay-bharadva`;
 const GITHUB_REPOS_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=9&type=owner`;
 
-// Placeholder images. In a real scenario, you'd fetch these from a CMS or map them.
-const projectImages: { [key: string]: string } = {
-  "akshay-bharadva.github.io": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=800&q=60",
-  "signoz": "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=800&q=60",
-  "portfolio-v2": "https://images.unsplash.com/photo-1522252234503-e356532cafd5?auto=format&fit=crop&w=800&q=60",
-  "nextjs-blog": "https://images.unsplash.com/photo-1618477388954-7852f32655ec?auto=format&fit=crop&w=800&q=60",
-};
-
-export default function Projects() {
+export default function Projects({ children }: ProjectsProps) {
   const [projects, setProjects] = useState<GitHubRepo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [hoveredProjectImage, setHoveredProjectImage] = useState<string | null>(null);
 
   useEffect(() => {
-    // Fetching logic remains the same
-    setLoading(true);
-    setError(null);
-    fetch(GITHUB_REPOS_URL)
-      .then(async (response) => {
+    const fetchProjects = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(GITHUB_REPOS_URL);
         if (!response.ok) {
-          throw new Error(`GitHub API request failed: ${response.status}`);
+          const errorData = await response.json().catch(() => ({ message: response.statusText }));
+          throw new Error(`GitHub API Error: ${response.status} - ${errorData.message || "Unknown error"}`);
         }
-        return response.json();
-      })
-      .then((data: GitHubRepo[]) => {
-        const filteredProjects = data.filter(p => !p.private && !p.fork && p.description)
-          .sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0))
-          .slice(0, 6); // Limit to 6 for a cleaner list
-        setProjects(filteredProjects);
-      })
-      .catch((err) => {
+        const data: GitHubRepo[] = await response.json();
+        const filteredProjects = data
+          .filter((p) => !p.private && p.language && !p.fork && !p.archived && p.name !== GITHUB_USERNAME)
+          .sort((a, b) => (b.stargazers_count || 0) - (a.stargazers_count || 0));
+        setProjects(filteredProjects.slice(0, 6)); // Show 6 for a cleaner grid
+      } catch (err: any) {
         console.error("Failed to fetch projects:", err);
-        setError(err.message || "Could not load projects.");
-      })
-      .finally(() => setLoading(false));
+        setError(err.message || "Could not load projects at this time.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProjects();
   }, []);
 
   return (
-    <section className="relative w-full border-t border-white/10 bg-background py-20 md:py-32">
-      <div className="mx-auto w-full px-4 sm:px-8 md:px-16 xl:px-48 2xl:px-72">
-        <motion.h2
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="mb-12 text-center text-4xl font-bold text-slate-400 md:text-5xl"
-        >
-          Selected Works
-        </motion.h2>
+    <section className="my-16">
+      <motion.h2
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        className="mb-8 border-b border-border pb-4 text-center text-3xl font-bold tracking-tight text-foreground sm:text-4xl"
+      >
+        Recent Projects
+      </motion.h2>
 
-        {/* This div will hold the floating image */}
-        <motion.div
-            animate={{ opacity: hoveredProjectImage ? 1 : 0, scale: hoveredProjectImage ? 1 : 0.95 }}
-            transition={{ duration: 0.3, ease: 'easeOut' }}
-            className="pointer-events-none fixed top-1/2 left-1/2 z-10 hidden h-64 w-96 -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-md border border-white/10 bg-zinc-900 p-2 shadow-2xl lg:block"
-        >
-            {hoveredProjectImage && (
-                <img src={hoveredProjectImage} alt="Project preview" className="h-full w-full object-cover" />
-            )}
-        </motion.div>
-
-        <div className="border-t border-white/10">
-          {loading && <p className="py-8 text-center text-slate-400">Loading projects...</p>}
-          {error && <p className="py-8 text-center text-red-400">Error: {error}</p>}
-          
-          {!loading && !error && projects.map((project, index) => (
-            <motion.a
-              key={project.id}
-              href={project.html_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true, amount: 0.5 }}
-              transition={{ delay: index * 0.1 }}
-              onMouseEnter={() => setHoveredProjectImage(projectImages[project.name] || 'https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=800&q=60')}
-              onMouseLeave={() => setHoveredProjectImage(null)}
-              className="group flex items-center justify-between border-b border-white/10 py-8 transition-colors duration-300 hover:bg-white/5"
-            >
-              <div className="flex items-baseline gap-4">
-                <span className="text-sm text-slate-500">{(index + 1).toString().padStart(2, '0')}</span>
-                <h3 className="text-2xl font-bold text-slate-200 transition-colors duration-300 group-hover:text-accent md:text-4xl">
-                  {project.name.replace(/-/g, " ")}
-                </h3>
-              </div>
-              <p className="hidden text-slate-400 md:block">{project.language}</p>
-              <BsArrowUpRight className="text-2xl text-slate-400 transition-transform duration-300 group-hover:rotate-45 group-hover:text-accent" />
-            </motion.a>
-          ))}
+      {loading && (
+        <div className="flex h-64 items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
         </div>
-      </div>
+      )}
+      
+      {error && !loading && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 p-8 text-center text-sm text-destructive">
+          <h3 className="font-semibold">Error Loading Projects</h3>
+          <p className="mt-2">{error}</p>
+        </div>
+      )}
+
+      {!loading && !error && projects.length === 0 && (
+        <div className="text-center rounded-lg border-2 border-dashed border-border bg-card py-20">
+          <h3 className="text-xl font-bold">No Public Projects Found</h3>
+          <p className="text-muted-foreground">I might be working on something new in private. Check GitHub for more!</p>
+        </div>
+      )}
+      
+      {!loading && !error && projects.length > 0 && (
+        <>
+          <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {projects.map((project) => (
+              <ProjectCard key={project.id} project={project} />
+            ))}
+          </div>
+          <div className="text-center">
+            <Button asChild variant="outline">
+              <Link href={`https://github.com/${GITHUB_USERNAME}?tab=repositories`} target="_blank" rel="noopener noreferrer">
+                More on GitHub <BsArrowUpRight className="ml-2 size-4" />
+              </Link>
+            </Button>
+          </div>
+        </>
+      )}
+      {children && <div className="mt-8">{children}</div>}
     </section>
   );
 }

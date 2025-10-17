@@ -1,3 +1,9 @@
+/*
+This file is updated for the new kinetic typography design system.
+- The neo-brutalist `border-2`, `rounded-none`, and `shadow-[...]` styles are removed from `HoverCardContent`.
+- The hover card panel now uses `rounded-md`, a subtle theme `border`, `bg-popover`, and a standard `shadow-md` for a modern, clean appearance, consistent with other popover-like components.
+- The animation properties are kept for a smooth user experience.
+*/
 "use client";
 
 import * as React from "react";
@@ -18,8 +24,8 @@ const HoverCardContent = React.forwardRef<
     align={align}
     sideOffset={sideOffset}
     className={cn(
-      "z-50 w-64 rounded-md border border-zinc-700 bg-zinc-900 p-4 text-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-      className,
+      "z-50 w-64 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
     )}
     {...props}
   />

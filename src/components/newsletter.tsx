@@ -1,3 +1,10 @@
+/*
+This file has been redesigned to match the new kinetic typography theme.
+- The neo-brutalist `border-2`, `rounded-none`, `shadow-[...]`, and yellow background are removed.
+- The component is now a clean section with modern typography. It uses the `Card` component for structure.
+- The form elements (`Input`, `Button`) are replaced with their redesigned counterparts from the UI kit.
+- The success/error message styling is updated to use the redesigned `Alert` component's variants for consistency.
+*/
 "use client";
 
 import type React from "react";
@@ -5,12 +12,11 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 export default function Newsletter() {
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<
-    "idle" | "loading" | "success" | "error"
-  >("idle");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -21,7 +27,7 @@ export default function Newsletter() {
     setMessage("");
 
     try {
-      // Fake API call
+      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       setStatus("success");
@@ -36,56 +42,60 @@ export default function Newsletter() {
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="my-16 rounded-lg border border-zinc-700 bg-zinc-900 p-6 md:p-8"
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4, duration: 0.5 }}
+      className="my-16"
     >
-      <h2 className="mb-2 text-2xl font-bold text-slate-100">Join The Newsletter</h2>
-      <p className="mb-4 text-zinc-400">
-        Project updates, cool links, and maybe some bad jokes. Straight to your
-        inbox. No spam, ever.
-      </p>
+      <div className="mx-auto max-w-2xl rounded-lg border bg-card p-8 text-center">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
+          Join the Newsletter
+        </h2>
+        <p className="mt-3 text-muted-foreground">
+          Project updates, cool links, and maybe some bad jokes. Straight to your
+          inbox. No spam, ever.
+        </p>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start"
-      >
-        <Input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="your.email@example.com"
-          className="h-11 flex-1 text-base"
-          required
-          disabled={status === "loading"}
-          aria-label="Email for newsletter"
-        />
-        <Button
-          type="submit"
-          disabled={status === "loading" || !email.trim()}
-          className="h-11 px-6 text-base"
+        <form
+          onSubmit={handleSubmit}
+          className="mt-6 flex flex-col items-stretch gap-2 sm:flex-row sm:items-start"
         >
-          {status === "loading" ? "Subscribing..." : "Subscribe"}
-        </Button>
-      </form>
-
-      <AnimatePresence>
-        {message && (
-          <motion.p
-            initial={{ opacity: 0, height: 0, marginTop: 0 }}
-            animate={{ opacity: 1, height: "auto", marginTop: "1rem" }}
-            exit={{ opacity: 0, height: 0, marginTop: 0 }}
-            transition={{ duration: 0.3 }}
-            className={`rounded-md p-3 text-sm font-semibold
-              ${status === "success" ? "border border-green-500/30 bg-green-900/20 text-green-300" : ""}
-              ${status === "error" ? "border border-red-500/30 bg-red-900/20 text-red-300" : ""}`}
-            role={status === "error" ? "alert" : "status"}
+          <Input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your.email@example.com"
+            className="h-11 flex-1 text-base"
+            required
+            disabled={status === "loading"}
+            aria-label="Email for newsletter"
+          />
+          <Button
+            type="submit"
+            disabled={status === "loading" || !email.trim()}
+            className="h-11 px-6 text-base"
           >
-            {message}
-          </motion.p>
-        )}
-      </AnimatePresence>
+            {status === "loading" && <Loader2 className="mr-2 size-4 animate-spin" />}
+            {status === "loading" ? "Subscribing..." : "Subscribe"}
+          </Button>
+        </form>
+
+        <AnimatePresence>
+          {message && (
+            <motion.p
+              initial={{ opacity: 0, height: 0, marginTop: 0 }}
+              animate={{ opacity: 1, height: "auto", marginTop: "1rem" }}
+              exit={{ opacity: 0, height: 0, marginTop: 0 }}
+              transition={{ duration: 0.3 }}
+              className={`rounded-md p-3 text-sm font-medium
+                ${status === "success" ? "border border-green-500/30 bg-green-500/10 text-green-400" : ""}
+                ${status === "error" ? "border border-destructive/50 bg-destructive/10 text-destructive" : ""}`}
+              role={status === "error" ? "alert" : "status"}
+            >
+              {message}
+            </motion.p>
+          )}
+        </AnimatePresence>
+      </div>
     </motion.section>
   );
 }

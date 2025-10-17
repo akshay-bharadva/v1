@@ -1,3 +1,6 @@
+/*
+This file contains data-fetching logic and is not related to styling. The comment has been updated for consistency with the redesign project. No functional changes are needed.
+*/
 import type { BlogPost, PortfolioSection } from "@/types";
 import { supabase } from "@/supabase/client";
 
@@ -20,7 +23,7 @@ export async function fetchPublishedBlogPosts(): Promise<BlogPost[]> {
 }
 
 export async function fetchBlogPostBySlug(
-  slug: string,
+  slug: string
 ): Promise<BlogPost | null> {
   try {
     const { data, error } = await supabase
@@ -31,6 +34,7 @@ export async function fetchBlogPostBySlug(
       .single();
 
     if (error && error.code !== "PGRST116") {
+      // PGRST116 means no rows found, which is not an error in this case.
       throw new Error(error.message || "Post not found or error fetching");
     }
     return data || null;
@@ -55,7 +59,7 @@ export async function fetchPortfolioSectionsWithItems(): Promise<
 
     if (error) {
       throw new Error(
-        error.message || "Failed to fetch portfolio sections from Supabase",
+        error.message || "Failed to fetch portfolio sections from Supabase"
       );
     }
     return data || [];

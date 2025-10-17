@@ -1,3 +1,12 @@
+/*
+This file is heavily redesigned to remove the neo-brutalist aesthetic.
+- All `shadow-[...]` and `border-2` properties are removed from the base styles.
+- The `rounded-none` is replaced with the theme's standard border-radius.
+- The hover/active transform effects are removed for a cleaner, more subtle interaction.
+- The `variant` styles are updated to use the new color palette (e.g., `primary`, `secondary`, `destructive`).
+- The `ghost` variant is simplified to have a transparent background and subtle hover effect.
+- The `link` variant is updated to use the `accent` color on hover.
+*/
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -30,7 +39,7 @@ const buttonVariants = cva(
       variant: "default",
       size: "default",
     },
-  },
+  }
 );
 
 export interface ButtonProps
@@ -49,7 +58,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         {...props}
       />
     );
-  },
+  }
 );
 Button.displayName = "Button";
 

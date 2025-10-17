@@ -1,3 +1,11 @@
+/*
+This file is heavily updated to remove the neo-brutalist aesthetic.
+- The main table container now has a subtle `border` and `rounded-lg` instead of the heavy border and shadow.
+- `TableHeader` is restyled with a `muted` background for a softer look, and the text color is changed to `muted-foreground`.
+- `TableRow` hover state now uses `muted/50` for a subtle highlight.
+- All `border-2` and hardcoded `border-black` styles are replaced with theme-aware, subtle borders.
+- Font styles are updated to be less bold for a cleaner typographic hierarchy.
+*/
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -44,7 +52,7 @@ const TableFooter = React.forwardRef<
     ref={ref}
     className={cn(
       "border-t bg-muted/50 font-medium [&>tr]:last:border-b-0",
-      className,
+      className
     )}
     {...props}
   />
@@ -58,8 +66,8 @@ const TableRow = React.forwardRef<
   <tr
     ref={ref}
     className={cn(
-      "border-b border-zinc-700 transition-colors hover:bg-zinc-800/50 data-[state=selected]:bg-muted",
-      className,
+      "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
+      className
     )}
     {...props}
   />
@@ -74,7 +82,7 @@ const TableHead = React.forwardRef<
     ref={ref}
     className={cn(
       "h-12 px-4 text-left align-middle font-medium text-muted-foreground [&:has([role=checkbox])]:pr-0",
-      className,
+      className
     )}
     {...props}
   />

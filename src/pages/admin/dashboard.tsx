@@ -1,10 +1,17 @@
+/*
+This file for the admin dashboard page is updated for the new design.
+- The loading state is simplified to a cleaner, more minimal spinner, removing the neo-brutalist box.
+- The main layout component no longer needs a specific `font-space` class, as `font-sans` is now the global default.
+- The `Layout` component is retained to provide consistent page structure (header/footer, etc.), even for the admin area.
+*/
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase, Session } from "@/supabase/client";
 import AdminDashboardComponent from "@/components/admin/admin-dashboard";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout";
-import type { BlogPost, Note, Transaction, Task } from "@/types";
+import type { BlogPost, Note } from "@/types";
+import { Loader2 } from "lucide-react";
 
 export interface DashboardData {
   stats: {
@@ -20,14 +27,18 @@ export interface DashboardData {
     tasksCompletedThisWeek: number;
   } | null;
   recentPosts: Pick<BlogPost, "id" | "title" | "updated_at" | "slug">[];
-  pinnedNotes: Pick<Note, 'id' | 'title' | 'content'>[];
+  pinnedNotes: Pick<Note, "id" | "title" | "content">[];
 }
 
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
-  const [dashboardData, setDashboardData] = useState<DashboardData>({ stats: null, recentPosts: [], pinnedNotes: [] });
+  const [dashboardData, setDashboardData] = useState<DashboardData>({
+    stats: null,
+    recentPosts: [],
+    pinnedNotes: [],
+  });
 
   useEffect(() => {
     const checkAuthAndAAL = async () => {
@@ -46,48 +57,31 @@ export default function AdminDashboardPage() {
         router.replace("/admin/login");
         return;
       }
-      setIsLoading(false);
-
+      
       try {
         const now = new Date();
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).toISOString();
 
-        const [
-          { count: totalPosts },
-          { count: portfolioSections },
-          { count: portfolioItems },
-          { data: recentPostsData },
-          { count: pendingTasksCount },
-          { count: totalNotesCount },
-          { data: pinnedNotesData },
-          { data: monthlyTransactionsData },
-          { data: totalViewsData, error: tvError },
-          { count: tasksCompletedCount },
-        ] = await Promise.all([
+        const [{ count: totalPosts }, { count: portfolioSections }, { count: portfolioItems }, { data: recentPostsData }, { count: pendingTasksCount }, { count: totalNotesCount }, { data: pinnedNotesData }, { data: monthlyTransactionsData }, { data: totalViewsData }, { count: tasksCompletedCount }] = await Promise.all([
           supabase.from("blog_posts").select("*", { count: "exact", head: true }),
           supabase.from("portfolio_sections").select("*", { count: "exact", head: true }),
           supabase.from("portfolio_items").select("*", { count: "exact", head: true }),
           supabase.from("blog_posts").select("id, title, updated_at, slug").order("updated_at", { ascending: false }).limit(3),
           supabase.from("tasks").select("*", { count: "exact", head: true }).neq("status", "done"),
           supabase.from("notes").select("*", { count: "exact", head: true }),
-          supabase.from("notes").select("id, title, content").eq("is_pinned", true).limit(5),
+          supabase.from("notes").select("id, title, content").eq("is_pinned", true).limit(3),
           supabase.from("transactions").select("type, amount").gte('date', firstDayOfMonth),
           supabase.rpc('get_total_blog_views'),
           supabase.from("tasks").select("*", { count: "exact", head: true }).eq("status", "done").gte("updated_at", startOfWeek),
         ]);
-        
-        // Simplified error check
-        if (tvError) throw tvError;
 
         let monthlyEarnings = 0;
         let monthlyExpenses = 0;
-        if (monthlyTransactionsData) {
-          for (const t of monthlyTransactionsData) {
+        monthlyTransactionsData?.forEach(t => {
             if (t.type === 'earning') monthlyEarnings += t.amount;
             else if (t.type === 'expense') monthlyExpenses += t.amount;
-          }
-        }
+        });
 
         setDashboardData({
           stats: {
@@ -107,6 +101,8 @@ export default function AdminDashboardPage() {
         });
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -117,15 +113,13 @@ export default function AdminDashboardPage() {
         setSession(newSession);
         if (event === "SIGNED_OUT" || !newSession) {
           router.replace("/admin/login");
-        } else if (event === "USER_UPDATED" || event === "TOKEN_REFRESHED" || event === "MFA_CHALLENGE_VERIFIED") {
+        } else if (["USER_UPDATED", "TOKEN_REFRESHED", "MFA_CHALLENGE_VERIFIED"].includes(event)) {
           checkAuthAndAAL();
         }
       },
     );
 
-    return () => {
-      authListener?.subscription?.unsubscribe();
-    };
+    return () => { authListener?.subscription?.unsubscribe(); };
   }, [router]);
 
   const handleLogout = async () => {
@@ -134,28 +128,18 @@ export default function AdminDashboardPage() {
   };
 
   const pageVariants = {
-    initial: { opacity: 0, y: 10 },
-    animate: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -10 },
-    transition: { duration: 0.2 },
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.3 },
   };
 
   if (isLoading || !session) {
     return (
       <Layout>
-        <motion.div
-          key="dashboard-loading"
-          initial="initial"
-          animate="animate"
-          exit="exit"
-          variants={pageVariants}
-          className="flex min-h-screen items-center justify-center bg-zinc-900 font-sans"
-        >
-          <div className="rounded-lg border border-zinc-700 bg-zinc-800 p-8 text-center">
-            <div className="mx-auto mb-4 w-12 h-12 animate-spin rounded-full border-4 border-accent border-l-transparent"></div>
-            <p className="font-semibold text-slate-200">Loading Dashboard...</p>
-          </div>
-        </motion.div>
+        <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
       </Layout>
     );
   }
@@ -164,11 +148,10 @@ export default function AdminDashboardPage() {
     <Layout>
       <motion.div
         key="dashboard-content"
+        variants={pageVariants}
         initial="initial"
         animate="animate"
         exit="exit"
-        variants={pageVariants}
-        className="font-sans"
       >
         <AdminDashboardComponent onLogout={handleLogout} dashboardData={dashboardData} />
       </motion.div>

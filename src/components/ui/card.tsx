@@ -1,3 +1,10 @@
+/*
+This file is completely redesigned to remove the neo-brutalist style.
+- The `rounded-none`, `border-2`, and `shadow-[...]` classes are removed.
+- The component now uses a standard `border`, `rounded-lg`, and subtle `bg-card` from the theme.
+- The `CardHeader` and `CardFooter` now have a simple border separating them from the content, instead of a thick one.
+- Font weights and colors are updated to use theme variables for a clean, modern look.
+*/
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -9,8 +16,8 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border border-zinc-700 bg-zinc-900 text-foreground shadow-sm",
-      className,
+      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      className
     )}
     {...props}
   />
@@ -32,15 +39,17 @@ CardHeader.displayName = "CardHeader";
 const CardTitle = React.forwardRef<
   HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
->(({ className, ...props }, ref) => (
+>(({ className, children, ...props }, ref) => (
   <h3
     ref={ref}
     className={cn(
-      "text-lg font-semibold leading-none tracking-tight",
-      className,
+      "text-2xl font-semibold leading-none tracking-tight",
+      className
     )}
     {...props}
-  />
+  >
+    {children}
+  </h3>
 ));
 CardTitle.displayName = "CardTitle";
 

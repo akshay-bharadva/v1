@@ -1,3 +1,9 @@
+/*
+This file is updated for the new design system.
+- The neo-brutalist styles (`border-2`, `rounded-none`, `shadow-[...]`) are removed from the root `ToggleGroup` component.
+- The group is now styled as a clean, contained unit with a `muted` background and `rounded-md`.
+- `ToggleGroupItem` is updated to use the modern `toggleVariants`. The active (`data-[state=on]`) state now uses the `primary` theme color for a clear and consistent selection style.
+*/
 "use client";
 
 import * as React from "react";
@@ -21,7 +27,7 @@ const ToggleGroup = React.forwardRef<
 >(({ className, variant, size, children, ...props }, ref) => (
   <ToggleGroupPrimitive.Root
     ref={ref}
-    className={cn("flex items-center justify-center gap-1", className)}
+    className={cn("inline-flex items-center justify-center gap-1 rounded-md bg-muted p-1", className)}
     {...props}
   >
     <ToggleGroupContext.Provider value={{ variant, size }}>
@@ -46,7 +52,8 @@ const ToggleGroupItem = React.forwardRef<
           variant: context.variant || variant,
           size: context.size || size,
         }),
-        className,
+        "data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:shadow-sm",
+        className
       )}
       {...props}
     >

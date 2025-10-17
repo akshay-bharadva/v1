@@ -1,10 +1,12 @@
 /*
-This file is updated to import the new 'Inter' font and set the base theme.
-- 'Space Mono' font import is removed.
-- Base styles are simplified for the dark, minimalist theme.
-- The custom '.prose-nb' class is removed in favor of configuring Tailwind's default 'prose' styles for dark mode.
+This file has been completely overhauled to establish the new "Kinetic Typography" design system.
+- Replaced 'Space Mono' with the versatile 'Inter' font for a clean, modern aesthetic.
+- Implemented a dark-first color palette using CSS variables for easy theming. A corresponding light theme is also defined.
+- Removed all neo-brutalist custom classes like '.prose-nb', as typography will now be handled by the Tailwind Typography plugin configuration in `tailwind.config.js`.
+- Simplified base layer styles for a minimalist foundation, removing hardcoded borders and shadows.
+- Added a new selection style to match the accent color.
 */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -12,26 +14,57 @@ This file is updated to import the new 'Inter' font and set the base theme.
 
 @layer base {
   :root {
-    --background: #111111;
-    --foreground: #EAEAEA;
-    --card: #1C1C1C;
-    --card-foreground: #EAEAEA;
-    --popover: #1C1C1C;
-    --popover-foreground: #EAEAEA;
-    --primary: #EAEAEA;
-    --primary-foreground: #111111;
-    --secondary: #333333;
-    --secondary-foreground: #EAEAEA;
-    --muted: #222222;
-    --muted-foreground: #A0A0A0;
-    --accent: #ABFF4F;
-    --accent-foreground: #111111;
-    --destructive: 0 100% 50%;
-    --destructive-foreground: #EAEAEA;
-    --border: 255 255 255 / 0.1;
-    --input: 255 255 255 / 0.1;
-    --ring: 171 255 79;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 4% 10%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 4% 16%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 4% 16%;
+    --muted-foreground: 240 5% 65%;
+    --accent: 80 95% 60%; /* Kinetic Green */
+    --accent-foreground: 240 10% 3.9%;
+    --destructive: 0 63% 31%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 4% 16%;
+    --input: 240 4% 16%;
+    --ring: 80 95% 60%;
     --radius: 0.5rem;
+  }
+
+  [data-theme="light"] {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 10% 3.9%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 240 10% 3.9%;
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    --accent: 80 95% 45%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 240 10% 3.9%;
+  }
+
+  * {
+    @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    @apply scroll-smooth scroll-p-24;
   }
 
   body {

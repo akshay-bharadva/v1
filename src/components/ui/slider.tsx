@@ -1,3 +1,11 @@
+/*
+This file is updated to remove the neo-brutalist styling.
+- The `border-2`, `rounded-none`, and `shadow-[...]` styles are removed from the track and thumb.
+- The `SliderPrimitive.Track` is now styled with `rounded-full` and uses the `secondary` background color.
+- The `SliderPrimitive.Range` (the filled part of the track) uses the `primary` color.
+- The `SliderPrimitive.Thumb` is restyled to be a clean, circular handle. It uses the theme's `ring` color for its focus state.
+- The hover and active effects are simplified to be more subtle.
+*/
 "use client";
 
 import * as React from "react";
@@ -13,7 +21,7 @@ const Slider = React.forwardRef<
     ref={ref}
     className={cn(
       "relative flex w-full touch-none select-none items-center",
-      className,
+      className
     )}
     {...props}
   >

@@ -1,3 +1,10 @@
+/*
+This file is updated to match the new minimalist design.
+- The link color is changed from a hardcoded indigo to the theme's `accent` color for consistency.
+- The current page (`BreadcrumbPage`) now uses the standard `foreground` color.
+- The separator color is updated to `muted-foreground`.
+- Font weights are adjusted for a cleaner, more modern typographic hierarchy.
+*/
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ChevronRight, MoreHorizontal } from "lucide-react";
@@ -20,7 +27,7 @@ const BreadcrumbList = React.forwardRef<
     ref={ref}
     className={cn(
       "flex flex-wrap items-center gap-1.5 break-words text-sm text-muted-foreground sm:gap-2.5",
-      className,
+      className
     )}
     {...props}
   />
@@ -98,7 +105,7 @@ const BreadcrumbEllipsis = ({
     className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >
-    <MoreHorizontal className="size-4" />
+    <MoreHorizontal className="h-4 w-4" />
     <span className="sr-only">More</span>
   </span>
 );
