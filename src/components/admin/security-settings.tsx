@@ -1,12 +1,3 @@
-/*
-This file is updated to align with the new minimalist, dark-themed design.
-- All custom CSS classes (`buttonPrimaryClass`, `buttonDangerClass`) are removed.
-- Standard UI components (`Input`, `Label`, `Button`, `Card`) are used throughout, ensuring a consistent look and feel.
-- The layout is structured into distinct `Card` components for MFA settings, password change, and security tips, improving readability.
-- Success and error messages are now displayed in the redesigned `Alert` component.
-- The MFA status indicator is now a `Badge`, consistent with the rest of the dashboard.
-- The "Security Tips" section is styled as a simple list within a `Card` for a clean presentation.
-*/
 "use client";
 import type React from "react";
 import { useState, useEffect, FormEvent } from "react";
@@ -17,10 +8,11 @@ import { useRouter } from "next/router";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { Loader2, ShieldCheck, Terminal, PlusCircle, Trash2 } from "lucide-react";
+
+const buttonPrimaryClass =
+  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded-none font-bold border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 font-space";
+const buttonDangerClass =
+  "bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded-none font-bold border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 font-space";
 
 export default function SecuritySettings() {
   const [factors, setFactors] = useState<Factor[]>([]);
@@ -48,16 +40,24 @@ export default function SecuritySettings() {
     setIsLoading(false);
   };
 
-  useEffect(() => { loadFactors(); }, []);
+  useEffect(() => {
+    loadFactors();
+  }, []);
 
   const handleUnenroll = async (factorId: string) => {
-    if (!confirm("Are you sure you want to remove this MFA method? You might be logged out or lose access if it's your only method.")) {
+    if (
+      !confirm(
+        "Are you sure you want to remove this MFA method? You might be logged out or lose access if it's your only method.",
+      )
+    ) {
       return;
     }
     setIsLoading(true);
     setError(null);
     setSuccess(null);
-    const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId });
+    const { error: unenrollError } = await supabase.auth.mfa.unenroll({
+      factorId,
+    });
 
     if (unenrollError) {
       setError("Failed to unenroll MFA: " + unenrollError.message);
@@ -65,103 +65,191 @@ export default function SecuritySettings() {
     } else {
       setSuccess("MFA method removed successfully.");
       await loadFactors();
-      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aalData?.currentLevel !== "aal2") { router.push("/admin/login"); }
-      else { setIsLoading(false); }
+      const { data: aalData } =
+        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      if (aalData?.currentLevel !== "aal2") {
+        router.push("/admin/login");
+      } else {
+        setIsLoading(false);
+      }
     }
   };
 
-  const handlePasswordChange = async (e: FormEvent) => {
+  const mfaEnabled = factors.some((f) => f.status === "verified");
+
+   const handlePasswordChange = async (e: FormEvent) => {
     e.preventDefault();
     setPasswordError("");
     setPasswordSuccess("");
 
-    if (newPassword.length < 6) { setPasswordError("Password must be at least 6 characters long."); return; }
-    if (newPassword !== confirmPassword) { setPasswordError("Passwords do not match."); return; }
+    if (newPassword.length < 6) {
+      setPasswordError("Password must be at least 6 characters long.");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPasswordError("Passwords do not match.");
+      return;
+    }
     
     setIsUpdatingPassword(true);
     const { error: updateError } = await supabase.auth.updateUser({ password: newPassword });
     setIsUpdatingPassword(false);
 
-    if (updateError) { setPasswordError("Failed to update password: " + updateError.message); }
-    else { setPasswordSuccess("Password updated successfully!"); setNewPassword(""); setConfirmPassword(""); }
+    if (updateError) {
+      setPasswordError("Failed to update password: " + updateError.message);
+    } else {
+      setPasswordSuccess("Password updated successfully!");
+      setNewPassword("");
+      setConfirmPassword("");
+    }
   };
 
-  const mfaEnabled = factors.some((f) => f.status === "verified");
-
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
-      <div>
-        <h2 className="text-2xl font-bold">Security Settings</h2>
-        <p className="text-muted-foreground">Manage your account security and two-factor authentication.</p>
-      </div>
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mx-auto max-w-4xl font-space"
+    >
+      <div className="rounded-none border-2 border-black bg-white">
+        <div className="border-b-2 border-black bg-gray-100 px-6 py-4">
+          <h2 className="text-xl font-bold text-black">Security Settings</h2>
+          <p className="mt-1 text-sm text-gray-700">
+            Manage your account security and two-factor authentication
+          </p>
+        </div>
 
-      {success && <Alert><Terminal className="size-4" /><AlertTitle>Success</AlertTitle><AlertDescription>{success}</AlertDescription></Alert>}
-      {error && <Alert variant="destructive"><Terminal className="size-4" /><AlertTitle>Error</AlertTitle><AlertDescription>{error}</AlertDescription></Alert>}
-      
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Two-Factor Authentication (MFA)</CardTitle>
-              <CardDescription>Add an extra layer of security to your account.</CardDescription>
+        <div className="space-y-8 p-4 sm:p-6">
+          {success && (
+            <div className="rounded-none border-2 border-green-500 bg-green-100 p-4">
+              <p className="text-sm font-semibold text-green-700">{success}</p>
             </div>
-            <Badge variant={mfaEnabled ? "default" : "secondary"} className={mfaEnabled ? "border-green-500/50 bg-green-500/10 text-green-400" : ""}>
-              <ShieldCheck className="mr-1.5 size-3" />
-              {mfaEnabled ? "Enabled" : "Not Enabled"}
-            </Badge>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {isLoading ? (<Loader2 className="animate-spin text-muted-foreground" />) : (
-            <>
-              {factors.length > 0 && (
-                <div className="space-y-3">
-                  <h4 className="text-sm font-semibold">Registered Authenticators:</h4>
-                  {factors.map((factor) => (
-                    <div key={factor.id} className="flex items-center justify-between rounded-md border bg-secondary/50 p-3">
-                      <div>
-                        <p className="text-sm font-medium">{factor.friendly_name || `Authenticator ID: ...${factor.id.slice(-6)}`}</p>
-                        <p className="text-xs text-muted-foreground">Status: {factor.status}</p>
-                      </div>
-                      <Button variant="ghost" size="icon" className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive" onClick={() => handleUnenroll(factor.id)} disabled={isLoading}><Trash2 className="size-4" /></Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              <Button onClick={() => router.push("/admin/setup-mfa")} disabled={isLoading}><PlusCircle className="mr-2 size-4"/> {factors.length > 0 ? "Add Another Authenticator" : "Set Up MFA Now"}</Button>
-            </>
           )}
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader><CardTitle>Change Password</CardTitle><CardDescription>Update your login password. We recommend a long, unique password.</CardDescription></CardHeader>
-        <CardContent>
-          <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
-            <div className="space-y-2"><Label htmlFor="new-password">New Password</Label><Input id="new-password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} /></div>
-            <div className="space-y-2"><Label htmlFor="confirm-password">Confirm New Password</Label><Input id="confirm-password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={6} /></div>
-            {passwordError && <p className="text-sm font-medium text-destructive">{passwordError}</p>}
-            {passwordSuccess && <p className="text-sm font-medium text-accent">{passwordSuccess}</p>}
-            <Button type="submit" disabled={isUpdatingPassword || !newPassword || !confirmPassword}>
-              {isUpdatingPassword && <Loader2 className="mr-2 size-4 animate-spin"/>}
-              {isUpdatingPassword ? "Updating..." : "Update Password"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+          {error && (
+            <div className="rounded-none border-2 border-red-500 bg-red-100 p-4">
+              <p className="text-sm font-semibold text-red-700">{error}</p>
+            </div>
+          )}
 
-      <Card>
-        <CardHeader><CardTitle>Security Tips</CardTitle></CardHeader>
-        <CardContent>
-          <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-            <li>Keep your authenticator app secure and backed up.</li>
-            <li>Do not share your password or MFA codes.</li>
-            <li>Use a strong, unique password for admin access.</li>
-            <li>Log out when you finish managing your site.</li>
-          </ul>
-        </CardContent>
-      </Card>
+          <div className="rounded-none border-2 border-black bg-gray-50 p-4 sm:p-6">
+            <div className="mb-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-black">
+                  Two-Factor Authentication (TOTP)
+                </h3>
+                <p className="text-sm text-gray-700">
+                  {mfaEnabled
+                    ? "MFA is currently active and verified on your account."
+                    : factors.length > 0
+                      ? "You have MFA factors registered, but not all may be fully verified for AAL2."
+                      : "Add an extra layer of security to your account."}
+                </p>
+              </div>
+              <span
+                className={`inline-flex items-center rounded-none border-2 border-black px-2.5 py-0.5 font-space text-xs font-bold ${
+                  mfaEnabled
+                    ? "bg-green-300 text-black"
+                    : "bg-yellow-300 text-black"
+                }`}
+              >
+                {mfaEnabled
+                  ? "AAL2 Active"
+                  : factors.length > 0
+                    ? "Factors Registered"
+                    : "Not Setup"}
+              </span>
+            </div>
+
+            {isLoading && (
+              <p className="text-sm text-gray-700">Loading MFA status...</p>
+            )}
+
+            {!isLoading && factors.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-md font-semibold text-black">
+                  Registered Authenticators:
+                </h4>
+                {factors.map((factor) => (
+                  <div
+                    key={factor.id}
+                    className="flex flex-col items-start gap-2 rounded-none border border-gray-400 bg-white p-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold">
+                        {factor.friendly_name ||
+                          `Authenticator (ID: ...${factor.id.slice(-6)})`}
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Status: {factor.status}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleUnenroll(factor.id)}
+                      className={`${buttonDangerClass} w-full px-2 py-1 text-xs sm:w-auto`}
+                      disabled={isLoading}
+                    >
+                      {isLoading ? "Removing..." : "Remove"}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!isLoading && factors.length === 0 && !error && (
+              <p className="text-sm text-gray-700">
+                No MFA methods are currently set up.
+              </p>
+            )}
+
+            {!isLoading && (
+              <button
+                onClick={() => router.push("/admin/setup-mfa")}
+                className={`${buttonPrimaryClass} mt-4`}
+                disabled={isLoading}
+              >
+                {factors.length > 0
+                  ? "Add Another Authenticator"
+                  : "Set Up MFA Now"}
+              </button>
+            )}
+          </div>
+
+          <div className="rounded-none border-2 border-black bg-gray-50 p-4 sm:p-6">
+            <h3 className="mb-4 text-lg font-bold text-black">Change Password</h3>
+            <form onSubmit={handlePasswordChange} className="space-y-4 max-w-md">
+              <div>
+                <Label htmlFor="new-password">New Password</Label>
+                <Input id="new-password" type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} required minLength={6} />
+              </div>
+              <div>
+                <Label htmlFor="confirm-password">Confirm New Password</Label>
+                <Input id="confirm-password" type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} required minLength={6} />
+              </div>
+              {passwordError && <p className="text-sm font-semibold text-red-600">{passwordError}</p>}
+              {passwordSuccess && <p className="text-sm font-semibold text-green-600">{passwordSuccess}</p>}
+              <Button type="submit" disabled={isUpdatingPassword || !newPassword || !confirmPassword}>
+                {isUpdatingPassword ? "Updating..." : "Update Password"}
+              </Button>
+            </form>
+          </div>
+
+          <div className="rounded-none border-2 border-black bg-gray-50 p-4 sm:p-6">
+            <h3 className="mb-4 text-lg font-bold text-black">Security Tips</h3>
+            <ul className="space-y-2 text-sm text-gray-700">
+              {[
+                "Keep your authenticator app secure and backed up.",
+                "Do not share your password or MFA codes.",
+                "Use a strong, unique password for admin access.",
+                "Log out when you finish managing your site.",
+                "Regularly review active sessions if your auth provider supports it.",
+              ].map((tip) => (
+                <li key={tip} className="flex items-start">
+                  <span className="mr-2 pt-1 font-bold text-indigo-600">•</span>
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      </div>
     </motion.div>
   );
 }

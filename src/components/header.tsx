@@ -1,16 +1,9 @@
-/*
-This file has been slightly adjusted for consistency with the new mobile header.
-- The height is standardized by adjusting padding (`py-4`) and container height to ensure a consistent top margin for the main content on desktop screens.
-- The `hidden md:block` classes ensure this header only appears on medium screens and larger, leaving mobile views to the new `MobileHeader` component.
-- The container width settings have been updated to match the main layout container.
-*/
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { PropsWithChildren } from "react";
 import { useTheme } from "next-themes";
 import { Button } from "./ui/button";
 import { Sun, Moon } from "lucide-react";
-import Container from "./container";
 
 type HeaderProps = PropsWithChildren;
 
@@ -25,29 +18,20 @@ const NAV_LINKS: NavLink[] = [
   { href: "/projects", label: "Projects" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
-  { href: "/contact", label: "Contact" },
+  { href: "/hire-me", label: "Hire Me" }
 ];
 
 export default function Header({ children }: HeaderProps) {
   const router = useRouter();
   const { theme, setTheme } = useTheme();
 
-  const linkClasses = (href: string) => {
-    const isActive =
-      router.pathname === href || (href !== "/" && router.pathname.startsWith(href));
-    return `relative cursor-pointer rounded-md px-3 py-1.5 text-sm font-medium transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring 
-    ${
-      isActive
-        ? "bg-primary text-primary-foreground"
-        : "text-muted-foreground hover:bg-secondary hover:text-secondary-foreground"
-    }`;
-  };
+  const linkClasses = (href: string) =>
+    `cursor-pointer px-3 py-1.5 last-of-type:mr-0 transform transition-all duration-150 text-sm font-bold rounded-none focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-1 focus-visible:ring-offset-white ${router.pathname === href ? "bg-black text-white shadow-[1px_1px_0px_hsl(var(--primary-foreground))_inset]" : "text-black hover:bg-yellow-300 hover:text-black hover:shadow-[1px_1px_0px_#000] active:bg-yellow-400"}`;
 
   return (
-    <header className="fixed left-0 top-0 z-50 hidden w-full border-b border-border bg-background/80 py-3 backdrop-blur-sm md:block">
-      <Container>
-      <div className="flex h-10 max-w-7xl items-center justify-between ">
-        <nav className="flex items-center gap-x-1 rounded-lg bg-secondary/50 p-1">
+    <header className="hidden md:block fixed left-0 top-0 z-50 w-full border-b-2 border-black bg-background/80 py-3 font-space shadow-[0px_2px_4px_rgba(0,0,0,0.1)] backdrop-blur-sm sm:py-4">
+      <div className="mx-auto flex items-center justify-between px-4 sm:px-8 md:px-24 lg:px-48 xl:px-72">
+        <nav className="hidden w-auto sm:flex sm:flex-row sm:gap-x-1">
           {NAV_LINKS.map((link) => (
             <Link
               className={linkClasses(link.href)}
@@ -59,8 +43,8 @@ export default function Header({ children }: HeaderProps) {
           ))}
         </nav>
 
-        <Button
-          variant="ghost"
+        {/* <Button
+          variant="outline"
           size="icon"
           className="h-9 w-9"
           onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
@@ -69,9 +53,8 @@ export default function Header({ children }: HeaderProps) {
           <Sun className="size-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
           <Moon className="absolute size-4 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
           <span className="sr-only">Toggle theme</span>
-        </Button>
+        </Button> */}
       </div>
-      </Container>
     </header>
   );
 }

@@ -1,24 +1,7 @@
-/*
-This file is redesigned to align with the new kinetic typography theme.
-- The component is now built using the redesigned `Card` component for consistency.
-- The hover effect is changed from a transform/shadow-change to a more subtle `border-accent` highlight.
-- Typography is updated to be cleaner and more modern.
-- The link icon is restyled to be a subtle icon button within the header.
-- The tech stack/topics section is now using the redesigned `Badge` component for a cleaner look.
-*/
 import Link from "next/link";
 import { PropsWithChildren } from "react";
 import { BsArrowUpRight } from "react-icons/bs";
 import type { GitHubRepo } from "@/types";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 
 type ProjectCardProps = PropsWithChildren & {
   project: GitHubRepo;
@@ -26,45 +9,56 @@ type ProjectCardProps = PropsWithChildren & {
 
 export default function ProjectCard({ children, project }: ProjectCardProps) {
   return (
-    <Card className="group flex h-full flex-col transition-colors hover:border-accent/50">
-      <CardHeader>
-        <div className="flex items-start justify-between gap-4">
-          <CardTitle className="transition-colors group-hover:text-accent">
-            {project.name.replaceAll("-", " ")}
-          </CardTitle>
+    <div
+      className="group flex h-full flex-col overflow-hidden rounded-none border-2 border-black bg-card font-space shadow-[6px_6px_0px_#000] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#4f46e5] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0px_#4f46e5]"
+      key={project.id}
+    >
+      <div className="grow p-5">
+        <h3 className="mb-2 flex items-start justify-between text-xl font-bold capitalize text-black transition-colors group-hover:text-indigo-700">
+          <span className="mr-2">{project.name.replaceAll("-", " ")}</span>
           {project.html_url && (
-            <a
+            <Link
+              className="-m-1 shrink-0 cursor-pointer rounded-none border-2 border-transparent p-1 text-black hover:border-black hover:bg-yellow-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 group-hover:text-indigo-700"
               href={project.html_url}
               rel="noopener noreferrer nofollow"
               target="_blank"
               title="View on GitHub"
               aria-label={`View ${project.name} on GitHub`}
-              className="text-muted-foreground transition-colors hover:text-foreground"
+
             >
-              <BsArrowUpRight className="size-4 shrink-0" />
-            </a>
+              <BsArrowUpRight className="inline-block size-5 transition-transform group-hover:rotate-[15deg]" />
+            </Link>
           )}
-        </div>
-        <CardDescription className="line-clamp-3">
+        </h3>
+        <p className="mb-3 line-clamp-3 text-ellipsis text-sm font-medium leading-relaxed text-gray-700 transition-all duration-200 hover:text-gray-900">
           {project.description || (
-            <span className="italic">No description provided.</span>
+            <span className="italic text-gray-500">
+              No description provided for this project.
+            </span>
           )}
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="flex-grow">{children}</CardContent>
+        </p>
+        {children && <div className="mt-2">{children}</div>}
+      </div>
       {(project.language || (project.topics && project.topics.length > 0)) && (
-        <CardFooter className="flex flex-wrap gap-2">
-          {project.language && (
-            <Badge variant="secondary">{project.language}</Badge>
-          )}
-          {project.topics &&
-            project.topics.slice(0, 3).map((topic: string) => (
-              <Badge key={topic} variant="outline">
-                {topic}
-              </Badge>
-            ))}
-        </CardFooter>
+        <div className="border-t-2 border-black bg-gray-50 p-4">
+          <div className="flex shrink flex-wrap gap-1.5">
+            {project.language && (
+              <small className="flex-inline rounded-none border border-black bg-yellow-300 px-2 py-0.5 text-xs font-bold text-black shadow-[1px_1px_0px_#000]">
+                {project.language}
+              </small>
+            )}
+            {project.topics &&
+              project.topics.slice(0, 3).map((topic: string) => (
+                <small
+                  key={topic}
+                  className="flex-inline rounded-none border border-black bg-gray-200 px-2 py-0.5 text-xs font-bold text-black shadow-[1px_1px_0px_#000]"
+                >
+                  {topic}
+                </small>
+              ))}
+          </div>
+        </div>
       )}
-    </Card>
+    </div>
   );
 }

@@ -1,48 +1,83 @@
-// The footer is redesigned to be minimal and match the new dark theme.
-// Blocky styles are replaced with simple text and icon links with accent color hover effects.
-
 import Link from "next/link";
-import { BsGithub, BsLinkedin } from "react-icons/bs";
+import { PropsWithChildren, useState, useEffect } from "react";
+import { AiOutlineCopyrightCircle } from "react-icons/ai";
+import { BsArrowUpRight, BsGithub, BsLinkedin } from "react-icons/bs";
 
-export default function Footer() {
+type FooterProps = PropsWithChildren;
+
+export default function Footer({ children }: FooterProps) {
+  const [currentTime, setCurrentTime] = useState("");
+
+  useEffect(() => {
+    const updateClock = () => {
+      const now = new Date();
+      setCurrentTime(
+        `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}`
+      );
+    };
+    updateClock();
+    const timerId = setInterval(updateClock, 1000 * 60);
+    return () => clearInterval(timerId);
+  }, []);
+
   const currentYear = new Date().getFullYear();
 
   return (
-    <footer className="w-full border-t border-white/10 py-16 text-sm text-muted-foreground md:py-20">
-      <div className="mx-auto flex flex-col items-center justify-between gap-8 px-4 sm:px-8 md:flex-row">
-        <p className="text-center md:text-left">
-          &copy; {currentYear} Akshay Bharadva. <br />
-          Built with love, Next.js, and a lot of coffee.
-        </p>
-
-        <div className="flex items-center gap-6">
-          <a
-            href="https://github.com/akshay-bharadva"
-            rel="noopener noreferrer"
-            target="_blank"
-            aria-label="GitHub Profile"
-            className="text-2xl transition-colors hover:text-accent"
-          >
-            <BsGithub />
-          </a>
-          <a
-            href="https://www.linkedin.com/in/akshay-bharadva/"
-            rel="noopener noreferrer"
-            target="_blank"
-            aria-label="LinkedIn Profile"
-            className="text-2xl transition-colors hover:text-accent"
-          >
-            <BsLinkedin />
-          </a>
-          <a
-            href="mailto:akshaybharadva19@gmail.com"
-            aria-label="Email Akshay"
-            className="font-bold transition-colors hover:text-accent"
-          >
-            akshaybharadva19@gmail.com
-          </a>
-        </div>
+    <footer className="mb-20 flex flex-col items-center justify-center gap-4 border-t-2 border-black pt-10 font-space text-sm text-black md:mb-8">
+      <div className="mb-4 flex gap-4">
+        <Link
+          href="https://github.com/akshay-bharadva"
+          rel="noopener noreferrer"
+          target="_blank"
+          aria-label="GitHub Profile"
+          className="border-2 border-transparent p-2 text-2xl text-black transition-colors hover:border-black hover:bg-yellow-200 hover:text-indigo-700"
+        >
+          <BsGithub />
+        </Link>
+        <Link
+          href="https://www.linkedin.com/in/akshay-bharadva/"
+          rel="noopener noreferrer"
+          target="_blank"
+          aria-label="LinkedIn Profile"
+          className="border-2 border-transparent p-2 text-2xl text-black transition-colors hover:border-black hover:bg-yellow-200 hover:text-indigo-700"
+        >
+          <BsLinkedin />
+        </Link>
       </div>
+
+      <p className="flex flex-col items-center justify-center gap-2 md:flex-row">
+        <span className="font-semibold">
+          Built with{" "}
+          <Link
+            href="https://nextjs.org/"
+            rel="noopener noreferrer"
+            target="_blank"
+            className="font-bold text-indigo-700 underline transition-colors hover:bg-yellow-200 hover:text-indigo-900"
+          >
+            Next.js <BsArrowUpRight className="inline" />
+          </Link>
+        </span>
+        <span className="mx-1 hidden font-bold md:inline">|</span>
+        <span className="font-semibold">
+          View Source on{" "}
+          <a
+            href="https://github.com/akshay-bharadva/akshay-bharadva.github.io"
+            rel="noopener noreferrer"
+            target="_blank"
+            className="font-bold text-indigo-700 underline transition-colors hover:bg-yellow-200 hover:text-indigo-900"
+          >
+            GitHub <BsArrowUpRight className="inline" />
+          </a>
+        </span>
+      </p>
+      <p className="font-bold">
+        <AiOutlineCopyrightCircle className="mr-1 inline-block" />
+        {currentYear} Akshay Bharadva
+        {currentTime && <span className="mx-1">|</span>}
+        {currentTime}
+      </p>
     </footer>
+
+
   );
 }

@@ -1,15 +1,8 @@
-/*
-This file is updated to integrate the new mobile navigation structure.
-- The `BottomMenu` component import and usage have been removed.
-- The new `MobileHeader` component is imported and rendered alongside the existing desktop `Header`.
-- Because both header components use mutually exclusive responsive classes (`md:hidden` vs. `hidden md:block`), they will correctly switch based on the viewport size.
-- The top margin on the `main` element has been adjusted to `mt-16 md:mt-20` to account for the consistent height of both the mobile and desktop headers.
-*/
 import Head from "next/head";
 import { PropsWithChildren } from "react";
 import Container from "./container";
 import Header from "./header";
-import MobileHeader from "./MobileHeader"; // Import the new MobileHeader
+import BottomMenu from "./bottom-menu";
 import Footer from "./footer";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { Toaster as ShadcnToaster } from "@/components/ui/toaster";
@@ -21,7 +14,8 @@ const SITE_URL =
 const DEFAULT_OG_TITLE = "Akshay Bharadva - Fullstack Developer";
 const DEFAULT_OG_DESCRIPTION =
   "Portfolio and Blog of Akshay Bharadva, showcasing projects and thoughts on web development.";
-const DEFAULT_OG_IMAGE = `${SITE_URL}/default-og-image.png`;
+const DEFAULT_OG_IMAGE = `${SITE_URL}/default-og-image.png`; // Ensure this image exists in /public
+
 
 export default function Layout({ children }: LayoutProps) {
   return (
@@ -52,6 +46,9 @@ export default function Layout({ children }: LayoutProps) {
           sizes="16x16"
           href="/favicon-16x16.png"
         />
+        <link rel="manifest" href="/site.webmanifest" />
+
+        {/* Open Graph / Facebook */}
         <meta property="og:title" content={DEFAULT_OG_TITLE} />
         <meta property="og:description" content={DEFAULT_OG_DESCRIPTION} />
         <meta property="og:type" content="website" />
@@ -60,23 +57,41 @@ export default function Layout({ children }: LayoutProps) {
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
         <meta property="og:site_name" content="Akshay Bharadva" />
+
+        {/* Twitter */}
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content={DEFAULT_OG_TITLE} />
         <meta name="twitter:description" content={DEFAULT_OG_DESCRIPTION} />
         <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
+
+        {/* Feeds */}
+        <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="Akshay Bharadva Blog RSS Feed"
+          href="/feed.xml"
+        />
+        <link
+          rel="sitemap"
+          type="application/xml"
+          title="Sitemap"
+          href="/sitemap.xml"
+        />
       </Head>
-      <div className="flex min-h-screen flex-col justify-between font-sans selection:bg-accent selection:text-accent-foreground">
+      <div className="flex min-h-screen flex-col justify-between bg-background font-space selection:bg-yellow-300 selection:text-black">
         <Header />
-        <MobileHeader />
-        <main className="mt-16 w-full grow md:mt-20">
+        <main className="mt-20 w-full grow sm:mt-24">
           <Container>{children}</Container>
         </main>
         <Container>
           <Footer />
         </Container>
+        <BottomMenu />
         <SonnerToaster />
         <ShadcnToaster />
       </div>
     </>
+
+
   );
 }

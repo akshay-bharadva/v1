@@ -1,10 +1,3 @@
-/*
-This file is updated to align with the new kinetic typography design system.
-- The `border-b-2 border-black` styling is replaced with a subtle `border-b` using the theme's border color.
-- Focus rings are updated to use the theme's `ring` color.
-- The font is updated to inherit `font-sans` (Inter), and weights are adjusted for a cleaner look.
-- The hover underline effect is retained for affordance but within the new minimalist aesthetic.
-*/
 "use client";
 
 import * as React from "react";
@@ -21,7 +14,7 @@ const AccordionItem = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <AccordionPrimitive.Item
     ref={ref}
-    className={cn("border-b", className)}
+    className={cn("border-b-2 border-black last:border-b-0", className)}
     {...props}
   />
 ));
@@ -35,13 +28,13 @@ const AccordionTrigger = React.forwardRef<
     <AccordionPrimitive.Trigger
       ref={ref}
       className={cn(
-        "flex flex-1 items-center justify-between py-4 font-medium transition-all hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 [&[data-state=open]>svg]:rotate-180",
-        className
+        "flex flex-1 items-center justify-between py-4 font-bold transition-all hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 [&[data-state=open]>svg]:rotate-180",
+        className,
       )}
       {...props}
     >
       {children}
-      <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+      <ChevronDown className="size-4 shrink-0 transition-transform duration-200" />
     </AccordionPrimitive.Trigger>
   </AccordionPrimitive.Header>
 ));
@@ -56,12 +49,11 @@ const AccordionContent = React.forwardRef<
     className="overflow-hidden text-sm transition-all data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down"
     {...props}
   >
-    <div className={cn("pb-4 pt-0 text-muted-foreground", className)}>
-      {children}
-    </div>
+    <div className={cn("pb-4 pt-0", className)}>{children}</div>
   </AccordionPrimitive.Content>
 ));
 
 AccordionContent.displayName = AccordionPrimitive.Content.displayName;
 
 export { Accordion, AccordionItem, AccordionTrigger, AccordionContent };
+

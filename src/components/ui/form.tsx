@@ -1,9 +1,3 @@
-/*
-This file, which provides the logic for `react-hook-form` integration, is updated for the new design system.
-- `FormLabel` styling is changed from `font-bold` to `font-medium` for a softer typographic feel.
-- `FormMessage` (the error message) is completely restyled. It no longer has a neo-brutalist box. Instead, it's a simple, colored text message for a cleaner, more integrated look, matching the `destructive` theme color.
-- Spacing in `FormItem` is slightly adjusted.
-*/
 "use client";
 
 import * as React from "react";
@@ -25,18 +19,18 @@ const Form = FormProvider;
 
 type FormFieldContextValue<
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 > = {
   name: TName;
 };
 
 const FormFieldContext = React.createContext<FormFieldContextValue>(
-  {} as FormFieldContextValue
+  {} as FormFieldContextValue,
 );
 
 const FormField = <
   TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
 >({
   ...props
 }: ControllerProps<TFieldValues, TName>) => {
@@ -75,7 +69,7 @@ type FormItemContextValue = {
 };
 
 const FormItemContext = React.createContext<FormItemContextValue>(
-  {} as FormItemContextValue
+  {} as FormItemContextValue,
 );
 
 const FormItem = React.forwardRef<
@@ -86,7 +80,7 @@ const FormItem = React.forwardRef<
 
   return (
     <FormItemContext.Provider value={{ id }}>
-      <div ref={ref} className={cn("space-y-2", className)} {...props} />
+      <div ref={ref} className={cn("space-y-1 mb-4", className)} {...props} />
     </FormItemContext.Provider>
   );
 });
@@ -101,7 +95,11 @@ const FormLabel = React.forwardRef<
   return (
     <Label
       ref={ref}
-      className={cn(error && "text-destructive", className)}
+      className={cn(
+        error && "text-red-600",
+        "font-bold text-black mb-1 block",
+        className,
+      )}
       htmlFor={formItemId}
       {...props}
     />
@@ -142,7 +140,7 @@ const FormDescription = React.forwardRef<
     <p
       ref={ref}
       id={formDescriptionId}
-      className={cn("text-[0.8rem] text-muted-foreground", className)}
+      className={cn("text-xs text-gray-600 mt-1", className)}
       {...props}
     />
   );
@@ -164,7 +162,10 @@ const FormMessage = React.forwardRef<
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-[0.8rem] font-medium text-destructive", className)}
+      className={cn(
+        "text-sm font-semibold text-red-600 mt-1 p-2 bg-red-100 border-2 border-red-500 rounded-none",
+        className,
+      )}
       {...props}
     >
       {body}

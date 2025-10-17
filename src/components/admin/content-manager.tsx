@@ -1,25 +1,25 @@
-/*
-This file is heavily redesigned to fit the new theme.
-- All custom CSS classes are replaced with the redesigned UI components (`Button`, `Input`, `Textarea`, `Select`, `Card`).
-- The structure is now based on nested `Card` components, providing a clean hierarchy for sections and their items.
-- Section and item forms are now rendered within a `Card` with a distinct background for better visual separation.
-- The drag-and-drop handle (`GripVertical`) is retained but styled to be more subtle.
-- Action buttons are now consistent `Button` components from the UI kit.
-*/
 "use client";
 
 import { useState, useEffect, FormEvent, DragEvent } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/supabase/client";
 import type { PortfolioSection, PortfolioItem } from "@/types";
-import { GripVertical, Plus, Edit, Trash2, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Separator } from "@/components/ui/separator";
+import { GripVertical } from "lucide-react";
+
+const inputClass =
+  "block w-full border-2 border-black rounded-none p-2 mb-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-space";
+const textareaClass = `${inputClass} resize-y`;
+const selectClass = `${inputClass} bg-white`;
+const buttonPrimaryClass =
+  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded-none font-bold border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 font-space";
+const buttonSecondaryClass =
+  "bg-gray-200 hover:bg-gray-300 text-black py-2 px-3 rounded-none font-bold border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 font-space";
+const buttonActionSmallClass = (
+  actionColor: string,
+  hoverActionColor: string,
+  textColor: string = "text-black",
+) =>
+  `text-xs ${actionColor} hover:${hoverActionColor} ${textColor} px-2 py-1 rounded-none font-semibold border border-black shadow-[1px_1px_0px_#000] active:translate-x-[0.5px] active:translate-y-[0.5px] active:shadow-none transition-all font-space`;
 
 interface ContentManagerProps {
   startInCreateMode?: boolean;
@@ -30,143 +30,467 @@ export default function ContentManager({ startInCreateMode, onActionHandled }: C
   const [sections, setSections] = useState<PortfolioSection[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [editingSection, setEditingSection] = useState<PortfolioSection | null>(null);
+  const [editingSection, setEditingSection] = useState<PortfolioSection | null>(
+    null,
+  );
   const [isCreatingSection, setIsCreatingSection] = useState(false);
+
   const [editingItem, setEditingItem] = useState<PortfolioItem | null>(null);
-  const [isCreatingItemInSection, setIsCreatingItemInSection] = useState<string | null>(null);
+  const [isCreatingItemInSection, setIsCreatingItemInSection] = useState<
+    string | null
+  >(null);
   const [draggedSectionId, setDraggedSectionId] = useState<string | null>(null);
 
-  const handleDragStart = (e: DragEvent<HTMLDivElement>, sectionId: string) => { e.dataTransfer.effectAllowed = 'move'; setDraggedSectionId(sectionId); };
-  const handleDragOver = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); };
+  // --- DRAG & DROP HANDLERS ---
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, sectionId: string) => {
+    e.dataTransfer.effectAllowed = 'move';
+    setDraggedSectionId(sectionId);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault(); // Necessary to allow dropping
+  };
+
   const handleDrop = async (e: DragEvent<HTMLDivElement>, targetSection: PortfolioSection) => {
     e.preventDefault();
     if (!draggedSectionId || draggedSectionId === targetSection.id) return;
+
     const currentSections = [...sections];
     const draggedIndex = currentSections.findIndex(s => s.id === draggedSectionId);
     const targetIndex = currentSections.findIndex(s => s.id === targetSection.id);
+
+    // Remove dragged item and insert it at the new position
     const [draggedItem] = currentSections.splice(draggedIndex, 1);
     currentSections.splice(targetIndex, 0, draggedItem);
+
+    // Optimistic UI update
     setSections(currentSections);
     setDraggedSectionId(null);
+
+    // Update the database
     const sectionIdsInNewOrder = currentSections.map(s => s.id);
     const { error: rpcError } = await supabase.rpc('update_section_order', { section_ids: sectionIdsInNewOrder });
-    if (rpcError) { setError("Failed to save new order: " + rpcError.message); await fetchPortfolioContent(); }
+
+    if (rpcError) {
+      setError("Failed to save new order: " + rpcError.message);
+      await fetchPortfolioContent(); // Revert on error
+    }
   };
 
   const fetchPortfolioContent = async () => {
     setIsLoading(true);
     setError(null);
-    const { data: sectionsData, error: sectionsError } = await supabase.from("portfolio_sections").select(`*, portfolio_items (*)`).order("display_order", { ascending: true }).order("display_order", { foreignTable: "portfolio_items", ascending: true });
-    if (sectionsError) { setError("Failed to load content: " + sectionsError.message); setSections([]); }
-    else setSections(sectionsData || []);
+    const { data: sectionsData, error: sectionsError } = await supabase
+      .from("portfolio_sections")
+      .select(`*, portfolio_items (*)`)
+      .order("display_order", { ascending: true })
+      .order("display_order", {
+        foreignTable: "portfolio_items",
+        ascending: true,
+      });
+
+    if (sectionsError) {
+      setError("Failed to load portfolio content: " + sectionsError.message);
+      setSections([]);
+    } else {
+      setSections(sectionsData || []);
+    }
     setIsLoading(false);
   };
 
-  useEffect(() => { fetchPortfolioContent(); }, []);
-  useEffect(() => { if (startInCreateMode) { handleCreateNewSection(); onActionHandled?.(); } }, [startInCreateMode, onActionHandled]);
+  useEffect(() => {
+    fetchPortfolioContent();
+  }, []);
 
-  const handleCreateNewSection = () => { setIsCreatingSection(true); setEditingSection(null); setEditingItem(null); setIsCreatingItemInSection(null); };
+  const handleCreateNewSection = () => {
+    setIsCreatingSection(true);
+    setEditingSection(null);
+    setEditingItem(null);
+    setIsCreatingItemInSection(null);
+  };
+
+  useEffect(() => {
+    if (startInCreateMode) {
+      handleCreateNewSection();
+      onActionHandled?.();
+    }
+  }, [startInCreateMode, onActionHandled]);
 
   const handleSaveSection = async (sectionData: Partial<PortfolioSection>) => {
     setIsLoading(true);
     setError(null);
     const { user_id, portfolio_items, id, ...saveData } = sectionData;
-    const response = editingSection?.id ? await supabase.from("portfolio_sections").update(saveData).eq("id", editingSection.id).select().single() : await supabase.from("portfolio_sections").insert(saveData).select().single();
-    if (response.error) setError("Failed to save section: " + response.error.message);
-    else { setEditingSection(null); setIsCreatingSection(false); await fetchPortfolioContent(); }
+
+    let response;
+    if (editingSection?.id) {
+      response = await supabase
+        .from("portfolio_sections")
+        .update(saveData)
+        .eq("id", editingSection.id)
+        .select()
+        .single();
+    } else {
+      response = await supabase
+        .from("portfolio_sections")
+        .insert(saveData)
+        .select()
+        .single();
+    }
+
+    if (response.error)
+      setError("Failed to save section: " + response.error.message);
+    else {
+      setEditingSection(null);
+      setIsCreatingSection(false);
+      await fetchPortfolioContent();
+    }
     setIsLoading(false);
   };
 
   const handleDeleteSection = async (sectionId: string) => {
-    if (!confirm("Delete this section and ALL its items? This is irreversible.")) return;
+    if (
+      !confirm("Delete this section and ALL its items? This is irreversible.")
+    )
+      return;
     setIsLoading(true);
-    const { error: deleteError } = await supabase.from("portfolio_sections").delete().eq("id", sectionId);
-    if (deleteError) setError("Failed to delete section: " + deleteError.message);
+    const { error: deleteError } = await supabase
+      .from("portfolio_sections")
+      .delete()
+      .eq("id", sectionId);
+    if (deleteError)
+      setError("Failed to delete section: " + deleteError.message);
     else await fetchPortfolioContent();
     setIsLoading(false);
   };
 
-  const handleSaveItem = async (itemData: Partial<PortfolioItem>, sectionId: string) => {
+  const handleSaveItem = async (
+    itemData: Partial<PortfolioItem>,
+    sectionId: string,
+  ) => {
     setIsLoading(true);
     setError(null);
     const { user_id, id, ...saveData } = itemData;
-    const response = editingItem?.id ? await supabase.from("portfolio_items").update({ ...saveData, section_id: sectionId }).eq("id", editingItem.id).select().single() : await supabase.from("portfolio_items").insert({ ...saveData, section_id: sectionId }).select().single();
-    if (response.error) setError("Failed to save item: " + response.error.message);
-    else { setEditingItem(null); setIsCreatingItemInSection(null); await fetchPortfolioContent(); }
+
+    let response;
+    if (editingItem?.id) {
+      response = await supabase
+        .from("portfolio_items")
+        .update({ ...saveData, section_id: sectionId })
+        .eq("id", editingItem.id)
+        .select()
+        .single();
+    } else {
+      response = await supabase
+        .from("portfolio_items")
+        .insert({ ...saveData, section_id: sectionId })
+        .select()
+        .single();
+    }
+
+    if (response.error)
+      setError("Failed to save item: " + response.error.message);
+    else {
+      setEditingItem(null);
+      setIsCreatingItemInSection(null);
+      await fetchPortfolioContent();
+    }
     setIsLoading(false);
   };
 
   const handleDeleteItem = async (itemId: string) => {
     if (!confirm("Delete this item? This is irreversible.")) return;
     setIsLoading(true);
-    const { error: deleteError } = await supabase.from("portfolio_items").delete().eq("id", itemId);
+    const { error: deleteError } = await supabase
+      .from("portfolio_items")
+      .delete()
+      .eq("id", itemId);
     if (deleteError) setError("Failed to delete item: " + deleteError.message);
     else await fetchPortfolioContent();
     setIsLoading(false);
   };
 
-  if (isLoading && sections.length === 0 && !error) return <div className="p-4"><Loader2 className="animate-spin" /></div>;
-  if (error && !editingItem && !editingSection) return <div className="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">{error}</div>;
+  if (isLoading && sections.length === 0 && !error)
+    return (
+      <p className="p-4 font-space font-bold">Loading content manager...</p>
+    );
+  if (error && !editingItem && !editingSection)
+    return (
+      <p className="rounded-none border-2 border-red-500 bg-red-100 p-4 font-space font-semibold text-red-700">
+        {error}
+      </p>
+    );
 
   return (
-    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
-      <div className="flex items-center justify-between">
-        <div><h2 className="text-2xl font-bold">Portfolio Content</h2><p className="text-muted-foreground">Manage sections and items on your showcase page.</p></div>
-        <Button onClick={handleCreateNewSection}><Plus className="mr-2 size-4" /> Add Section</Button>
-      </div>
-      <Separator className="my-6" />
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mx-auto font-space"
+    >
+      <div className="rounded-none border-2 border-black bg-white">
+        <div className="flex flex-col items-stretch gap-3 border-b-2 border-black bg-gray-100 px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+          <h2 className="text-xl font-bold text-black">Portfolio Content</h2>
+          <button
+            onClick={handleCreateNewSection}
+            className={buttonPrimaryClass}
+          >
+            + Add Section
+          </button>
+        </div>
 
-      {(isCreatingSection || editingSection) && (
-        <Card className="mb-6 bg-secondary/50">
-          <CardHeader><CardTitle className="text-lg">{editingSection ? `Edit Section: ${editingSection.title}` : "Create New Section"}</CardTitle></CardHeader>
-          <CardContent>
-            <form onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const formData = new FormData(e.currentTarget); const data: Partial<PortfolioSection> = { title: formData.get("section_title") as string, type: formData.get("section_type") as PortfolioSection["type"], content: (formData.get("section_content") as string) || null, display_order: parseInt(formData.get("section_display_order") as string) || 0, }; handleSaveSection(data); }} className="space-y-4">
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2"><div className="space-y-2"><Label htmlFor="section_title">Title</Label><Input id="section_title" name="section_title" defaultValue={editingSection?.title || ""} required /></div><div className="space-y-2"><Label htmlFor="section_type">Type</Label><Select name="section_type" defaultValue={editingSection?.type || "markdown"} required><SelectTrigger><SelectValue /></SelectTrigger><SelectContent><SelectItem value="markdown">Markdown</SelectItem><SelectItem value="list_items">List of Items</SelectItem></SelectContent></Select></div></div>
-              <div className="space-y-2"><Label htmlFor="section_content">Content (for Markdown type)</Label><Textarea id="section_content" name="section_content" defaultValue={editingSection?.content || ""} rows={4} /></div>
-              <div className="space-y-2"><Label htmlFor="section_display_order">Display Order</Label><Input id="section_display_order" type="number" name="section_display_order" defaultValue={editingSection?.display_order?.toString() || "0"} /></div>
-              <div className="flex gap-2"><Button type="submit" disabled={isLoading}>{isLoading && <Loader2 className="mr-2 size-4 animate-spin"/>}Save Section</Button><Button type="button" variant="outline" onClick={() => { setIsCreatingSection(false); setEditingSection(null); }}>Cancel</Button></div>
+        {(isCreatingSection || editingSection) && (
+          <div className="border-b-2 border-black bg-yellow-50 p-4 sm:p-6">
+            <h3 className="mb-3 text-lg font-bold text-black">
+              {editingSection
+                ? `Edit Section: ${editingSection.title}`
+                : "Create New Section"}
+            </h3>
+            <form
+              onSubmit={(e: FormEvent<HTMLFormElement>) => {
+                e.preventDefault();
+                const formData = new FormData(e.currentTarget);
+                const data: Partial<PortfolioSection> = {
+                  title: formData.get("section_title") as string,
+                  type: formData.get(
+                    "section_type",
+                  ) as PortfolioSection["type"],
+                  content: (formData.get("section_content") as string) || null,
+                  display_order:
+                    parseInt(formData.get("section_display_order") as string) || 0,
+                };
+                handleSaveSection(data);
+              }}
+            >
+              <input
+                name="section_title"
+                placeholder="Section Title"
+                defaultValue={editingSection?.title || ""}
+                required
+                className={inputClass}
+              />
+              <select
+                name="section_type"
+                defaultValue={editingSection?.type || "markdown"}
+                required
+                className={selectClass}
+              >
+                <option value="markdown">Markdown</option>
+                <option value="list_items">List of Items</option>
+              </select>
+              <textarea
+                name="section_content"
+                placeholder="Content (for Markdown type)"
+                defaultValue={editingSection?.content || ""}
+                className={textareaClass}
+                rows={4}
+              />
+              <input
+                type="number"
+                name="section_display_order"
+                placeholder="Order (e.g., 1, 2, 3)"
+                defaultValue={editingSection?.display_order?.toString() || "0"}
+                className={inputClass}
+              />
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="submit"
+                  className={buttonPrimaryClass}
+                  disabled={isLoading}
+                >
+                  Save Section
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsCreatingSection(false);
+                    setEditingSection(null);
+                  }}
+                  className={buttonSecondaryClass}
+                >
+                  Cancel
+                </button>
+              </div>
             </form>
-          </CardContent>
-        </Card>
-      )}
+          </div>
+        )}
 
-      <div className="space-y-6">
-        {sections.map((section) => (
-          <div key={section.id} draggable="true" onDragStart={(e) => handleDragStart(e, section.id)} onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, section)} className={`rounded-lg border bg-card transition-all duration-200 ${draggedSectionId === section.id ? 'opacity-50 scale-95' : 'opacity-100'}`}>
-            <div className="flex items-start">
-              <div className="p-3 cursor-grab active:cursor-grabbing touch-none text-muted-foreground hover:text-foreground"><GripVertical className="size-5" /></div>
-              <div className="flex-grow border-l border-border">
-                <div className="flex flex-col items-start gap-2 border-b border-border p-3 md:flex-row md:items-center md:justify-between">
-                  <h3 className="text-lg font-bold">{section.title} <span className="ml-2 text-sm font-normal text-muted-foreground">(Type: {section.type}, Order: {section.display_order})</span></h3>
-                  <div className="flex shrink-0 gap-2"><Button size="sm" variant="outline" onClick={() => { setEditingSection(section); setIsCreatingSection(false); setEditingItem(null); setIsCreatingItemInSection(null); }}><Edit className="mr-1.5 size-3.5" /> Edit</Button><Button size="sm" variant="destructive" onClick={() => handleDeleteSection(section.id)} disabled={isLoading}><Trash2 className="mr-1.5 size-3.5" /> Delete</Button></div>
+        <div className="space-y-6 p-4 sm:p-6">
+          {sections.map((section) => (
+            <div
+              key={section.id}
+              draggable="true"
+              onDragStart={(e) => handleDragStart(e, section.id)}
+              onDragOver={handleDragOver}
+              onDrop={(e) => handleDrop(e, section)}
+              className={`rounded-none border-2 border-black bg-white shadow-[4px_4px_0_rgba(0,0,0,0.05)] transition-all duration-200 ${draggedSectionId === section.id ? 'opacity-50 scale-95' : 'opacity-100'}`}
+            >
+              <div className="flex items-start">
+                <div className="p-3 cursor-grab active:cursor-grabbing touch-none text-gray-400 hover:text-black">
+                  <GripVertical className="size-5" />
                 </div>
-                <div className="p-4">
-                  {section.type === "markdown" && <p className="text-sm text-muted-foreground">{section.content || <span className="italic">No content.</span>}</p>}
-                  {section.type === "list_items" && (
-                    <div className="space-y-4">
-                      {section.portfolio_items && section.portfolio_items.map((item) => (
-                        <div key={item.id} className="rounded-md border bg-secondary/30 p-3"><div className="flex items-start justify-between"><div className="flex-1"><p className="font-bold">{item.title}</p><p className="text-sm font-semibold text-accent">{item.subtitle}</p>{item.description && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{item.description}</p>}</div><div className="ml-2 shrink-0 space-x-1"><Button variant="ghost" size="icon" className="size-7" onClick={() => { setEditingItem(item); setIsCreatingItemInSection(section.id); setEditingSection(null); setIsCreatingSection(false); }}><Edit className="size-3.5" /></Button><Button variant="ghost" size="icon" className="size-7 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDeleteItem(item.id)} disabled={isLoading}><Trash2 className="size-3.5" /></Button></div></div></div>
-                      ))}
-                      <Button size="sm" onClick={() => { setIsCreatingItemInSection(section.id); setEditingItem(null); setEditingSection(null); setIsCreatingSection(false); }}><Plus className="mr-2 size-4" /> Add Item</Button>
+                <div className="flex-grow border-l-2 border-black">
+                  <div className="mb-3 flex flex-col items-start gap-2 border-b border-black p-2 md:flex-row md:items-center md:justify-between">
+                    <h3 className="text-lg font-bold text-black">
+                      {section.title}{" "}
+                      <span className="block text-sm font-normal text-gray-600 sm:inline">
+                        (Type: {section.type}, Order: {section.display_order})
+                      </span>
+                    </h3>
+                    <div className="flex w-full shrink-0 gap-2 md:w-auto">
+                      <button
+                        onClick={() => {
+                          setEditingSection(section);
+                          setIsCreatingSection(false);
+                          setEditingItem(null);
+                          setIsCreatingItemInSection(null);
+                        }}
+                        className={`${buttonActionSmallClass("bg-blue-300", "bg-blue-400")} flex-1 md:flex-none`}
+                      >
+                        Edit Section
+                      </button>
+                      <button
+                        onClick={() => handleDeleteSection(section.id)}
+                        disabled={isLoading}
+                        className={`${buttonActionSmallClass("bg-red-300", "bg-red-400", "text-white")} flex-1 md:flex-none`}
+                      >
+                        Del Section
+                      </button>
                     </div>
-                  )}
-                  {((isCreatingItemInSection === section.id && !editingItem) || (editingItem && editingItem.section_id === section.id)) && (
-                    <div className="mt-4 border-t border-border pt-4"><h4 className="text-md mb-2 font-bold">{editingItem ? `Edit Item: ${editingItem.title}` : `Create Item in "${section.title}"`}</h4>
-                      <form onSubmit={(e: FormEvent<HTMLFormElement>) => { e.preventDefault(); const formData = new FormData(e.currentTarget); const data: Partial<PortfolioItem> = { title: formData.get("item_title") as string, subtitle: (formData.get("item_subtitle") as string) || null, description: (formData.get("item_description") as string) || null, link_url: (formData.get("item_link") as string) || null, image_url: (formData.get("item_image_url") as string) || null, tags: (formData.get("item_tags") as string)?.split(",").map((t) => t.trim()).filter((t) => t) || null, display_order: parseInt(formData.get("item_display_order") as string) || 0, internal_notes: (formData.get("item_internal_notes") as string) || null }; handleSaveItem(data, section.id); }} className="space-y-3">
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><div className="space-y-1.5"><Label>Title *</Label><Input name="item_title" defaultValue={editingItem?.title || ""} required /></div><div className="space-y-1.5"><Label>Subtitle</Label><Input name="item_subtitle" defaultValue={editingItem?.subtitle || ""} /></div></div>
-                        <div className="space-y-1.5"><Label>Description</Label><Textarea name="item_description" defaultValue={editingItem?.description || ""} rows={3} /></div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><div className="space-y-1.5"><Label>Link URL</Label><Input name="item_link" defaultValue={editingItem?.link_url || ""} /></div><div className="space-y-1.5"><Label>Image URL</Label><Input name="item_image_url" defaultValue={editingItem?.image_url || ""} /></div></div>
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2"><div className="space-y-1.5"><Label>Tags (comma-separated)</Label><Input name="item_tags" defaultValue={editingItem?.tags?.join(", ") || ""} /></div><div className="space-y-1.5"><Label>Display Order</Label><Input type="number" name="item_display_order" defaultValue={editingItem?.display_order?.toString() || "0"} /></div></div>
-                        <div className="space-y-1.5"><Label>Internal Notes</Label><Textarea name="item_internal_notes" defaultValue={editingItem?.internal_notes || ""} rows={2} /></div>
-                        <div className="flex gap-2"><Button type="submit" size="sm" disabled={isLoading}>{isLoading && <Loader2 className="mr-2 size-4 animate-spin"/>}Save Item</Button><Button type="button" size="sm" variant="outline" onClick={() => { setIsCreatingItemInSection(null); setEditingItem(null); }}>Cancel</Button></div>
-                      </form>
-                    </div>
-                  )}
+                  </div>
+                  <div
+                    key={section.id}
+                    className="rounded-none bg-white p-4 shadow-[4px_4px_0_rgba(0,0,0,0.05)]"
+                  >
+                    {section.type === "markdown" && (
+                      <div className="prose prose-sm max-w-none font-space text-gray-800">
+                        <p>
+                          {section.content || (
+                            <span className="italic">No content.</span>
+                          )}
+                        </p>
+                      </div>
+                    )}
+
+                    {section.type === "list_items" && (
+                      <div className="mt-4 space-y-3">
+                        <h4 className="font-bold text-black">Items:</h4>
+                        {section.portfolio_items &&
+                          section.portfolio_items.length > 0 ? (
+                          section.portfolio_items.map((item) => (
+                            <div
+                              key={item.id}
+                              className="rounded-none border-2 border-black bg-gray-50 p-3"
+                            >
+                              <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-start sm:justify-between">
+                                <div className="flex-1">
+                                  <p className="font-bold text-black">{item.title}</p>
+                                  <p className="text-sm font-semibold text-indigo-700">
+                                    {item.subtitle}
+                                  </p>
+                                  {item.description && (
+                                    <p className="mt-1 line-clamp-2 text-xs text-gray-700">
+                                      {item.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <div className="ml-0 shrink-0 space-x-1 sm:ml-2">
+                                  <button
+                                    onClick={() => {
+                                      setEditingItem(item);
+                                      setIsCreatingItemInSection(section.id);
+                                      setEditingSection(null);
+                                      setIsCreatingSection(false);
+                                    }}
+                                    className={buttonActionSmallClass("bg-blue-300", "bg-blue-400")}
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteItem(item.id)}
+                                    disabled={isLoading}
+                                    className={buttonActionSmallClass("bg-red-300", "bg-red-400", "text-white")}
+                                  >
+                                    Del
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <p className="text-sm italic text-gray-600">
+                            No items in this section yet.
+                          </p>
+                        )}
+                        <button
+                          onClick={() => {
+                            setIsCreatingItemInSection(section.id);
+                            setEditingItem(null);
+                            setEditingSection(null);
+                            setIsCreatingSection(false);
+                          }}
+                          className={`${buttonPrimaryClass} mt-2 text-sm`}
+                        >
+                          + Add Item to "{section.title}"
+                        </button>
+                      </div>
+                    )}
+                    {((isCreatingItemInSection === section.id && !editingItem) ||
+                      (editingItem && editingItem.section_id === section.id)) && (
+                        <div className="mt-4 border-t-2 border-black bg-yellow-50 p-4">
+                          <h4 className="text-md mb-2 font-bold text-black">
+                            {editingItem
+                              ? `Edit Item: ${editingItem.title}`
+                              : `Create New Item in "${sections.find((s) => s.id === section.id)?.title || ""}"`}
+                          </h4>
+                          <form
+                            onSubmit={(e: FormEvent<HTMLFormElement>) => {
+                              e.preventDefault();
+                              const formData = new FormData(e.currentTarget);
+                              const data: Partial<PortfolioItem> = {
+                                title: formData.get("item_title") as string,
+                                subtitle: (formData.get("item_subtitle") as string) || null,
+                                description: (formData.get("item_description") as string) || null,
+                                link_url: (formData.get("item_link") as string) || null,
+                                image_url: (formData.get("item_image_url") as string) || null,
+                                tags: (formData.get("item_tags") as string)?.split(",").map((t) => t.trim()).filter((t) => t) || null,
+                                display_order: parseInt(formData.get("item_display_order") as string) || 0,
+                                internal_notes: (formData.get("item_internal_notes") as string) || null,
+                              };
+                              handleSaveItem(data, section.id);
+                            }}
+                          >
+                            <input name="item_title" placeholder="Item Title" defaultValue={editingItem?.title || ""} required className={inputClass} />
+                            <input name="item_subtitle" placeholder="Item Subtitle (optional)" defaultValue={editingItem?.subtitle || ""} className={inputClass} />
+                            <textarea name="item_description" placeholder="Item Description (Markdown supported, optional)" defaultValue={editingItem?.description || ""} className={textareaClass} rows={3} />
+                            <input name="item_link" placeholder="Item Link URL (e.g. https://example.com)" defaultValue={editingItem?.link_url || ""} className={inputClass} />
+                            <input name="item_image_url" placeholder="Item Image URL (e.g. https://.../image.png)" defaultValue={editingItem?.image_url || ""} className={inputClass} />
+                            <input name="item_tags" placeholder="Tags (comma-separated, optional)" defaultValue={editingItem?.tags?.join(", ") || ""} className={inputClass} />
+                            <input type="number" name="item_display_order" placeholder="Order" defaultValue={editingItem?.display_order?.toString() || "0"} className={inputClass} />
+                            <textarea name="item_internal_notes" placeholder="Internal Notes (Admin only, optional)" defaultValue={editingItem?.internal_notes || ""} className={textareaClass} rows={2} />
+
+                            <div className="mt-2 flex gap-2">
+                              <button type="submit" className={buttonPrimaryClass} disabled={isLoading}>
+                                Save Item
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setIsCreatingItemInSection(null);
+                                  setEditingItem(null);
+                                }}
+                                className={buttonSecondaryClass}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        </div>
+                      )}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </motion.div>
   );

@@ -1,10 +1,3 @@
-/*
-This file is updated to remove the neo-brutalist styling.
-- `NavigationMenuList`, `NavigationMenuTrigger`, and `NavigationMenuViewport` have been restyled to be cleaner, using subtle borders, rounded corners, and theme-based colors.
-- The heavy `border-2` and `shadow-[...]` are replaced with modern, softer equivalents.
-- The `navigationMenuTriggerStyle` cva is updated to reflect the new design: a subtle background on hover/open and a clean active state.
-- The indicator (`NavigationMenuIndicator`) is simplified, removing the shadow.
-*/
 import * as React from "react";
 import * as NavigationMenuPrimitive from "@radix-ui/react-navigation-menu";
 import { cva } from "class-variance-authority";
@@ -20,7 +13,7 @@ const NavigationMenu = React.forwardRef<
     ref={ref}
     className={cn(
       "relative z-10 flex max-w-max flex-1 items-center justify-center",
-      className
+      className,
     )}
     {...props}
   >
@@ -37,8 +30,8 @@ const NavigationMenuList = React.forwardRef<
   <NavigationMenuPrimitive.List
     ref={ref}
     className={cn(
-      "group flex flex-1 list-none items-center justify-center space-x-1",
-      className
+      "group flex flex-1 list-none items-center justify-center space-x-1 rounded-none border-2 border-black bg-white p-1 shadow-[2px_2px_0px_#000]",
+      className,
     )}
     {...props}
   />
@@ -48,7 +41,7 @@ NavigationMenuList.displayName = NavigationMenuPrimitive.List.displayName;
 const NavigationMenuItem = NavigationMenuPrimitive.Item;
 
 const navigationMenuTriggerStyle = cva(
-  "group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
+  "group inline-flex h-10 w-max items-center justify-center rounded-none border-2 border-transparent bg-background px-4 py-2 text-sm font-bold transition-colors hover:border-black hover:bg-yellow-300 hover:text-black focus:border-black focus:bg-yellow-200 focus:text-black focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[state=open]:border-black data-[active]:bg-black data-[state=open]:bg-black data-[active]:text-white data-[state=open]:text-white",
 );
 
 const NavigationMenuTrigger = React.forwardRef<
@@ -62,7 +55,7 @@ const NavigationMenuTrigger = React.forwardRef<
   >
     {children}{" "}
     <ChevronDown
-      className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180"
+      className="relative top-px ml-1 size-3 transition duration-200 group-data-[state=open]:rotate-180"
       aria-hidden="true"
     />
   </NavigationMenuPrimitive.Trigger>
@@ -77,7 +70,7 @@ const NavigationMenuContent = React.forwardRef<
     ref={ref}
     className={cn(
       "left-0 top-0 w-full data-[motion^=from-]:animate-in data-[motion^=to-]:animate-out data-[motion^=from-]:fade-in data-[motion^=to-]:fade-out data-[motion=from-end]:slide-in-from-right-52 data-[motion=from-start]:slide-in-from-left-52 data-[motion=to-end]:slide-out-to-right-52 data-[motion=to-start]:slide-out-to-left-52 md:absolute md:w-auto ",
-      className
+      className,
     )}
     {...props}
   />
@@ -93,8 +86,8 @@ const NavigationMenuViewport = React.forwardRef<
   <div className={cn("absolute left-0 top-full flex justify-center")}>
     <NavigationMenuPrimitive.Viewport
       className={cn(
-        "origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-md border bg-popover text-popover-foreground shadow-lg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]",
-        className
+        "origin-top-center relative mt-1.5 h-[var(--radix-navigation-menu-viewport-height)] w-full overflow-hidden rounded-none border-2 border-black bg-popover text-popover-foreground shadow-[4px_4px_0px_#000] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-90 md:w-[var(--radix-navigation-menu-viewport-width)]",
+        className,
       )}
       ref={ref}
       {...props}
@@ -112,11 +105,11 @@ const NavigationMenuIndicator = React.forwardRef<
     ref={ref}
     className={cn(
       "top-full z-[1] flex h-1.5 items-end justify-center overflow-hidden data-[state=visible]:animate-in data-[state=hidden]:animate-out data-[state=hidden]:fade-out data-[state=visible]:fade-in",
-      className
+      className,
     )}
     {...props}
   >
-    <div className="relative top-[60%] h-2 w-2 rotate-45 rounded-tl-sm bg-border" />
+    <div className="relative top-[60%] size-2 rotate-45 rounded-none bg-black shadow-md" />
   </NavigationMenuPrimitive.Indicator>
 ));
 NavigationMenuIndicator.displayName =
