@@ -1,3 +1,10 @@
+/*
+This file is updated for the new design system.
+- The neo-brutalist `border-2`, `rounded-none`, and harsh checked state are removed.
+- `RadioGroupItem` is now styled to be a standard `rounded-full` radio button.
+- The checked state is now indicated by a filled circle using the theme's `primary` color, which is a more conventional and recognizable pattern.
+- Focus rings are updated to use the theme's `ring` color.
+*/
 "use client";
 
 import * as React from "react";
@@ -28,14 +35,13 @@ const RadioGroupItem = React.forwardRef<
     <RadioGroupPrimitive.Item
       ref={ref}
       className={cn(
-        "aspect-square h-4 w-4 rounded-none border-2 border-black text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-0 disabled:cursor-not-allowed disabled:opacity-50",
-        "data-[state=checked]:bg-black data-[state=checked]:border-black",
-        className,
+        "aspect-square h-4 w-4 rounded-full border border-primary text-primary ring-offset-background focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50",
+        className
       )}
       {...props}
     >
       <RadioGroupPrimitive.Indicator className="flex items-center justify-center">
-        <Circle className="size-2.5 fill-white text-white" />
+        <Circle className="h-2.5 w-2.5 fill-current text-current" />
       </RadioGroupPrimitive.Indicator>
     </RadioGroupPrimitive.Item>
   );

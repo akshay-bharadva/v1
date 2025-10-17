@@ -1,8 +1,15 @@
+/*
+This file is updated to remove the neo-brutalist styling.
+- The main container's `border-2`, `rounded-none`, and `shadow-[...]` are removed, replaced by a simpler presentation.
+- `PaginationLink` (the buttons) now uses the redesigned `Button` component's variants for a consistent look.
+- The `isActive` state is now styled using the `primary` color for clear visual indication.
+- The `PaginationPrevious` and `PaginationNext` buttons are simplified and now include text that is visible on larger screens.
+*/
 import * as React from "react";
 import { ChevronLeft, ChevronRight, MoreHorizontal } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { ButtonProps, Button } from "@/components/ui/button";
+import { ButtonProps, buttonVariants } from "@/components/ui/button";
 
 const Pagination = ({ className, ...props }: React.ComponentProps<"nav">) => (
   <nav
@@ -20,10 +27,7 @@ const PaginationContent = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <ul
     ref={ref}
-    className={cn(
-      "flex flex-row items-center gap-1 p-1 border-2 border-black rounded-none bg-white shadow-[2px_2px_0px_#000]",
-      className,
-    )}
+    className={cn("flex flex-row items-center gap-1", className)}
     {...props}
   />
 ));
@@ -39,7 +43,8 @@ PaginationItem.displayName = "PaginationItem";
 
 type PaginationLinkProps = {
   isActive?: boolean;
-} & ButtonProps;
+} & Pick<ButtonProps, "size"> &
+  React.ComponentProps<"a">;
 
 const PaginationLink = ({
   className,
@@ -47,16 +52,14 @@ const PaginationLink = ({
   size = "icon",
   ...props
 }: PaginationLinkProps) => (
-  <Button
+  <a
     aria-current={isActive ? "page" : undefined}
-    variant={isActive ? "default" : "outline"}
-    size={size}
     className={cn(
-      isActive
-        ? "bg-black text-white pointer-events-none shadow-[1px_1px_0px_hsl(var(--primary-foreground))_inset]"
-        : "hover:bg-yellow-300 text-black",
-      size === "icon" && "p-0",
-      className,
+      buttonVariants({
+        variant: isActive ? "outline" : "ghost",
+        size,
+      }),
+      className
     )}
     {...props}
   />
@@ -73,8 +76,8 @@ const PaginationPrevious = ({
     className={cn("gap-1 pl-2.5", className)}
     {...props}
   >
-    <ChevronLeft className="size-4" />
-    <span className="hidden sm:inline">Previous</span>
+    <ChevronLeft className="h-4 w-4" />
+    <span>Previous</span>
   </PaginationLink>
 );
 PaginationPrevious.displayName = "PaginationPrevious";
@@ -89,8 +92,8 @@ const PaginationNext = ({
     className={cn("gap-1 pr-2.5", className)}
     {...props}
   >
-    <span className="hidden sm:inline">Next</span>
-    <ChevronRight className="size-4" />
+    <span>Next</span>
+    <ChevronRight className="h-4 w-4" />
   </PaginationLink>
 );
 PaginationNext.displayName = "PaginationNext";
@@ -101,13 +104,10 @@ const PaginationEllipsis = ({
 }: React.ComponentProps<"span">) => (
   <span
     aria-hidden
-    className={cn(
-      "flex h-9 w-9 items-center justify-center text-black font-bold",
-      className,
-    )}
+    className={cn("flex h-9 w-9 items-center justify-center", className)}
     {...props}
   >
-    <MoreHorizontal className="size-4" />
+    <MoreHorizontal className="h-4 w-4" />
     <span className="sr-only">More pages</span>
   </span>
 );

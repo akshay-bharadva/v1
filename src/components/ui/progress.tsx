@@ -1,3 +1,10 @@
+/*
+This file is updated to remove the neo-brutalist aesthetic.
+- The `border-2`, `rounded-none`, and `shadow-[...]` styles are replaced with a modern progress bar style.
+- The root component (`ProgressPrimitive.Root`) now uses `rounded-full` for a softer look.
+- The background color is set to `secondary` for a subtle track.
+- The indicator (`ProgressPrimitive.Indicator`) color is now tied to the theme's `primary` color for consistency.
+*/
 "use client";
 
 import * as React from "react";
@@ -12,13 +19,13 @@ const Progress = React.forwardRef<
   <ProgressPrimitive.Root
     ref={ref}
     className={cn(
-      "relative h-4 w-full overflow-hidden rounded-none border-2 border-black bg-gray-200 shadow-[2px_2px_0px_#000]",
-      className,
+      "relative h-4 w-full overflow-hidden rounded-full bg-secondary",
+      className
     )}
     {...props}
   >
     <ProgressPrimitive.Indicator
-      className="size-full flex-1 bg-primary transition-all duration-300 ease-in-out"
+      className="h-full w-full flex-1 bg-primary transition-all"
       style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
     />
   </ProgressPrimitive.Root>

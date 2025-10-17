@@ -1,22 +1,29 @@
+/*
+This file is updated to adopt the new design system.
+- The `rounded-none` and `shadow-[...]` classes are removed.
+- Components are now styled with a standard border-radius defined by the theme.
+- The `border-2` is reduced to a standard single-pixel border.
+- The `destructive` variant is updated to use theme-aware colors for background and text, improving consistency.
+*/
 import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
 const alertVariants = cva(
-  "relative w-full rounded-none border-2 p-4 shadow-[2px_2px_0px_#000] [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground [&>svg~*]:pl-7",
+  "relative w-full rounded-lg border p-4 [&>svg~*]:pl-7 [&>svg+div]:translate-y-[-3px] [&>svg]:absolute [&>svg]:left-4 [&>svg]:top-4 [&>svg]:text-foreground",
   {
     variants: {
       variant: {
-        default: "border-black bg-background text-foreground",
+        default: "bg-background text-foreground",
         destructive:
-          "border-destructive bg-destructive/20 text-destructive-foreground [&>svg]:text-destructive-foreground",
+          "border-destructive/50 text-destructive dark:border-destructive [&>svg]:text-destructive",
       },
     },
     defaultVariants: {
       variant: "default",
     },
-  },
+  }
 );
 
 const Alert = React.forwardRef<
@@ -33,12 +40,12 @@ const Alert = React.forwardRef<
 Alert.displayName = "Alert";
 
 const AlertTitle = React.forwardRef<
-  HTMLHeadingElement,
+  HTMLParagraphElement,
   React.HTMLAttributes<HTMLHeadingElement>
 >(({ className, ...props }, ref) => (
   <h5
     ref={ref}
-    className={cn("mb-1 font-bold leading-none tracking-tight", className)}
+    className={cn("mb-1 font-medium leading-none tracking-tight", className)}
     {...props}
   />
 ));
