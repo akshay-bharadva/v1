@@ -4,7 +4,7 @@ import Layout from "@/components/layout";
 export default function AdminMFASetupPage() {
   return (
     <Layout>
-      <div className="font-space">
+      <div className="font-sans">
         <SupabaseMFASetup />
       </div>
     </Layout>

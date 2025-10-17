@@ -103,7 +103,7 @@ export interface Task {
   priority?: "low" | "medium" | "high";
   created_at?: string;
   updated_at?: string;
-  sub_tasks?: SubTask[]; // This line should be present
+  sub_tasks?: SubTask[];
 }
 
 export interface Transaction {

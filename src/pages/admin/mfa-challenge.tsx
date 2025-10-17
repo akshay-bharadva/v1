@@ -4,7 +4,7 @@ import Layout from "@/components/layout";
 export default function AdminMFAChallengePage() {
   return (
     <Layout>
-      <div className="font-space">
+      <div className="font-sans">
         <SupabaseMFAChallenge />
       </div>
     </Layout>

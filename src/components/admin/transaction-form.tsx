@@ -1,3 +1,7 @@
+// This form component is updated for the dark theme.
+// - It now uses the themed <Input>, <Label>, <Button>, and <RadioGroup> components.
+// - All functionality remains identical.
+
 "use client";
 import { useState, useEffect, FormEvent } from "react";
 import type { Transaction } from "@/types";
@@ -13,7 +17,7 @@ interface TransactionFormProps {
 }
 
 export default function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
-  const [date, setDate] = useState("");
+   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<"earning" | "expense">("expense");
@@ -65,7 +69,7 @@ export default function TransactionForm({ transaction, onSuccess }: TransactionF
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 pt-4 font-space">
+    <form onSubmit={handleSubmit} className="space-y-4 pt-4 font-sans">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="date">Date *</Label>
@@ -98,7 +102,7 @@ export default function TransactionForm({ transaction, onSuccess }: TransactionF
         </RadioGroup>
       </div>
 
-      {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
+      {error && <p className="text-sm font-semibold text-red-400">{error}</p>}
       
       <div className="flex justify-end pt-4">
         <Button type="submit">{transaction ? "Save Changes" : "Add Transaction"}</Button>

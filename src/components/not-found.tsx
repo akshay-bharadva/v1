@@ -1,33 +1,31 @@
 import { PropsWithChildren } from "react";
 import Link from "next/link";
-import { BsArrowUpRight } from "react-icons/bs";
 import { Button } from "@/components/ui/button";
+import { ArrowRight } from "lucide-react";
+import { motion } from "framer-motion";
 
 type NotFoundProps = PropsWithChildren;
 
 export default function NotFound({ children }: NotFoundProps) {
-return (
-<section className="my-8 rounded-none border-2 border-black bg-white p-8 py-12 text-center font-space shadow-[8px_8px_0px_#000]">
-<div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-none border-2 border-black bg-red-500 text-5xl font-black text-white shadow-[2px_2px_0px_#000]">
-!
-</div>
-<h1 className="mb-3 text-4xl font-black text-black">
-<span className="text-red-600">404</span> | PAGE NOT FOUND
-</h1>
-<p className="mb-4 text-lg leading-relaxed text-gray-700">
-Whoops! Looks like this page took a wrong turn at Albuquerque.
-</p>
-<p className="mb-8 text-gray-700">Let's get you back on track.</p>
-
-{children && <div className="mb-8">{children}</div>}
-  
-  <Link href="/" passHref legacyBehavior>
-    <Button asChild variant="default" size="lg">
-      <a>Go Home <BsArrowUpRight className="ml-1.5 inline" /></a>
-    </Button>
-  </Link>
-</section>
-
-
-);
+  return (
+    <motion.section 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex min-h-[calc(100vh-10rem)] items-center justify-center p-4 text-center"
+    >
+      <div>
+        <h1 className="text-5xl font-black text-accent md:text-7xl">404</h1>
+        <p className="mt-4 text-xl text-slate-300">Whoops! Looks like this page took a wrong turn.</p>
+        <p className="mt-2 text-slate-400">Let's get you back on track.</p>
+        
+        {children && <div className="my-8">{children}</div>}
+        
+        <Button asChild className="mt-8">
+          <Link href="/">
+            Go Home <ArrowRight className="ml-2 size-4" />
+          </Link>
+        </Button>
+      </div>
+    </motion.section>
+  );
 }

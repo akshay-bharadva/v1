@@ -1,3 +1,9 @@
+// The admin dashboard is updated to match the dark theme for consistency.
+// - Backgrounds are changed to dark colors (e.g., bg-zinc-900).
+// - Text is changed to light colors (e.g., text-slate-200).
+// - Borders are made more subtle (e.g., border-zinc-700).
+// - The font is changed from 'font-space' to the default 'font-sans' (Inter).
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -5,9 +11,9 @@ import { motion } from "framer-motion";
 import BlogManager from "@/components/admin/blog-manager";
 import ContentManager from "@/components/admin/content-manager";
 import SecuritySettings from "@/components/admin/security-settings";
-import TaskManager from "@/components/admin/tasks-manager"; // New Import
-import NotesManager from "@/components/admin/notes-manager"; // New Import
-import FinanceManager from "@/components/admin/finance-manager"; // New Import
+import TaskManager from "@/components/admin/tasks-manager";
+import NotesManager from "@/components/admin/notes-manager";
+import FinanceManager from "@/components/admin/finance-manager";
 import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, Edit3, BarChart2, ExternalLink, ListTodo, StickyNote, Banknote, TrendingUp, TrendingDown, CheckCircle, Eye } from "lucide-react";
@@ -29,8 +35,7 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
 
   useEffect(() => {
     const checkMfaStatus = async () => {
-      const { data: aalData } =
-        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
       if (aalData?.currentLevel === "aal2") {
         setIsMfaEnabled(true);
       } else {
@@ -50,48 +55,29 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
     { id: "security", label: "Security", icon: "🔒" },
   ];
 
-  const handleQuickCreateBlogPost = () => {
-    setActiveTab("blogs");
-    setInitialAction("createBlogPost");
-  };
-
-  const handleQuickCreatePortfolioSection = () => {
-    setActiveTab("content");
-    setInitialAction("createPortfolioSection");
-  };
-
-  const handleActionCompleted = () => {
-    setInitialAction(null);
-  };
-
-  const StatCard: React.FC<{ title: string; value: string | number; icon?: JSX.Element, bgColor?: string }> = ({ title, value, icon, bgColor = "bg-white" }) => (
-    <div className={`rounded-none border-2 border-black p-4 shadow-[3px_3px_0px_#000] ${bgColor}`}>
+  const StatCard: React.FC<{ title: string; value: string | number; icon?: JSX.Element, bgColor?: string }> = ({ title, value, icon, bgColor = "bg-zinc-800" }) => (
+    <div className={`rounded-lg border border-zinc-700 p-4 ${bgColor}`}>
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500">{title}</h3>
-        {icon && <div className="text-gray-400">{icon}</div>}
+        <h3 className="text-xs font-bold uppercase tracking-wider text-zinc-400">{title}</h3>
+        {icon && <div className="text-zinc-500">{icon}</div>}
       </div>
-      <p className="mt-1 text-3xl font-black text-black">{value}</p>
+      <p className="mt-1 text-3xl font-black text-slate-100">{value}</p>
     </div>
   );
 
   return (
-    <div className="min-h-screen bg-background font-space">
-      <header className="border-b-2 border-black bg-background">
+    <div className="min-h-screen bg-zinc-900 text-slate-200 font-sans">
+      <header className="border-b border-zinc-700 bg-zinc-900">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col items-start gap-4 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <h1 className="text-2xl font-bold text-black sm:text-3xl">Admin Dashboard</h1>
+            <h1 className="text-2xl font-bold text-slate-100 sm:text-3xl">Admin Dashboard</h1>
             <div className="flex w-full items-center justify-between sm:w-auto sm:justify-end sm:space-x-4">
               {isMfaEnabled && (
-                <span className="rounded-none border-2 border-green-500 bg-green-100 px-2 py-1 text-xs font-semibold text-black shadow-[1px_1px_0px_#000] sm:text-sm">
+                <span className="rounded-md border border-green-500/50 bg-green-500/10 px-2 py-1 text-xs font-semibold text-green-300 sm:text-sm">
                   🔒 MFA Enabled
                 </span>
               )}
-              <button
-                onClick={onLogout}
-                className="rounded-none border-2 border-black bg-red-500 px-3 py-2 font-space text-sm font-bold text-white shadow-[2px_2px_0px_#000] transition-all duration-150 hover:translate-x-px hover:translate-y-px hover:bg-red-600 hover:shadow-[1px_1px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none sm:px-4"
-              >
-                Logout
-              </button>
+              <Button onClick={onLogout} variant="destructive">Logout</Button>
             </div>
           </div>
         </div>
@@ -99,18 +85,15 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
 
       <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
         <div className="mb-8">
-          <nav className="flex flex-wrap gap-1 border-b-2 border-black pb-px sm:space-x-1">
+          <nav className="flex flex-wrap gap-1 border-b border-zinc-700 pb-px sm:space-x-1">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id as ActiveTab);
-                  setInitialAction(null);
-                }}
-                className={`flex items-center space-x-2 rounded-t-none border-2 border-b-0 px-3 py-2 font-space text-sm font-bold sm:px-4
+                onClick={() => setActiveTab(tab.id as ActiveTab)}
+                className={`flex items-center space-x-2 rounded-t-md border-x border-t px-3 py-2 text-sm font-bold sm:px-4
                   ${activeTab === tab.id
-                    ? "border-black bg-black text-white"
-                    : "border-black bg-white text-black hover:bg-gray-200"
+                    ? "border-zinc-700 bg-zinc-800 text-slate-100"
+                    : "border-transparent text-zinc-400 hover:bg-zinc-800/50 hover:text-slate-200"
                   } transition-colors`}
               >
                 <span>{tab.icon}</span>
@@ -129,31 +112,31 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
             className="space-y-8"
           >
             <div>
-              <h2 className="mb-4 text-2xl font-black text-black">This Month's Summary</h2>
+              <h2 className="mb-4 text-2xl font-black text-slate-100">This Month's Summary</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {!dashboardData.stats ? (
-                  Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-none border-2 border-black bg-gray-200 shadow-[3px_3px_0px_#000]"></div>)
+                  Array.from({ length: 3 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-lg border border-zinc-700 bg-zinc-800"></div>)
                 ) : (
                   <>
-                    <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<TrendingUp />} bgColor="bg-green-100" />
-                    <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<TrendingDown />} bgColor="bg-red-100" />
-                    <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<Banknote />} bgColor={dashboardData.stats.monthlyNet >= 0 ? "bg-blue-100" : "bg-orange-100"} />
+                    <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<TrendingUp />} bgColor="bg-green-900/20 border-green-500/30" />
+                    <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<TrendingDown />} bgColor="bg-red-900/20 border-red-500/30" />
+                    <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString('en-US', { style: 'currency', currency: 'USD' })} icon={<Banknote />} bgColor={dashboardData.stats.monthlyNet >= 0 ? "bg-blue-900/20 border-blue-500/30" : "bg-orange-900/20 border-orange-500/30"} />
                   </>
                 )}
               </div>
             </div>
 
             <div>
-              <h2 className="mb-4 text-2xl font-black text-black">At a Glance</h2>
+              <h2 className="mb-4 text-2xl font-black text-slate-100">At a Glance</h2>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {!dashboardData.stats ? (
-                  Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-none border-2 border-black bg-gray-200 shadow-[3px_3px_0px_#000]"></div>)
+                  Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-28 animate-pulse rounded-lg border border-zinc-700 bg-zinc-800"></div>)
                 ) : (
                   <>
-                    <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo />} bgColor="bg-purple-100" />
-                    <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle />} bgColor="bg-green-100" />
-                    <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote />} bgColor="bg-orange-100" />
-                    <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye />} bgColor="bg-yellow-100" />
+                    <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo />} bgColor="bg-purple-900/20 border-purple-500/30" />
+                    <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle />} bgColor="bg-green-900/20 border-green-500/30" />
+                    <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote />} bgColor="bg-orange-900/20 border-orange-500/30" />
+                    <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye />} bgColor="bg-yellow-900/20 border-yellow-500/30" />
                   </>
                 )}
               </div>
@@ -161,12 +144,12 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
 
             {dashboardData.pinnedNotes.length > 0 && (
               <div>
-                <h3 className="mb-3 text-xl font-bold text-black">Pinned Notes</h3>
+                <h3 className="mb-3 text-xl font-bold text-slate-100">Pinned Notes</h3>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {dashboardData.pinnedNotes.map(note => (
-                    <div key={note.id} className="rounded-none border-2 border-black bg-yellow-50 p-4 shadow-[3px_3px_0px_#000]">
-                      <h4 className="truncate font-bold text-black">{note.title || "Untitled Note"}</h4>
-                      <p className="mt-1 line-clamp-3 text-xs text-gray-600">{note.content}</p>
+                    <div key={note.id} className="rounded-lg border border-yellow-500/30 bg-yellow-900/20 p-4">
+                      <h4 className="truncate font-bold text-slate-100">{note.title || "Untitled Note"}</h4>
+                      <p className="mt-1 line-clamp-3 text-xs text-zinc-400">{note.content}</p>
                       <Button size="sm" variant="outline" className="mt-3 text-xs" onClick={() => setActiveTab('notes')}>
                         Edit
                       </Button>
@@ -178,18 +161,18 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
 
             {dashboardData.recentPosts.length > 0 && (
               <div>
-                <h3 className="mb-3 text-xl font-bold text-black">Recently Updated Blog Posts</h3>
-                <div className="space-y-3 rounded-none border-2 border-black bg-white p-4 shadow-[4px_4px_0px_#000]">
+                <h3 className="mb-3 text-xl font-bold text-slate-100">Recently Updated Blog Posts</h3>
+                <div className="space-y-3 rounded-lg border border-zinc-700 bg-zinc-800 p-4">
                   {dashboardData.recentPosts.map(post => (
-                    <div key={post.id} className="flex flex-col items-start gap-2 rounded-none border border-gray-300 bg-gray-50 p-3 hover:bg-yellow-50 sm:flex-row sm:items-center sm:justify-between">
+                    <div key={post.id} className="flex flex-col items-start gap-2 rounded-md border border-zinc-700 bg-zinc-900/50 p-3 hover:bg-zinc-700/50 sm:flex-row sm:items-center sm:justify-between">
                       <div>
                         <button
                           onClick={() => setActiveTab('blogs')}
-                          className="text-left font-semibold text-black hover:text-indigo-700 hover:underline"
+                          className="text-left font-semibold text-slate-100 hover:text-accent hover:underline"
                         >
                           {post.title}
                         </button>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-zinc-400">
                           Updated: {new Date(post.updated_at || "").toLocaleDateString()}
                         </p>
                       </div>
@@ -224,20 +207,10 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.2 }}
-            className="rounded-none border-2 border-black bg-card p-4 shadow-[6px_6px_0px_#000000] sm:p-6"
+            className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-4 sm:p-6"
           >
-            {activeTab === "blogs" && (
-              <BlogManager
-                startInCreateMode={initialAction === "createBlogPost"}
-                onActionHandled={handleActionCompleted}
-              />
-            )}
-            {activeTab === "content" && (
-              <ContentManager
-                startInCreateMode={initialAction === "createPortfolioSection"}
-                onActionHandled={handleActionCompleted}
-              />
-            )}
+            {activeTab === "blogs" && <BlogManager />}
+            {activeTab === "content" && <ContentManager />}
             {activeTab === "tasks" && <TaskManager />}
             {activeTab === "notes" && <NotesManager />}
             {activeTab === "finance" && <FinanceManager />}

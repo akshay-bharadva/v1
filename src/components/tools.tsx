@@ -1,78 +1,78 @@
-import { PropsWithChildren } from "react";
+// This component now fetches its data dynamically from Supabase.
+// The hardcoded USED_TOOLS array has been removed.
+
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { BsArrowUpRight } from "react-icons/bs";
+import { supabase } from "@/supabase/client";
+import type { PortfolioItem } from "@/types";
 
-type ToolsProps = PropsWithChildren;
+export default function Tools() {
+  const [items, setItems] = useState<PortfolioItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-interface ToolItem {
-name: string;
-href: string;
-desc: string;
-}
+  useEffect(() => {
+    const fetchTools = async () => {
+      setIsLoading(true);
+      const { data, error } = await supabase
+        .from('portfolio_sections')
+        .select('portfolio_items(*)')
+        .eq('title', 'Tools')
+        .order('display_order', { foreignTable: 'portfolio_items', ascending: true })
+        .single();
 
-const USED_TOOLS: ToolItem[] = [
-{
-name: "Visual Studio Code",
-href: "https://code.visualstudio.com/",
-desc: "My all-time favorite text editor with superpowers. Indispensable for daily coding tasks.",
-},
-{
-name: "Figma",
-href: "https://www.figma.com/",
-desc: "For turning UI/UX designs into real, functional products. Excellent for collaboration.",
-},
-{
-name: "GitHub",
-href: "https://github.com/",
-desc: "Essential for version control, remote backups, and collaborating with other developers.",
-},
-{
-name: "Slack",
-href: "https://slack.com/",
-desc: "Communication is key. Also, many Open-Source communities use it for interaction.",
-},
-{
-name: "Discord",
-href: "https://discord.com/",
-desc: "Initially joined for gaming, but later discovered many awesome developer communities.",
-},
-{
-name: "Postman",
-href: "https://www.postman.com/",
-desc: "The go-to tool for API testing and development. Simplifies debugging endpoints significantly.",
-},
-];
+      if (data?.portfolio_items) {
+        setItems(data.portfolio_items);
+      }
+      if (error) {
+        console.error("Error fetching tools:", error);
+      }
+      setIsLoading(false);
+    };
+    fetchTools();
+  }, []);
 
-export default function Tools({ children }: ToolsProps) {
-return (
-<section className="my-12 font-space">
-<h2 className="mb-6 border-b-4 border-black pb-2 text-3xl font-black text-black">
-Tools I Use
-</h2>
-<div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-{USED_TOOLS.map((tool) => (
-<div
-key={tool.href}
-className="flex flex-col rounded-none border-2 border-black bg-white p-5 shadow-[4px_4px_0px_#000] transition-shadow duration-150 hover:shadow-[6px_6px_0px_#4f46e5]"
->
-<a
-href={tool.href}
-rel="noopener noreferrer"
-target="_blank"
-className="group mb-1 inline-flex items-center self-start text-xl font-bold text-indigo-700 transition-colors hover:bg-yellow-200 hover:text-indigo-900 hover:underline"
->
-<span>{tool.name}</span>
-<BsArrowUpRight className="ml-1.5 inline-block size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-</a>
-<p className="grow text-sm leading-relaxed text-gray-700">
-{tool.desc}
-</p>
-</div>
-))}
-</div>
-{children && <div className="mt-6">{children}</div>}
-<p className="mt-8 text-center font-semibold text-black">
-...plus a healthy dose of coffee and curiosity!
-</p>
-</section>
-);
+  if (isLoading) {
+    return <div className="py-24 text-center">Loading Tools...</div>;
+  }
+
+  if (items.length === 0) {
+    return null; // Don't render the section if there's no content
+  }
+
+  return (
+    <section className="border-t border-white/10 py-16 md:py-24">
+      <motion.h2
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true, amount: 0.5 }}
+        className="mb-12 text-center text-4xl font-bold text-slate-400 md:text-5xl"
+      >
+        Tools I Use
+      </motion.h2>
+      <div className="mx-auto max-w-4xl">
+        {items.map((tool, index) => (
+          <motion.a
+            key={tool.id}
+            href={tool.link_url || "#"}
+            target="_blank"
+            rel="noopener noreferrer"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
+            transition={{ delay: index * 0.1 }}
+            className="group block border-b border-white/10 px-4 py-6 transition-colors hover:bg-white/5"
+          >
+            <div className="flex items-center justify-between">
+              <h3 className="text-2xl font-bold text-slate-200 transition-colors group-hover:text-accent">
+                {tool.title}
+              </h3>
+              <BsArrowUpRight className="text-xl text-slate-500 transition-transform duration-300 group-hover:rotate-45 group-hover:text-accent" />
+            </div>
+            {tool.description && <p className="mt-2 text-slate-400">{tool.description}</p>}
+          </motion.a>
+        ))}
+      </div>
+    </section>
+  );
 }

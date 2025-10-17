@@ -1,15 +1,13 @@
+// This file is updated to import the 'Inter' font instead of 'Space Mono'.
+// The 'scroll-smooth' class is added for native smooth scrolling.
+
 import { Html, Head, Main, NextScript } from "next/document";
 
 export default function Document() {
   return (
     <Html lang="en" className="scroll-smooth">
       <Head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
+        {/* The Inter font is now imported via globals.css */}
       </Head>
       <body className="bg-background text-foreground antialiased">
         <Main />

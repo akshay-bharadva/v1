@@ -21,7 +21,9 @@ export default function ExperiencePage() {
         <meta name="twitter:description" content={pageDescription} />
         <link rel="canonical" href={pageUrl} />
       </Head>
-      <ExperienceComponent />
+      <div className="mx-auto w-full px-4 sm:px-8 md:px-16 xl:px-48 2xl:px-72">
+        <ExperienceComponent />
+      </div>
     </Layout>
   );
 }

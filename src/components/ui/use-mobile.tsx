@@ -2,35 +2,35 @@
 
 import * as React from "react";
 
-const MOBILE_BREAKPOINT = 768;
+const MOBILE_BREAKPOINT = 768; // Standard breakpoint for md in Tailwind
 
 export function useIsMobile(): boolean {
-const [isMobile, setIsMobile] = React.useState<boolean>(() => {
-if (typeof window !== "undefined") {
-return window.innerWidth < MOBILE_BREAKPOINT;
-}
-return false;
-});
+  const [isMobile, setIsMobile] = React.useState<boolean>(() => {
+    // Initial state for client-side rendering
+    if (typeof window !== "undefined") {
+      return window.innerWidth < MOBILE_BREAKPOINT;
+    }
+    return false; // Default for SSR
+  });
 
-React.useEffect(() => {
-if (typeof window === "undefined") {
-return;
-}
+  React.useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
 
-const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
+    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
 
-const handleChange = () => {
-  setIsMobile(mql.matches);
-};
+    const handleChange = () => {
+      setIsMobile(mql.matches);
+    };
 
-handleChange();
+    // Set initial state correctly after mount
+    handleChange();
 
-mql.addEventListener("change", handleChange);
+    mql.addEventListener("change", handleChange);
 
-return () => mql.removeEventListener("change", handleChange);
+    return () => mql.removeEventListener("change", handleChange);
+  }, []); // Empty dependency array ensures this runs once
 
-
-}, []);
-
-return isMobile;
+  return isMobile;
 }

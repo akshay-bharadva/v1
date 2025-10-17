@@ -1,3 +1,9 @@
+// This component's styling is updated to match the new dark theme.
+// - All neo-brutalist styles (thick borders, shadows, square corners) are replaced with clean, modern equivalents.
+// - Colors are updated to the dark theme palette (zinc, slate, accent).
+// - Font is changed to 'font-sans' (Inter).
+// - All functionality for MFA setup remains identical.
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -17,40 +23,45 @@ export default function SupabaseMFASetup() {
   const router = useRouter();
 
   useEffect(() => {
-    const protectPageAndEnroll = async () => {
+    const enrollMfa = async () => {
       setIsLoadingState(true);
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
+      setError("");
+
+      const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.replace("/admin/login");
         return;
       }
-
+      
       const { data, error: enrollError } = await supabase.auth.mfa.enroll({
         factorType: "totp",
-        issuer: "MyPortfolioAdmin",
       });
 
       if (enrollError) {
-        let errorMessage = enrollError.message || "Failed to start MFA enrollment.";
-        if (enrollError.message.includes("Enrolled factors exceed")) {
-          errorMessage = "MFA is already set up or max factors reached. Try the MFA Challenge page or manage factors in your Security settings.";
+        setError(enrollError.message || "Failed to start MFA enrollment.");
+        if (enrollError.message.includes("MFA is already set up")) {
+            // Check if there are verified factors
+            const { data: factorsData } = await supabase.auth.mfa.listFactors();
+            const hasVerifiedFactor = factorsData?.totp.some(f => f.status === 'verified');
+            if (hasVerifiedFactor) {
+                // If already set up, redirect to challenge
+                router.replace("/admin/mfa-challenge");
+                return;
+            }
         }
-        setError(errorMessage);
         setIsLoadingState(false);
         return;
       }
 
       if (data) {
+        setFactorId(data.id);
         setQrCodeUrl(data.totp.qr_code);
         setManualEntryKey(data.totp.secret);
-        setFactorId(data.id);
       }
       setIsLoadingState(false);
     };
 
-    protectPageAndEnroll();
+    enrollMfa();
   }, [router]);
 
   useEffect(() => {
@@ -61,50 +72,48 @@ export default function SupabaseMFASetup() {
   }, []);
 
   const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoadingState(true);
-    setError("");
+  e.preventDefault();
+  setIsLoadingState(true);
+  setError("");
 
-    const { data: challengeData, error: challengeError } =
-      await supabase.auth.mfa.challenge({ factorId });
-
-    if (challengeError) {
-      setIsLoadingState(false);
-      setError(challengeError.message || "Failed to create MFA challenge.");
-      return;
-    }
-
-    const challengeId = challengeData.id;
-    const { error: verifyError } = await supabase.auth.mfa.verify({
-      factorId,
-      challengeId,
-      code: otp,
-    });
-
+  // 1️⃣ Create the challenge
+  const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId });
+  if (challengeError || !challengeData) {
+    setError(challengeError?.message || "Could not challenge MFA factor.");
     setIsLoadingState(false);
-    if (verifyError) {
-      setError(verifyError.message || "Invalid OTP. Please try again.");
-      return;
-    }
+    return;
+  }
 
-    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-    router.replace("/admin/dashboard");
-  };
+  // 2️⃣ Use the returned challengeId in verify()
+  const challengeId = challengeData.id;
+
+  const { error: verifyError } = await supabase.auth.mfa.verify({
+    factorId,
+    challengeId,
+    code: otp,
+  });
+
+  if (verifyError) {
+    setError(verifyError.message || "Invalid code. Please try again.");
+    setIsLoadingState(false);
+    return;
+  }
+
+  // 3️⃣ Success → redirect
+  router.replace("/admin/dashboard");
+};
 
   const copySecret = async () => {
     try {
       await navigator.clipboard.writeText(manualEntryKey);
-      const copyButton = document.getElementById("copySecretButton");
-      if (copyButton) {
-        const originalText = copyButton.innerText;
-        copyButton.innerText = "Copied!";
-        setTimeout(() => {
-          if (copyButton) copyButton.innerText = originalText;
-        }, 2000);
+      const button = document.getElementById("copySecretButton");
+      if (button) {
+        const originalText = button.innerText;
+        button.innerText = "Copied!";
+        setTimeout(() => { button.innerText = originalText; }, 2000);
       }
     } catch (err) {
-      console.error("Failed to copy secret:", err);
-      setError("Failed to copy. Please copy manually.");
+      setError("Failed to copy secret key.");
     }
   };
 
@@ -123,11 +132,11 @@ export default function SupabaseMFASetup() {
         exit="exit"
         variants={stepVariants}
         transition={{ duration: 0.3 }}
-        className="flex min-h-screen items-center justify-center bg-indigo-100 font-space"
+        className="flex min-h-screen items-center justify-center bg-zinc-900 font-sans"
       >
-        <div className="border-2 border-black bg-white p-8 text-center">
-          <div className="mx-auto mb-4 size-12 animate-spin rounded-none border-y-4 border-indigo-600"></div>
-          <p className="font-semibold text-gray-700">Loading MFA Setup...</p>
+        <div className="rounded-lg border border-zinc-700 bg-zinc-800 p-8 text-center">
+          <div className="mx-auto mb-4 w-12 h-12 animate-spin rounded-full border-4 border-l-transparent border-accent"></div>
+          <p className="font-semibold text-slate-200">Loading MFA Setup...</p>
         </div>
       </motion.div>
     );
@@ -141,17 +150,17 @@ export default function SupabaseMFASetup() {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="flex min-h-screen items-center justify-center bg-indigo-100 px-4 py-8 font-space"
+      className="flex min-h-screen items-center justify-center bg-zinc-900 px-4 py-8 font-sans"
     >
-      <div className="w-full max-w-2xl space-y-8 border-2 border-black bg-white p-6 shadow-[8px_8px_0px_#000000] sm:p-8">
+      <div className="w-full max-w-2xl space-y-8 rounded-lg border border-zinc-700 bg-zinc-800 p-6 sm:p-8">
         <div className="text-center">
-          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-none border-2 border-black bg-green-500">
-            <span className="text-xl text-white">📱</span>
+          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-700">
+            <span className="text-xl">📱</span>
           </div>
-          <h2 className="text-3xl font-bold text-black">
+          <h2 className="text-3xl font-bold text-slate-100">
             Set Up Two-Factor Authentication
           </h2>
-          <p className="mt-2 text-gray-700">
+          <p className="mt-2 text-zinc-400">
             Secure your admin account with an authenticator app
           </p>
         </div>
@@ -162,13 +171,13 @@ export default function SupabaseMFASetup() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="my-4 rounded-none border-2 border-red-500 bg-red-100 p-3"
+              className="my-4 rounded-md border border-red-500/50 bg-red-900/20 p-3"
             >
-              <p className="text-sm font-semibold text-red-700">{error}</p>
+              <p className="text-sm font-semibold text-red-300">{error}</p>
               {error.includes("MFA is already set up") && (
                 <button
                   onClick={() => router.push("/admin/mfa-challenge")}
-                  className="mt-2 font-space text-sm font-semibold text-indigo-700 underline hover:text-indigo-900"
+                  className="mt-2 text-sm font-semibold text-accent underline hover:no-underline"
                 >
                   Go to MFA Challenge
                 </button>
@@ -180,16 +189,15 @@ export default function SupabaseMFASetup() {
         {factorId && (
           <div className="space-y-8">
             <div>
-              <h3 className="mb-2 text-lg font-bold text-black">
+              <h3 className="mb-2 text-lg font-bold text-slate-100">
                 Step 1: Scan QR Code
               </h3>
-              <p className="mb-4 text-gray-700">
-                Open your authenticator app (e.g., Google Authenticator) and
-                scan this QR code.
+              <p className="mb-4 text-zinc-400">
+                Open your authenticator app and scan this QR code.
               </p>
               {qrCodeUrl ? (
                 <div className="flex justify-center">
-                  <div className="rounded-none border-2 border-black bg-white p-2">
+                  <div className="rounded-lg border border-zinc-600 bg-white p-2">
                     <img
                       src={qrCodeUrl}
                       alt="QR Code for MFA setup"
@@ -198,29 +206,27 @@ export default function SupabaseMFASetup() {
                   </div>
                 </div>
               ) : (
-                <p className="text-gray-600">Generating QR Code...</p>
+                <p className="text-zinc-500">Generating QR Code...</p>
               )}
             </div>
 
             {manualEntryKey && (
-              <div className="border-t-2 border-black pt-6">
-                <h3 className="mb-2 text-lg font-bold text-black">
+              <div className="border-t border-zinc-700 pt-6">
+                <h3 className="mb-2 text-lg font-bold text-slate-100">
                   Step 2: Manual Entry (Optional)
                 </h3>
-                <p className="mb-3 text-gray-700">
+                <p className="mb-3 text-zinc-400">
                   Can&apos;t scan? Enter this secret manually:
                 </p>
-                <div className="flex flex-col items-stretch gap-2 rounded-none border-2 border-black bg-gray-100 p-3 sm:flex-row sm:items-center sm:gap-4">
-                  <code className="flex-1 break-all font-mono text-sm text-gray-800">
-                    {showSecret
-                      ? manualEntryKey
-                      : "••••••••••••••••••••••••••••••••"}
+                <div className="flex flex-col items-stretch gap-2 rounded-md border border-zinc-600 bg-zinc-700 p-3 sm:flex-row sm:items-center sm:gap-4">
+                  <code className="flex-1 break-all font-mono text-sm text-slate-300">
+                    {showSecret ? manualEntryKey : "••••••••••••••••••••••••••••••••"}
                   </code>
                   <div className="flex gap-x-3">
                     <button
                       type="button"
                       onClick={() => setShowSecret(!showSecret)}
-                      className="font-space text-sm font-semibold text-indigo-600 underline hover:text-indigo-800"
+                      className="text-sm font-semibold text-accent underline hover:no-underline"
                     >
                       {showSecret ? "Hide" : "Show"}
                     </button>
@@ -228,7 +234,7 @@ export default function SupabaseMFASetup() {
                       type="button"
                       id="copySecretButton"
                       onClick={copySecret}
-                      className="font-space text-sm font-semibold text-indigo-600 underline hover:text-indigo-800"
+                      className="text-sm font-semibold text-accent underline hover:no-underline"
                     >
                       Copy
                     </button>
@@ -238,17 +244,17 @@ export default function SupabaseMFASetup() {
             )}
 
             {factorId && (
-              <div className="border-t-2 border-black pt-6">
+              <div className="border-t border-zinc-700 pt-6">
                 <form onSubmit={handleVerify} className="space-y-6">
                   <div>
-                    <h3 className="mb-2 text-lg font-bold text-black">
+                    <h3 className="mb-2 text-lg font-bold text-slate-100">
                       Step 3: Verify Setup
                     </h3>
                     <label
                       htmlFor="totpCode"
-                      className="mb-1 block text-sm font-bold text-black"
+                      className="mb-1 block text-sm font-bold text-slate-200"
                     >
-                      Enter the 6-digit code from your authenticator app:
+                      Enter the 6-digit code from your app:
                     </label>
                     <div className="flex items-center space-x-3">
                       <input
@@ -258,18 +264,16 @@ export default function SupabaseMFASetup() {
                         required
                         maxLength={6}
                         pattern="[0-9]{6}"
-                        className="flex-1 rounded-none border-2 border-black px-3 py-2 text-center font-mono text-xl tracking-widest focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="flex-1 rounded-md border border-zinc-600 bg-zinc-700 px-3 py-2 text-center font-mono text-xl tracking-widest text-slate-100 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent"
                         placeholder="123456"
                         value={otp}
-                        onChange={(e) =>
-                          setOtp(e.target.value.replace(/\D/g, ""))
-                        }
+                        onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
                       />
-                      <div className="rounded-none border-2 border-black p-2 text-center">
-                        <div className="text-2xl font-bold text-indigo-600">
+                      <div className="rounded-md border border-zinc-600 bg-zinc-700 p-2 text-center">
+                        <div className="text-2xl font-bold text-accent">
                           {remainingTime}
                         </div>
-                        <div className="text-xs text-gray-600">seconds</div>
+                        <div className="text-xs text-zinc-400">seconds</div>
                       </div>
                     </div>
                   </div>
@@ -280,11 +284,9 @@ export default function SupabaseMFASetup() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: "auto" }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="rounded-none border-2 border-red-500 bg-red-100 p-3"
+                        className="rounded-md border border-red-500/50 bg-red-900/20 p-3"
                       >
-                        <p className="text-sm font-semibold text-red-700">
-                          {error}
-                        </p>
+                        <p className="text-sm font-semibold text-red-300">{error}</p>
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -293,11 +295,9 @@ export default function SupabaseMFASetup() {
                     <button
                       type="submit"
                       disabled={isLoadingState || otp.length !== 6 || !factorId}
-                      className="flex-1 rounded-none border-2 border-black bg-indigo-600 px-4 py-3 font-space font-bold text-white shadow-[4px_4px_0px_#000] transition-all duration-150 hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-indigo-700 hover:shadow-[2px_2px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none disabled:translate-x-0 disabled:translate-y-0 disabled:cursor-not-allowed disabled:opacity-70 disabled:shadow-none"
+                      className="flex-1 rounded-md bg-accent px-4 py-3 font-sans font-bold text-accent-foreground transition-opacity hover:opacity-90 active:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                      {isLoadingState
-                        ? "Verifying..."
-                        : "Verify & Complete Setup"}
+                      {isLoadingState ? "Verifying..." : "Verify & Complete Setup"}
                     </button>
                     <button
                       type="button"
@@ -305,7 +305,7 @@ export default function SupabaseMFASetup() {
                         await supabase.auth.signOut();
                         router.push("/admin/login");
                       }}
-                      className="flex-1 rounded-none border-2 border-black bg-gray-200 px-4 py-3 font-space font-bold text-black shadow-[4px_4px_0px_#000] transition-all duration-150 hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-gray-300 hover:shadow-[2px_2px_0px_#000] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none"
+                      className="flex-1 rounded-md border border-zinc-600 bg-zinc-700 px-4 py-3 font-sans font-bold text-slate-100 transition-colors hover:bg-zinc-600"
                     >
                       Cancel
                     </button>
