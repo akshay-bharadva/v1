@@ -1,9 +1,5 @@
-/*
-This file for the admin dashboard page is updated for the new design.
-- The loading state is simplified to a cleaner, more minimal spinner, removing the neo-brutalist box.
-- The main layout component no longer needs a specific `font-space` class, as `font-sans` is now the global default.
-- The `Layout` component is retained to provide consistent page structure (header/footer, etc.), even for the admin area.
-*/
+// In src/pages/admin/dashboard.tsx
+
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase, Session } from "@/supabase/client";
@@ -33,32 +29,15 @@ export interface DashboardData {
 export default function AdminDashboardPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(true);
-  const [session, setSession] = useState<Session | null>(null);
+  const [isAuthorized, setIsAuthorized] = useState(false); // New state to control rendering
   const [dashboardData, setDashboardData] = useState<DashboardData>({
     stats: null,
     recentPosts: [],
     pinnedNotes: [],
   });
 
-  useEffect(() => {
-    const checkAuthAndAAL = async () => {
-      setIsLoading(true);
-      const { data: { session: currentSession }, error: sessionError } = await supabase.auth.getSession();
-
-      if (sessionError || !currentSession) {
-        router.replace("/admin/login");
-        return;
-      }
-
-      setSession(currentSession);
-
-      const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-      if (aalError || aalData?.currentLevel !== 'aal2') {
-        router.replace("/admin/login");
-        return;
-      }
-      
-      try {
+  const fetchDashboardData = async () => {
+    try {
         const now = new Date();
         const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).toISOString();
         const startOfWeek = new Date(now.setDate(now.getDate() - now.getDay())).toISOString();
@@ -101,25 +80,53 @@ export default function AdminDashboardPage() {
         });
       } catch (error) {
         console.error("Error fetching dashboard data:", error);
-      } finally {
-        setIsLoading(false);
       }
+  };
+
+  useEffect(() => {
+    // This function now only checks authorization status.
+    const checkAuthorization = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        router.replace("/admin/login");
+        return;
+      }
+
+      const { data: aalData, error: aalError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      
+      if (aalError || aalData.currentLevel !== 'aal2') {
+        // If not aal2, it might be aal1 needing a challenge, or no session.
+        // The /admin index will handle this redirection logic.
+        router.replace("/admin");
+        return;
+      }
+      
+      // If we are here, the user is authorized.
+      setIsAuthorized(true);
+      setIsLoading(false);
+      fetchDashboardData();
     };
 
-    checkAuthAndAAL();
+    // Run the initial check on page load.
+    checkAuthorization();
 
+    // Set up the listener to handle state changes AFTER the initial load.
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
-        setSession(newSession);
-        if (event === "SIGNED_OUT" || !newSession) {
+      (event, session) => {
+        if (event === "SIGNED_OUT" || !session) {
+          setIsAuthorized(false);
           router.replace("/admin/login");
-        } else if (["USER_UPDATED", "TOKEN_REFRESHED", "MFA_CHALLENGE_VERIFIED"].includes(event)) {
-          checkAuthAndAAL();
+        } else if (event === "MFA_CHALLENGE_VERIFIED" || event === "TOKEN_REFRESHED") {
+          // This event fires *after* the AAL level is updated.
+          // Re-run the authorization check to confirm.
+          checkAuthorization();
         }
-      },
+      }
     );
 
-    return () => { authListener?.subscription?.unsubscribe(); };
+    return () => {
+      authListener?.subscription?.unsubscribe();
+    };
   }, [router]);
 
   const handleLogout = async () => {
@@ -131,14 +138,23 @@ export default function AdminDashboardPage() {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },
-    transition: { duration: 0.3 },
   };
 
-  if (isLoading || !session) {
+  if (isLoading || !isAuthorized) {
     return (
       <Layout>
         <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <motion.div
+            key="dashboard-loading"
+            variants={pageVariants}
+            initial="initial"
+            animate="animate"
+            exit="exit"
+            className="flex flex-col items-center gap-4"
+          >
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <p className="font-semibold text-muted-foreground">Verifying access...</p>
+          </motion.div>
         </div>
       </Layout>
     );
