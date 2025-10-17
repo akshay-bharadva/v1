@@ -1,9 +1,8 @@
+import Hero from "@/components/hero";
 import Layout from "@/components/layout";
 import Me from "@/components/me";
-import Hero from "@/components/hero";
 import Technology from "@/components/technology";
 import Tools from "@/components/tools";
-import Experience from "@/components/experience";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
 
@@ -21,20 +20,18 @@ export default function AboutPage() {
         <meta property="og:title" content={pageTitle} />
         <meta property="og:description" content={pageDescription} />
         <meta property="og:url" content={pageUrl} />
+        <meta property="og:type" content="profile" />
+        <meta property="profile:first_name" content="Akshay" />
+        <meta property="profile:last_name" content="Bharadva" />
+        <meta property="profile:username" content="akshay-bharadva" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
         <link rel="canonical" href={pageUrl} />
       </Head>
-      <div className="mx-auto w-full px-4 sm:px-8 md:px-16 xl:px-48 2xl:px-72">
-        {/* 1. Introduction */}
-        <Me />
-        {/* 2. Bio */}
-        <Hero />
-        {/* 3. Professional History */}
-        <Experience />
-        {/* 4. Skills */}
-        <Technology />
-        {/* 5. Tools */}
-        <Tools />
-      </div>
+      <Me />
+      <Hero />
+      <Technology />
+      <Tools />
     </Layout>
   );
 }

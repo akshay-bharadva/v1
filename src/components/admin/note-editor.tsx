@@ -1,7 +1,3 @@
-// This form component is updated for the dark theme.
-// - It now uses the themed <Input>, <Textarea>, and <Button> components for a consistent look.
-// - All functionality remains identical.
-
 "use client";
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
@@ -9,7 +5,6 @@ import type { Note } from "@/types";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
 
 interface NoteEditorProps {
   note: Note | null;
@@ -17,8 +12,10 @@ interface NoteEditorProps {
   onCancel: () => void;
 }
 
+const inputClass = "w-full px-3 py-2 border-2 rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 font-space border-black";
+
 export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) {
-const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState({
     title: "",
     content: "",
     tags: "",
@@ -49,22 +46,22 @@ const [formData, setFormData] = useState({
     await onSave(noteDataToSave);
     setIsSaving(false);
   };
-  
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-4xl font-sans"
+      className="mx-auto max-w-4xl font-space"
     >
-      <div className="rounded-lg border border-zinc-700 bg-zinc-800">
-        <div className="border-b border-zinc-700 bg-zinc-900/50 px-4 py-4">
-          <h2 className="text-xl font-bold text-slate-100">
+      <div className="rounded-none border-2 border-black bg-white">
+        <div className="border-b-2 border-black bg-gray-100 px-4 py-4">
+          <h2 className="text-xl font-bold text-black">
             {note?.id ? "Edit Note" : "Create New Note"}
           </h2>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-6 p-6">
+        <form onSubmit={handleSubmit} className="p-6 space-y-6">
           <div>
-            <Label htmlFor="title" className="mb-1 block text-sm font-bold text-slate-200">Title (Optional)</Label>
+            <label htmlFor="title" className="mb-1 block text-sm font-bold text-black">Title (Optional)</label>
             <Input
               id="title"
               value={formData.title}
@@ -73,7 +70,7 @@ const [formData, setFormData] = useState({
             />
           </div>
           <div>
-            <Label htmlFor="content" className="mb-1 block text-sm font-bold text-slate-200">Content</Label>
+            <label htmlFor="content" className="mb-1 block text-sm font-bold text-black">Content</label>
             <Textarea
               id="content"
               value={formData.content}
@@ -83,7 +80,7 @@ const [formData, setFormData] = useState({
             />
           </div>
           <div>
-            <Label htmlFor="tags" className="mb-1 block text-sm font-bold text-slate-200">Tags (comma-separated)</Label>
+            <label htmlFor="tags" className="mb-1 block text-sm font-bold text-black">Tags (comma-separated)</label>
             <Input
               id="tags"
               value={formData.tags}
@@ -91,8 +88,8 @@ const [formData, setFormData] = useState({
               placeholder="idea, to-do, reminder"
             />
           </div>
-          <div className="flex justify-end gap-3 border-t border-zinc-700 pt-4">
-            <Button type="button" variant="secondary" onClick={onCancel} disabled={isSaving}>Cancel</Button>
+          <div className="flex justify-end gap-3 border-t-2 border-black pt-4">
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isSaving}>Cancel</Button>
             <Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : "Save Note"}</Button>
           </div>
         </form>

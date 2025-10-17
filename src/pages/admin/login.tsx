@@ -4,7 +4,7 @@ import Layout from "@/components/layout";
 export default function AdminLoginPage() {
   return (
     <Layout>
-      <div className="font-sans">
+      <div className="font-space">
         <SupabaseLogin />
       </div>
     </Layout>

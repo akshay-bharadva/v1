@@ -1,13 +1,13 @@
-import ExperienceComponent from "@/components/experience";
 import Layout from "@/components/layout";
+import ProjectsComponent from "@/components/projects";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
 
-export default function ExperiencePage() {
+export default function ProjectsPage() {
   const { site: siteConfig } = appConfig;
-  const pageTitle = `My Experience | ${siteConfig.title}`;
-  const pageDescription = `Detailed work experience of Akshay Bharadva, showcasing roles, responsibilities, and technologies used.`;
-  const pageUrl = `${siteConfig.url}/experience/`;
+  const pageTitle = `My Projects | ${siteConfig.title}`;
+  const pageDescription = `A collection of projects developed by Akshay Bharadva, showcasing skills in various technologies.`;
+  const pageUrl = `${siteConfig.url}/projects/`;
 
   return (
     <Layout>
@@ -21,7 +21,7 @@ export default function ExperiencePage() {
         <meta name="twitter:description" content={pageDescription} />
         <link rel="canonical" href={pageUrl} />
       </Head>
-      <ExperienceComponent />
+      <ProjectsComponent />
     </Layout>
   );
 }

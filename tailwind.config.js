@@ -1,9 +1,3 @@
-// This file is updated to implement the new dark theme, typography, and accent color.
-// - Default theme is now dark, using zinc and slate colors.
-// - 'Space Mono' is replaced with 'Inter' as the primary sans-serif font.
-// - A vibrant lime accent color is added.
-// - Neo-brutalist shadows and thick borders are removed from theme configurations.
-
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   darkMode: ["class"],
@@ -14,50 +8,66 @@ module.exports = {
     "*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
-    container: {
-      center: true,
-      padding: "2rem",
-      screens: {
-        "2xl": "1400px",
-      },
-    },
     extend: {
+      backgroundImage: {
+        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
+        "gradient-conic":
+          "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+      },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        space: ["Space Mono", "monospace", "sans-serif"],
+        tahu: ["var(--font-tahu)", "sans-serif"],
       },
       colors: {
-        border: "var(--border)",
-        input: "var(--input)",
-        ring: "var(--ring)",
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        primary: {
-          DEFAULT: "var(--primary)",
-          foreground: "var(--primary-foreground)",
-        },
-        secondary: {
-          DEFAULT: "var(--secondary)",
-          foreground: "var(--secondary-foreground)",
-        },
-        destructive: {
-          DEFAULT: "var(--destructive)",
-          foreground: "var(--destructive-foreground)",
-        },
-        muted: {
-          DEFAULT: "var(--muted)",
-          foreground: "var(--muted-foreground)",
-        },
-        accent: {
-          DEFAULT: "var(--accent)",
-          foreground: "var(--accent-foreground)",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
         popover: {
-          DEFAULT: "var(--popover)",
-          foreground: "var(--popover-foreground)",
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
         },
-        card: {
-          DEFAULT: "var(--card)",
-          foreground: "var(--card-foreground)",
+        primary: {
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
+        },
+        sidebar: {
+          DEFAULT: "hsl(var(--sidebar-background))",
+          foreground: "hsl(var(--sidebar-foreground))",
+          primary: "hsl(var(--sidebar-primary))",
+          "primary-foreground": "hsl(var(--sidebar-primary-foreground))",
+          accent: "hsl(var(--sidebar-accent))",
+          "accent-foreground": "hsl(var(--sidebar-accent-foreground))",
+          border: "hsl(var(--sidebar-border))",
+          ring: "hsl(var(--sidebar-ring))",
         },
       },
       borderRadius: {
@@ -84,44 +94,20 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.2s ease-out infinite",
       },
-      typography: (theme) => ({
+      typography: {
         DEFAULT: {
           css: {
-            '--tw-prose-body': theme('colors.slate[300]'),
-            '--tw-prose-headings': theme('colors.slate[100]'),
-            '--tw-prose-lead': theme('colors.slate[400]'),
-            '--tw-prose-links': theme('colors.accent.DEFAULT'),
-            '--tw-prose-bold': theme('colors.white'),
-            '--tw-prose-counters': theme('colors.slate[400]'),
-            '--tw-prose-bullets': theme('colors.slate[600]'),
-            '--tw-prose-hr': theme('colors.slate[800]'),
-            '--tw-prose-quotes': theme('colors.slate[200]'),
-            '--tw-prose-quote-borders': theme('colors.accent.DEFAULT'),
-            '--tw-prose-captions': theme('colors.slate[400]'),
-            '--tw-prose-code': theme('colors.accent.DEFAULT'),
-            '--tw-prose-pre-code': theme('colors.slate[300]'),
-            '--tw-prose-pre-bg': theme('colors.zinc[900]'),
-            '--tw-prose-th-borders': theme('colors.slate[700]'),
-            '--tw-prose-td-borders': theme('colors.slate[800]'),
-            '--tw-prose-invert-body': theme('colors.slate[300]'),
-            '--tw-prose-invert-headings': theme('colors.white'),
-            '--tw-prose-invert-lead': theme('colors.slate[400]'),
-            '--tw-prose-invert-links': theme('colors.accent.DEFAULT'),
-            '--tw-prose-invert-bold': theme('colors.white'),
-            '--tw-prose-invert-counters': theme('colors.slate[400]'),
-            '--tw-prose-invert-bullets': theme('colors.slate[600]'),
-            '--tw-prose-invert-hr': theme('colors.slate[700]'),
-            '--tw-prose-invert-quotes': theme('colors.slate[100]'),
-            '--tw-prose-invert-quote-borders': theme('colors.accent.DEFAULT'),
-            '--tw-prose-invert-captions': theme('colors.slate[400]'),
-            '--tw-prose-invert-code': theme('colors.accent.DEFAULT'),
-            '--tw-prose-invert-pre-code': theme('colors.slate[300]'),
-            '--tw-prose-invert-pre-bg': theme('colors.zinc[900]'),
-            '--tw-prose-invert-th-borders': theme('colors.slate[600]'),
-            '--tw-prose-invert-td-borders': theme('colors.slate[700]'),
+            maxWidth: "100%",
+            color: "#333",
+            a: {
+              color: "#3182ce",
+              "&:hover": {
+                color: "#2c5282",
+              },
+            },
           },
         },
-      }),
+      },
     },
   },
   plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],

@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
+
 import { cn } from "@/lib/utils";
 
 const Avatar = React.forwardRef<
@@ -11,7 +12,7 @@ const Avatar = React.forwardRef<
   <AvatarPrimitive.Root
     ref={ref}
     className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full border border-zinc-700",
+      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full border-2 border-black",
       className,
     )}
     {...props}

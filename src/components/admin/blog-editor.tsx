@@ -1,8 +1,3 @@
-// This component is updated to match the dark admin theme.
-// - All hard-coded style classes are replaced with simpler, theme-consistent ones.
-// - The `font-space` class is replaced with the default `font-sans`.
-// - All functionality for editing posts remains identical.
-
 "use client";
 import type React from "react";
 import { useState, useEffect, FormEvent, useRef } from "react";
@@ -11,11 +6,6 @@ import type { BlogPost } from "@/types";
 import AdvancedMarkdownEditor from "@/components/admin/AdvancedMarkdownEditor";
 import { supabase } from "@/supabase/client";
 import imageCompression from "browser-image-compression";
-import { Button } from "@/components/ui/button"; // Using UI components for consistency
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
 
 interface BlogEditorProps {
   post: BlogPost | null;
@@ -25,8 +15,20 @@ interface BlogEditorProps {
 
 const bucketName = process.env.NEXT_PUBLIC_BUCKET_NAME || "blog-assets";
 
-export default function BlogEditor({ post, onSave, onCancel }: BlogEditorProps) {
-const initialFormData = {
+const inputClass = (hasError: boolean) =>
+  `w-full px-3 py-2 border-2 rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 font-space ${hasError ? "border-red-500" : "border-black"}`;
+
+const buttonPrimaryClass =
+  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150 font-space";
+const buttonSecondaryClass =
+  "bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150 font-space";
+
+export default function BlogEditor({
+  post,
+  onSave,
+  onCancel,
+}: BlogEditorProps) {
+  const initialFormData = {
     title: "",
     slug: "",
     excerpt: "",
@@ -192,16 +194,30 @@ const initialFormData = {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-6xl font-sans"
+      className="mx-auto max-w-6xl font-space"
     >
-      <div className="overflow-hidden rounded-lg border border-zinc-700 bg-zinc-800">
-        <div className="border-b border-zinc-700 bg-zinc-900/50 px-4 py-4 sm:px-6">
+      <div className="overflow-hidden rounded-none border-2 border-black bg-white">
+        <div className="border-b-2 border-black bg-gray-100 px-4 py-4 sm:px-6">
           <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <h2 className="text-xl font-bold text-slate-100">{post?.id ? "Edit Post" : "Create New Post"}</h2>
-            <div className="flex items-center space-x-2">
-              <Checkbox id="published" checked={formData.published} onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, published: !!checked }))} />
-              <Label htmlFor="published" className="text-sm font-semibold text-slate-200">Published</Label>
-            </div>
+            <h2 className="text-xl font-bold text-black">
+              {post?.id ? "Edit Post" : "Create New Post"}
+            </h2>
+            <label className="flex cursor-pointer items-center">
+              <input
+                type="checkbox"
+                checked={formData.published}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    published: e.target.checked,
+                  }))
+                }
+                className="relative size-5 cursor-pointer appearance-none border-2 border-black bg-white checked:border-indigo-500 checked:bg-indigo-500"
+              />
+              <span className="ml-2 text-sm font-semibold text-black">
+                Published
+              </span>
+            </label>
           </div>
         </div>
 
@@ -209,54 +225,222 @@ const initialFormData = {
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <div className="space-y-6 lg:col-span-2">
               <div>
-                <Label htmlFor="title" className="mb-1 block text-sm font-bold text-slate-200">Title *</Label>
-                <Input type="text" id="title" value={formData.title} onChange={(e) => handleTitleChange(e.target.value)} className={errors.title ? "border-red-500" : ""} />
-                {errors.title && <p className="mt-1 text-xs font-semibold text-red-400">{errors.title}</p>}
+                <label
+                  htmlFor="title"
+                  className="mb-1 block text-sm font-bold text-black"
+                >
+                  Title *
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  value={formData.title}
+                  onChange={(e) => handleTitleChange(e.target.value)}
+                  className={inputClass(!!errors.title)}
+                />
+                {errors.title && (
+                  <p className="mt-1 text-xs font-semibold text-red-600">
+                    {errors.title}
+                  </p>
+                )}
               </div>
 
               <div>
-                <Label className="mb-1 block text-sm font-bold text-slate-200">Content (Markdown) *</Label>
-                <AdvancedMarkdownEditor value={formData.content} onChange={(newContent) => setFormData((prev) => ({ ...prev, content: newContent }))} onImageUploadRequest={() => fileInputRef.current?.click()} minHeight="400px" />
-                <input type="file" ref={fileInputRef} onChange={(e) => onFileSelected(e, false)} accept="image/*" className="hidden" id="content_image_file_input" />
-                {errors.content && <p className="mt-1 text-xs font-semibold text-red-400">{errors.content}</p>}
-                {errors.image_upload && <p className="mt-1 text-xs font-semibold text-red-400">{errors.image_upload}</p>}
-                {isUploading && <p className="text-sm font-semibold text-blue-400">Uploading image...</p>}
+                <label className="mb-1 block text-sm font-bold text-black">
+                  Content (Markdown) *
+                </label>
+                <AdvancedMarkdownEditor
+                  value={formData.content}
+                  onChange={(newContent) =>
+                    setFormData((prev) => ({ ...prev, content: newContent }))
+                  }
+                  onImageUploadRequest={() => fileInputRef.current?.click()}
+                  minHeight="400px"
+                />
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={(e) => onFileSelected(e, false)}
+                  accept="image/*"
+                  className="hidden"
+                  id="content_image_file_input"
+                />
+                {errors.content && (
+                  <p className="mt-1 text-xs font-semibold text-red-600">
+                    {errors.content}
+                  </p>
+                )}
+                {errors.image_upload && (
+                  <p className="mt-1 text-xs font-semibold text-red-600">
+                    {errors.image_upload}
+                  </p>
+                )}
+                {isUploading && (
+                  <p className="text-sm font-semibold text-blue-600">
+                    Uploading image...
+                  </p>
+                )}
               </div>
               <div>
-                <Label htmlFor="internal_notes" className="mb-1 block text-sm font-bold text-slate-200">Internal Notes (Admin only)</Label>
-                <Textarea id="internal_notes" rows={3} value={formData.internal_notes} onChange={(e) => setFormData((prev) => ({ ...prev, internal_notes: e.target.value }))} />
+                <label
+                  htmlFor="internal_notes"
+                  className="mb-1 block text-sm font-bold text-black"
+                >
+                  Internal Notes (Admin only)
+                </label>
+                <textarea
+                  id="internal_notes"
+                  rows={3}
+                  value={formData.internal_notes}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      internal_notes: e.target.value,
+                    }))
+                  }
+                  className={`${inputClass(false)} resize-y`}
+                />
               </div>
             </div>
 
-            <div className="space-y-6 rounded-lg border border-zinc-700 bg-zinc-900/50 p-4">
+            <div className="space-y-6 rounded-none border-2 border-black bg-gray-50 p-4">
               <div>
-                <Label htmlFor="slug" className="mb-1 block text-sm font-bold text-slate-200">Slug *</Label>
-                <Input type="text" id="slug" value={formData.slug} onChange={(e) => setFormData((prev) => ({ ...prev, slug: e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "").replace(/\s+/g, "-") }))} className={errors.slug ? "border-red-500" : ""} />
-                {errors.slug && <p className="mt-1 text-xs font-semibold text-red-400">{errors.slug}</p>}
+                <label
+                  htmlFor="slug"
+                  className="mb-1 block text-sm font-bold text-black"
+                >
+                  Slug *
+                </label>
+                <input
+                  type="text"
+                  id="slug"
+                  value={formData.slug}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      slug: e.target.value
+                        .toLowerCase()
+                        .replace(/[^a-z0-9-]/g, "")
+                        .replace(/\s+/g, "-"),
+                    }))
+                  }
+                  className={inputClass(!!errors.slug)}
+                />
+                {errors.slug && (
+                  <p className="mt-1 text-xs font-semibold text-red-600">
+                    {errors.slug}
+                  </p>
+                )}
               </div>
               <div>
-                <Label htmlFor="excerpt" className="mb-1 block text-sm font-bold text-slate-200">Excerpt (Short summary)</Label>
-                <Textarea id="excerpt" rows={3} value={formData.excerpt} onChange={(e) => setFormData((prev) => ({ ...prev, excerpt: e.target.value }))} />
+                <label
+                  htmlFor="excerpt"
+                  className="mb-1 block text-sm font-bold text-black"
+                >
+                  Excerpt (Short summary)
+                </label>
+                <textarea
+                  id="excerpt"
+                  rows={3}
+                  value={formData.excerpt}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      excerpt: e.target.value,
+                    }))
+                  }
+                  className={`${inputClass(false)} resize-none`}
+                />
               </div>
               <div>
-                <Label htmlFor="tags" className="mb-1 block text-sm font-bold text-slate-200">Tags (comma-separated)</Label>
-                <Input type="text" id="tags" value={formData.tags} onChange={(e) => setFormData((prev) => ({ ...prev, tags: e.target.value }))} />
+                <label
+                  htmlFor="tags"
+                  className="mb-1 block text-sm font-bold text-black"
+                >
+                  Tags (comma-separated)
+                </label>
+                <input
+                  type="text"
+                  id="tags"
+                  value={formData.tags}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, tags: e.target.value }))
+                  }
+                  className={inputClass(false)}
+                />
               </div>
               <div>
-                <Label htmlFor="cover_image_url_display" className="mb-1 block text-sm font-bold text-slate-200">Cover Image</Label>
-                <Input type="text" id="cover_image_url_display" value={formData.cover_image_url} onChange={(e) => setFormData((prev) => ({ ...prev, cover_image_url: e.target.value }))} className="mb-2" placeholder="Paste image URL or upload" />
-                <Input type="file" id="cover_image_file_input" ref={coverImageFileInputRef} accept="image/*" onChange={(e) => onFileSelected(e, true)} />
-                {formData.cover_image_url && <img src={formData.cover_image_url} alt="Cover preview" className="mt-2 max-h-40 w-full rounded-md border border-zinc-600 object-contain" />}
-                {errors.cover_image_url && <p className="mt-1 text-xs font-semibold text-red-400">{errors.cover_image_url}</p>}
+                <label
+                  htmlFor="cover_image_url_display"
+                  className="mb-1 block text-sm font-bold text-black"
+                >
+                  Cover Image
+                </label>
+                <input
+                  type="text"
+                  id="cover_image_url_display"
+                  value={formData.cover_image_url}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      cover_image_url: e.target.value,
+                    }))
+                  }
+                  className={`${inputClass(!!errors.cover_image_url)} mb-2`}
+                  placeholder="Paste image URL or upload"
+                />
+                <input
+                  type="file"
+                  id="cover_image_file_input"
+                  ref={coverImageFileInputRef}
+                  accept="image/*"
+                  onChange={(e) => onFileSelected(e, true)}
+                  className="w-full rounded-none border-2 border-black p-2 font-space text-sm file:mr-2 file:border-0 file:bg-indigo-100 file:px-2 file:py-1 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-200"
+                />
+                {formData.cover_image_url && (
+                  <img
+                    src={formData.cover_image_url}
+                    alt="Cover preview"
+                    className="mt-2 max-h-40 w-full rounded-none border-2 border-black object-contain"
+                  />
+                )}
+                {errors.cover_image_url && (
+                  <p className="mt-1 text-xs font-semibold text-red-600">
+                    {errors.cover_image_url}
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
-          <div className="mt-8 flex flex-col justify-end gap-3 border-t border-zinc-700 pt-6 sm:flex-row sm:space-x-3">
-            <Button type="button" onClick={onCancel} variant="secondary" disabled={isSaving || isUploading}>Cancel</Button>
-            <Button type="submit" disabled={isSaving || isUploading || !formData.title || !formData.slug || !formData.content}>
-              {isSaving ? "Saving..." : isUploading ? "Processing Image..." : post?.id ? "Update Post" : "Create Post"}
-            </Button>
+          <div className="mt-8 flex flex-col justify-end gap-3 border-t-2 border-black pt-6 sm:flex-row sm:space-x-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className={buttonSecondaryClass}
+              disabled={isSaving || isUploading}
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={
+                isSaving ||
+                isUploading ||
+                !formData.title ||
+                !formData.slug ||
+                !formData.content
+              }
+              className={buttonPrimaryClass}
+            >
+              {isSaving
+                ? "Saving..."
+                : isUploading
+                  ? "Processing Image..."
+                  : post?.id
+                    ? "Update Post"
+                    : "Create Post"}
+            </button>
           </div>
         </form>
       </div>

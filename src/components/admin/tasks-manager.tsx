@@ -1,10 +1,3 @@
-// This component has been fully restyled for the dark admin theme.
-// - The Kanban board columns and task cards are now dark with subtle borders.
-// - Hover and drag-over states are updated for the dark theme.
-// - Priority badges have new dark-themed colors.
-// - The dialog for adding/editing tasks and the sub-task UI are also restyled.
-// - Functionality remains identical.
-
 "use client";
 import { useState, useEffect, FormEvent, DragEvent } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,7 +11,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Trash2, Edit, Plus, CheckCircle, Circle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
 
 type Priority = "low" | "medium" | "high";
 type Status = "todo" | "inprogress" | "done";
@@ -29,9 +21,10 @@ const KANBAN_COLUMNS: { id: Status; title: string }[] = [
   { id: "done", title: "Done" },
 ];
 
-// SubTaskList Component
+// SubTask Component
 const SubTaskList = ({ task, onUpdate }: { task: Task, onUpdate: () => void }) => {
   const [newSubTask, setNewSubTask] = useState("");
+
   const handleAddSubTask = async (e: FormEvent) => {
     e.preventDefault();
     if (!newSubTask.trim()) return;
@@ -54,18 +47,20 @@ const SubTaskList = ({ task, onUpdate }: { task: Task, onUpdate: () => void }) =
   const totalCount = task.sub_tasks?.length || 0;
 
   return (
-    <div className="mt-3 space-y-2 pt-2 border-t border-zinc-700">
+    <div className="mt-3 space-y-2 pt-2 border-t border-gray-200">
       {totalCount > 0 && (
-        <div className="flex items-center gap-2 text-xs text-zinc-400">
-          <Progress value={(completedCount / totalCount) * 100} className="h-1" />
+        <div className="flex items-center gap-2 text-xs text-gray-500">
+          <div className="w-full bg-gray-200 h-1.5 rounded-none border border-black">
+            <div className="bg-green-500 h-full transition-all" style={{ width: `${(completedCount / totalCount) * 100}%` }}></div>
+          </div>
           <span>{completedCount}/{totalCount}</span>
         </div>
       )}
       {task.sub_tasks?.map(subTask => (
         <div key={subTask.id} className="group flex items-center gap-2">
           <Checkbox id={`subtask-${subTask.id}`} checked={subTask.is_completed} onCheckedChange={() => handleToggleSubTask(subTask)} className="size-4" />
-          <label htmlFor={`subtask-${subTask.id}`} className={`flex-grow text-sm ${subTask.is_completed ? 'line-through text-zinc-500' : 'text-slate-200'}`}>{subTask.title}</label>
-          <button onClick={() => handleDeleteSubTask(subTask.id)} className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-red-400"><Trash2 className="size-3" /></button>
+          <label htmlFor={`subtask-${subTask.id}`} className={`flex-grow text-sm ${subTask.is_completed ? 'line-through text-gray-500' : 'text-black'}`}>{subTask.title}</label>
+          <button onClick={() => handleDeleteSubTask(subTask.id)} className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-600"><Trash2 className="size-3" /></button>
         </div>
       ))}
       <form onSubmit={handleAddSubTask} className="flex items-center gap-2">
@@ -76,12 +71,13 @@ const SubTaskList = ({ task, onUpdate }: { task: Task, onUpdate: () => void }) =
   );
 };
 
+
 // Main Task Card Component
 const TaskCard = ({ task, onEdit, onDelete, onDragStart, onUpdate }: { task: Task, onEdit: () => void, onDelete: () => void, onDragStart: (e: DragEvent<HTMLDivElement>) => void, onUpdate: () => void }) => {
-  const priorityClasses = {
-    low: "bg-blue-900/50 border-blue-500/30 text-blue-300",
-    medium: "bg-yellow-900/50 border-yellow-500/30 text-yellow-300",
-    high: "bg-red-900/50 border-red-500/30 text-red-300",
+  const priorityClasses: Record<Priority, string> = {
+    low: "bg-blue-200 border-blue-400",
+    medium: "bg-yellow-200 border-yellow-400",
+    high: "bg-red-200 border-red-400",
   };
 
   return (
@@ -93,9 +89,9 @@ const TaskCard = ({ task, onEdit, onDelete, onDragStart, onUpdate }: { task: Tas
       transition={{ duration: 0.2 }}
       draggable="true"
       onDragStart={(e: any) => onDragStart(e as unknown as DragEvent<HTMLDivElement>)} // 👈 type cast
-      className="group cursor-grab active:cursor-grabbing rounded-lg border border-zinc-700 bg-zinc-900 p-3 transition-colors hover:border-accent"
+      className="group cursor-grab active:cursor-grabbing rounded-none border-2 border-black bg-white p-3 shadow-[3px_3px_0_#000] hover:shadow-[4px_4px_0_#4f46e5]"
     >
-      <p className="font-bold text-slate-100 break-words">{task.title}</p>
+      <p className="font-bold text-black break-words">{task.title}</p>
       {(task.sub_tasks && task.sub_tasks.length > 0) ? <SubTaskList task={task} onUpdate={onUpdate} /> : null}
       {(!task.sub_tasks || task.sub_tasks.length === 0) &&
         <div className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -104,17 +100,18 @@ const TaskCard = ({ task, onEdit, onDelete, onDragStart, onUpdate }: { task: Tas
       }
       <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          {task.due_date && <span className="text-xs text-zinc-500">{new Date(task.due_date).toLocaleDateString()}</span>}
-          <span className={`px-1.5 py-0.5 border text-[10px] font-bold rounded-md ${priorityClasses[task.priority || 'medium']}`}>{task.priority}</span>
+          {task.due_date && <span className="text-xs text-gray-500">{new Date(task.due_date).toLocaleDateString()}</span>}
+          <span className={`px-1.5 py-0.5 border text-[10px] font-bold rounded-none ${priorityClasses[task.priority || 'medium']}`}>{task.priority}</span>
         </div>
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <Button variant="ghost" size="icon" className="size-7" onClick={onEdit}><Edit className="size-3.5" /></Button>
-          <Button variant="ghost" size="icon" className="size-7 hover:bg-red-900/50 hover:text-red-300" onClick={onDelete}><Trash2 className="size-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="size-7 hover:bg-red-100 hover:text-red-600" onClick={onDelete}><Trash2 className="size-3.5" /></Button>
         </div>
       </div>
     </motion.div>
   );
 };
+
 
 export default function TaskManager() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -210,11 +207,11 @@ export default function TaskManager() {
 
 
   return (
-    <div className="space-y-6 font-sans">
+    <div className="space-y-6 font-space">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-slate-100">Task Board</h2>
-          <p className="text-zinc-400">Drag and drop tasks to change their status.</p>
+          <h2 className="text-2xl font-bold text-black">Task Board</h2>
+          <p className="text-gray-700">Drag and drop tasks to change their status.</p>
         </div>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild><Button onClick={() => handleOpenDialog()}>+ Add Task</Button></DialogTrigger>
@@ -251,8 +248,8 @@ export default function TaskManager() {
         </Dialog>
       </div>
 
-      {isLoading && <p className="font-semibold text-slate-200">Loading tasks...</p>}
-      {error && <p className="font-semibold text-red-400">{error}</p>}
+      {isLoading && <p className="font-semibold">Loading tasks...</p>}
+      {error && <p className="font-semibold text-red-500">{error}</p>}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {KANBAN_COLUMNS.map(column => (
@@ -261,9 +258,9 @@ export default function TaskManager() {
             onDragOver={(e) => handleDragOver(e, column.id)}
             onDragLeave={handleDragLeave}
             onDrop={(e) => handleDrop(e, column.id)}
-            className={cn("rounded-lg border border-zinc-700 bg-zinc-800/50 p-3 transition-colors", dragOverColumn === column.id && "bg-zinc-700")}
+            className={cn("rounded-none border-2 border-black bg-gray-100 p-3 transition-colors", dragOverColumn === column.id && "bg-yellow-200")}
           >
-            <h3 className="mb-4 border-b border-zinc-700 pb-2 text-lg font-bold text-slate-100">{column.title} ({tasks.filter(t => t.status === column.id).length})</h3>
+            <h3 className="mb-4 border-b-2 border-black pb-2 text-lg font-bold text-black">{column.title} ({tasks.filter(t => t.status === column.id).length})</h3>
             <div className="space-y-3 min-h-[200px]">
               <AnimatePresence>
                 {tasks.filter(t => t.status === column.id).map(task => (

@@ -21,7 +21,6 @@ export default function Newsletter() {
     setMessage("");
 
     try {
-      // Fake API call
       await new Promise((resolve) => setTimeout(resolve, 1500));
 
       setStatus("success");
@@ -31,25 +30,26 @@ export default function Newsletter() {
       setStatus("error");
       setMessage(err.message || "An error occurred. Please try again later.");
     }
+
+
   };
 
   return (
     <motion.section
       initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      className="my-16 rounded-lg border border-zinc-700 bg-zinc-900 p-6 md:p-8"
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.4, duration: 0.5 }}
+      className="mb-12 rounded-none border-2 border-black bg-yellow-100 p-6 font-space shadow-[6px_6px_0px_#000]"
     >
-      <h2 className="mb-2 text-2xl font-bold text-slate-100">Join The Newsletter</h2>
-      <p className="mb-4 text-zinc-400">
+      <h2 className="mb-2 text-2xl font-black text-black">JOIN THE LIST</h2>
+      <p className="mb-4 font-medium text-gray-800">
         Project updates, cool links, and maybe some bad jokes. Straight to your
         inbox. No spam, ever.
       </p>
 
       <form
         onSubmit={handleSubmit}
-        className="flex flex-col items-stretch gap-3 sm:flex-row sm:items-start"
+        className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-start"
       >
         <Input
           type="email"
@@ -65,6 +65,7 @@ export default function Newsletter() {
           type="submit"
           disabled={status === "loading" || !email.trim()}
           className="h-11 px-6 text-base"
+          variant="default"
         >
           {status === "loading" ? "Subscribing..." : "Subscribe"}
         </Button>
@@ -74,12 +75,12 @@ export default function Newsletter() {
         {message && (
           <motion.p
             initial={{ opacity: 0, height: 0, marginTop: 0 }}
-            animate={{ opacity: 1, height: "auto", marginTop: "1rem" }}
+            animate={{ opacity: 1, height: "auto", marginTop: "0.75rem" }}
             exit={{ opacity: 0, height: 0, marginTop: 0 }}
             transition={{ duration: 0.3 }}
-            className={`rounded-md p-3 text-sm font-semibold
-              ${status === "success" ? "border border-green-500/30 bg-green-900/20 text-green-300" : ""}
-              ${status === "error" ? "border border-red-500/30 bg-red-900/20 text-red-300" : ""}`}
+            className={`rounded-none border-2 p-2 text-sm font-bold
+          ${status === "success" ? "border-green-600 bg-green-100 text-green-700" : ""}
+          ${status === "error" ? "border-red-600 bg-red-100 text-red-700" : ""}`}
             role={status === "error" ? "alert" : "status"}
           >
             {message}
