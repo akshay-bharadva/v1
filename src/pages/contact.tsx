@@ -59,8 +59,8 @@ export default function ContactPage() {
           transition={{ duration: 0.5 }}
           className="mb-16 text-center"
         >
-          <h1 className="text-5xl font-black text-slate-100 md:text-6xl">Get In Touch</h1>
-          <p className="mx-auto mt-4 max-w-2xl text-xl text-slate-400">
+          <h1 className="text-5xl font-black text-foreground md:text-6xl">Get In Touch</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-xl text-muted-foreground">
             Have a project in mind or just want to say hello? I'd love to hear from you.
           </p>
           <div className="mt-8 flex justify-center gap-4">
@@ -80,7 +80,7 @@ export default function ContactPage() {
 
         {(isLoading || (!isLoading && serviceSection?.portfolio_items && serviceSection.portfolio_items.length > 0)) && (
           <motion.div className="mt-24">
-              <h2 className="mb-10 text-center text-4xl font-bold text-slate-400">What I Can Do For You</h2>
+              <h2 className="mb-10 text-center text-4xl font-bold text-muted-foreground">What I Can Do For You</h2>
               {isLoading && (
                  <div className="flex justify-center"><div className="mb-4 w-10 h-10 animate-spin rounded-full border-4 border-accent border-l-transparent"></div></div>
               )}
@@ -95,14 +95,14 @@ export default function ContactPage() {
                     <motion.div 
                       key={service.id}
                       variants={itemVariants}
-                      className="flex h-full flex-col rounded-lg border border-white/10 bg-zinc-900 p-8"
+                      className="flex h-full flex-col rounded-lg border bg-card text-card-foreground shadow-sm p-8 transition-transform duration-200 hover:-translate-y-1"
                     >
-                      <h3 className="mb-3 text-2xl font-bold text-slate-100">{service.title}</h3>
-                      <p className="mb-6 flex-grow text-slate-400">{service.subtitle}</p>
+                      <h3 className="mb-3 text-2xl font-bold text-foreground">{service.title}</h3>
+                      <p className="mb-6 flex-grow text-muted-foreground">{service.subtitle}</p>
                       {service.tags && (
                         <ul className="mb-8 space-y-3">
                           {service.tags.map(tag => (
-                            <li key={tag} className="flex items-start text-slate-300">
+                            <li key={tag} className="flex items-start text-muted-foreground">
                               <Check className="mr-3 mt-1 size-4 shrink-0 text-accent" />
                               <span>{tag}</span>
                             </li>
