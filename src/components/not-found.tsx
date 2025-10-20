@@ -8,7 +8,7 @@ type NotFoundProps = PropsWithChildren;
 export default function NotFound({ children }: NotFoundProps) {
 return (
 <section className="my-8 rounded-none border-2 border-black bg-white p-8 py-12 text-center font-space shadow-[8px_8px_0px_#000]">
-<div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-none border-2 border-black bg-red-500 text-5xl font-black text-white shadow-[2px_2px_0px_#000]">
+<div className="mx-auto mb-6 w-20 h-20 flex items-center justify-center rounded-none border-2 border-black bg-red-500 text-5xl font-black text-white shadow-[2px_2px_0px_#000]">
 !
 </div>
 <h1 className="mb-3 text-4xl font-black text-black">

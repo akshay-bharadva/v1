@@ -19,7 +19,7 @@ const NAV_LINKS: NavLink[] = [
   { href: "/projects", label: "Projects" },
   { href: "/blog", label: "Blog" },
   { href: "/about", label: "About" },
-  { href: "/hire-me", label: "Hire Me" }
+  { href: "/contact", label: "Contact" }
 ];
 
 export default function Header({ children }: HeaderProps) {

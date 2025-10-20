@@ -1,3 +1,11 @@
+/*
+This file is heavily redesigned for the kinetic typography theme.
+- The `markdownComponents` are updated to render clean, unstyled HTML. All styling is now handled by the Tailwind Typography plugin (`prose dark:prose-invert`) for automatic theme support.
+- The custom code block styling is simplified, removing the neo-brutalist elements.
+- The overall page layout is cleaner, with a two-column design on larger screens for the article and a sticky sidebar for metadata.
+- `PostHeader`, `AuthorInfo`, and `PostTagsSidebar` are restyled to be minimalist and modern, using components from the UI kit where appropriate (`Avatar`, `Badge`).
+- The "Not Found" display is redesigned to match the new, clean aesthetic.
+*/
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/supabase/client";
@@ -6,169 +14,87 @@ import Head from "next/head";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { dark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Layout from "@/components/layout";
 import { config as appConfig } from "@/lib/config";
 import { formatDate } from "@/lib/utils";
-import { Calendar, Eye } from "lucide-react";
+import { Calendar, Eye, Copy, Check, Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
-// Markdown components (styling for the article body)
-const markdownComponents: any = {
-  code({ node, inline, className, children, ...props }: any) {
-    const match = /language-(\w+)/.exec(className || "");
-    return !inline && match ? (
-      <div className="my-6 overflow-hidden rounded-none border-2 border-black font-space bg-gray-800 shadow-[4px_4px_0_#000]">
-        <div className="flex items-center justify-between border-b-2 border-black bg-black px-3 py-1.5 font-mono text-xs text-gray-300">
-          <span>{match[1].toUpperCase()}</span>
-          <button
-            onClick={() => navigator.clipboard.writeText(String(children))}
-            className="rounded-none border border-gray-600 bg-gray-700 px-2 py-0.5 text-xs text-gray-300 hover:bg-gray-600"
-            aria-label="Copy code to clipboard"
-          >
-            Copy
-          </button>
-        </div>
-        <SyntaxHighlighter>
-          {String(children).replace(/\n$/, "")}
-        </SyntaxHighlighter>
-        {/* <SyntaxHighlighter 
-          style={dark}
-          language={match[1]}
-          PreTag="div" // Use div to avoid pre-within-pre issues
-          className="!m-0 !p-4 !bg-transparent overflow-x-auto font-mono text-sm"
-          showLineNumbers
-          {...props}
-        >
-          {String(children).replace(/\n$/, "")}
-        </SyntaxHighlighter > */}
+const CodeBlock = ({ className, children }: { className?: string, children: React.ReactNode }) => {
+  const [isCopied, setIsCopied] = useState(false);
+  const match = /language-(\w+)/.exec(className || "");
+  const lang = match ? match[1] : "bash";
+  const codeString = String(children).replace(/\n$/, "");
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(codeString);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
+  return (
+    <div className="relative my-6 rounded-lg border bg-secondary/50 font-sans">
+      <div className="flex items-center justify-between px-4 py-1.5 text-xs">
+        <span className="font-sans text-muted-foreground">{lang}</span>
+        <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground" onClick={handleCopy}>
+          {isCopied ? <Check className="size-4 text-accent" /> : <Copy className="size-4" />}
+        </Button>
       </div>
-    ) : (
-      <code
-        className={`${className || ""} rounded-none border border-black bg-yellow-200 px-1 py-0.5 font-mono text-sm text-black`}
-        {...props}
+      <SyntaxHighlighter
+        style={vscDarkPlus}
+        language={lang}
+        PreTag="div"
+        className="!m-0 !p-4 !bg-transparent overflow-x-auto text-sm"
       >
-        {children}
-      </code>
-    );
-  },
-  img: ({ node, ...props }: any) => (
-    <img
-      {...props}
-      loading="lazy"
-      className="my-8 h-auto max-h-[80vh] w-full rounded-none border-2 border-black object-contain shadow-[4px_4px_0_#000]"
-      alt={props.alt || "Blog image"}
-    />
-  ),
-  blockquote: ({ node, ...props }: any) => (
-    <blockquote
-      className="my-6 rounded-none border-l-4 border-black bg-gray-100 px-4 py-3 font-space italic text-black"
-      {...props}
-    />
-  ),
-  h2: ({ node, ...props }: any) => (
-    <h2
-      className="mb-4 mt-8 border-b-2 border-black pb-2 font-space text-2xl font-black text-black sm:text-3xl"
-      {...props}
-    />
-  ),
-  h3: ({ node, ...props }: any) => (
-    <h3
-      className="mb-3 mt-6 font-space text-xl font-bold text-black sm:text-2xl"
-      {...props}
-    />
-  ),
-  p: ({ node, ...props }: any) => (
-    <p
-      className="mb-6 font-space text-base leading-relaxed text-gray-800"
-      {...props}
-    />
-  ),
-  ul: ({ node, ...props }: any) => (
-    <ul
-      className="mb-6 list-inside list-disc space-y-2 pl-4 font-space text-gray-800"
-      {...props}
-    />
-  ),
-  ol: ({ node, ...props }: any) => (
-    <ol
-      className="mb-6 list-inside list-decimal space-y-2 pl-4 font-space text-gray-800"
-      {...props}
-    />
-  ),
-  li: ({ node, ...props }: any) => (
-    <li className="mb-2 font-space leading-relaxed" {...props} />
-  ),
-  a: ({ node, ...props }: any) => (
-    <a
-      className="font-space font-bold text-indigo-700 underline transition-colors hover:bg-yellow-200 hover:text-indigo-900"
-      target="_blank"
-      rel="noopener noreferrer"
-      {...props}
-    />
-  ),
-  table: ({ node, ...props }: any) => (
-    <div className="my-6 overflow-x-auto rounded-none border-2 border-black font-space shadow-[4px_4px_0_#000]">
-      <table className="min-w-full border-collapse bg-white" {...props} />
+        {codeString}
+      </SyntaxHighlighter>
     </div>
-  ),
-  th: ({ node, ...props }: any) => (
-    <th
-      className="border border-gray-500 bg-black px-4 py-2 text-left font-space font-bold text-white"
-      {...props}
-    />
-  ),
-  td: ({ node, ...props }: any) => (
-    <td className="border border-gray-400 px-4 py-2 font-space" {...props} />
-  ),
-  hr: ({ node, ...props }: any) => (
-    <hr className="my-10 border-t-2 border-black" {...props} />
+  );
+};
+
+const markdownComponents: any = {
+  code: (props: any) => <CodeBlock {...props} />,
+  img: ({ node, ...props }: any) => (
+    <img {...props} loading="lazy" className="my-8 h-auto max-h-[80vh] w-full rounded-lg border object-contain" alt={props.alt || "Blog image"} />
   ),
 };
 
 const PostHeader = ({ post }: { post: BlogPost }) => (
-  <header className="mb-10 font-space">
-    <h1 className="mb-4 text-2xl font-black leading-tight text-black md:text-3xl lg:text-4xl">
+  <header className="mb-8">
+    <h1 className="mb-4 text-3xl font-black leading-tight tracking-tighter text-foreground md:text-4xl lg:text-5xl">
       {post.title}
     </h1>
-    {post.excerpt && (
-      <p className="mt-4 text-lg leading-relaxed text-gray-600 md:text-xl">
-        {post.excerpt}
-      </p>
-    )}
+    {post.excerpt && <p className="text-lg text-muted-foreground md:text-xl">{post.excerpt}</p>}
   </header>
 );
 
 const AuthorInfo = ({ author, postDate, views }: { author: string; postDate: string | Date; views: number }) => (
   <div className="flex items-center gap-3">
-    {/* <Avatar>
+    <Avatar>
       <AvatarImage src="https://avatars.githubusercontent.com/u/52954931?v=4" alt={author} />
       <AvatarFallback>{author.slice(0, 2).toUpperCase()}</AvatarFallback>
-    </Avatar> */}
+    </Avatar>
     <div className="text-sm">
-      <p className="font-bold text-black">{author}</p>
-      <div className="flex items-center gap-2 text-gray-500">
-        <time dateTime={new Date(postDate).toISOString()}>
-          {formatDate(postDate, { month: 'short', day: 'numeric' })}
-        </time>
+      <p className="font-semibold text-foreground">{author}</p>
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <time dateTime={new Date(postDate).toISOString()}>{formatDate(postDate)}</time>
         <span>·</span>
-        <span>{views} views</span>
+        <div className="flex items-center gap-1"><Eye className="size-3.5" /><span>{views.toLocaleString()} views</span></div>
       </div>
     </div>
   </div>
 );
 
 const PostContent = ({ content }: { content: string }) => (
-  <div className="prose prose-nb max-w-none font-space text-black">
-    <ReactMarkdown
-      remarkPlugins={[remarkGfm]}
-      rehypePlugins={[rehypeRaw]}
-      components={markdownComponents}
-    >
+  <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none focus:outline-none">
+    <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]} components={markdownComponents}>
       {content}
     </ReactMarkdown>
   </div>
@@ -176,32 +102,27 @@ const PostContent = ({ content }: { content: string }) => (
 
 const PostTagsSidebar = ({ tags }: { tags: string[] }) => (
   <div>
-    <h3 className="mb-3 text-sm font-bold uppercase tracking-wider text-black">Tags</h3>
+    <h3 className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">Tags</h3>
     <div className="flex flex-wrap gap-2">
       {tags.map((tag) => (
-        <Link
-          href={`/blog/tags/${encodeURIComponent(tag.toLowerCase())}`}
-          key={tag}
-          className="inline-block rounded-full bg-gray-200 px-3 py-1 text-sm font-semibold text-gray-700 transition-colors hover:bg-gray-300 hover:text-black"
-        >
-          {tag}
-        </Link>
+        <Badge key={tag} variant="secondary">
+          <Link href={`/blog/tags/${encodeURIComponent(tag.toLowerCase())}`}>{tag}</Link>
+        </Badge>
       ))}
     </div>
   </div>
 );
 
-
 const NotFoundDisplay = () => (
-  <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center bg-yellow-100 p-4 font-space">
-    <Head><title>Post Not Found | Blog</title><meta name="robots" content="noindex" /></Head>
-    <div className="rounded-none border-2 border-black bg-white p-8 text-center shadow-[8px_8px_0_#000] sm:p-12">
-      <div className="mx-auto mb-6 flex size-20 items-center justify-center rounded-none border-2 border-black bg-red-500 text-4xl font-black text-white">!</div>
-      <h1 className="mb-2 text-3xl font-black text-black">404 - Post Not Found</h1>
-      <p className="mb-8 text-lg text-gray-700">The page you seek is lost in the digital ether.</p>
-      <Link href="/blog" className="inline-flex items-center rounded-none border-2 border-black bg-black px-6 py-3 font-bold text-white shadow-[4px_4px_0px_#333] transition-all hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-gray-800 hover:shadow-[2px_2px_0px_#333] active:translate-x-[4px] active:translate-y-[4px] active:shadow-none">Back to Blog</Link>
+    <div className="flex min-h-[calc(100vh-10rem)] items-center justify-center p-4">
+        <Head><title>Post Not Found | Blog</title><meta name="robots" content="noindex" /></Head>
+        <div className="w-full max-w-md text-center">
+            <h1 className="text-6xl font-black text-foreground">404</h1>
+            <p className="mt-2 text-xl font-medium text-muted-foreground">Post Not Found</p>
+            <p className="mt-4 text-muted-foreground">The page you're looking for doesn't exist or has been moved.</p>
+            <Button asChild className="mt-8"><Link href="/blog">Back to Blog</Link></Button>
+        </div>
     </div>
-  </div>
 );
 
 export default function BlogPostPage() {
@@ -239,17 +160,17 @@ export default function BlogPostPage() {
         try { await supabase.rpc("increment_blog_post_view", { post_id_to_increment: post.id }); }
         catch (rpcError) { console.error("Failed to increment view count", rpcError); }
       };
-      const timeoutId = setTimeout(incrementViewCount, 2000);
+      const timeoutId = setTimeout(incrementViewCount, 3000); // Increased delay
       return () => clearTimeout(timeoutId);
     }
   }, [post?.id]);
 
-  if (loading) { return <Layout><div className="flex min-h-screen items-center justify-center bg-gray-100 font-space"><div className="rounded-none border-2 border-black bg-white p-6 text-lg font-bold">Loading Post...</div></div></Layout>; }
-  if (error) { return <Layout><div className="flex min-h-screen items-center justify-center bg-red-100 p-4 font-space"><div className="rounded-none border-2 border-red-500 bg-white p-6 font-semibold text-red-700">Error: {error}. <Link href="/blog" className="underline hover:text-black">Back to blog</Link></div></div></Layout>; }
+  if (loading) { return <Layout><div className="flex min-h-screen items-center justify-center"><Loader2 className="size-8 animate-spin text-muted-foreground"/></div></Layout>; }
+  if (error) { return <Layout><div className="flex min-h-screen items-center justify-center p-4"><div className="rounded-md border border-destructive/50 bg-destructive/10 p-6 font-medium text-destructive">Error: {error}. <Link href="/blog" className="underline hover:text-foreground">Back to blog</Link></div></div></Layout>; }
   if (!post) { return <Layout><NotFoundDisplay /></Layout>; }
 
   const postUrl = `${siteConfig.url}/blog/${post.slug}/`;
-  const metaDescription = post.excerpt || post.title.substring(0, 160);
+  const metaDescription = post.excerpt || post.content?.substring(0, 160).replace(/\n/g, ' ') || post.title;
 
   return (
     <Layout>
@@ -260,33 +181,27 @@ export default function BlogPostPage() {
         <meta property="og:description" content={metaDescription} />
         <meta property="og:type" content="article" />
         <meta property="og:url" content={postUrl} />
-        {post.cover_image_url ? (<><meta property="og:image" content={post.cover_image_url} /><meta name="twitter:image" content={post.cover_image_url} /></>) : (<><meta property="og:image" content={siteConfig.defaultOgImage} /><meta name="twitter:image" content={siteConfig.defaultOgImage} /></>)}
+        <meta property="og:image" content={post.cover_image_url || siteConfig.defaultOgImage} />
         <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:image" content={post.cover_image_url || siteConfig.defaultOgImage} />
         <link rel="canonical" href={postUrl} />
       </Head>
 
-      <main className="bg-white py-8 font-space md:py-12">
-        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto max-w-7xl px-4">
+      <main className="py-8 md:py-16">
+        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="mx-auto max-w-5xl px-4">
           <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-x-12">
-
             <article className="lg:col-span-9">
               <PostHeader post={post} />
-              <hr className="my-8 border-gray-200" />
-              {post.cover_image_url && (
-                <div className="my-8">
-                  <img src={post.cover_image_url} alt={post.title} className="w-full h-auto rounded-none border-2 border-black object-cover" />
-                </div>
-              )}
+              {post.cover_image_url && <img src={post.cover_image_url} alt={post.title} className="my-8 w-full h-auto rounded-lg border object-cover" />}
+              <Separator className="my-8" />
               {post.content && <PostContent content={post.content} />}
             </article>
-
             <aside className="hidden lg:block lg:col-span-3">
               <div className="sticky top-28 space-y-8">
                 <AuthorInfo author={siteConfig.author} postDate={post.published_at || post.created_at || new Date()} views={post.views || 0} />
                 {post.tags && post.tags.length > 0 && <PostTagsSidebar tags={post.tags} />}
               </div>
             </aside>
-
           </div>
         </motion.div>
       </main>
