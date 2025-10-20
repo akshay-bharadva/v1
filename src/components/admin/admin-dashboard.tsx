@@ -23,9 +23,16 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
   Banknote,
   BookText,
   CheckCircle,
+  ChevronDown,
   Eye,
   LayoutTemplate,
   ListTodo,
@@ -74,26 +81,29 @@ export default function AdminDashboard({
   }, []);
 
   const tabs = [
-    { id: "dashboard", label: "Overview", icon: <FaChartLine /> },
-    { id: "blogs", label: "Blog", icon: <BookText /> },
-    { id: "content", label: "Content", icon: <LayoutTemplate /> },
-    { id: "tasks", label: "Tasks", icon: <ListTodo /> },
-    { id: "notes", label: "Notes", icon: <StickyNote /> },
-    { id: "finance", label: "Finance", icon: <Banknote /> },
-    { id: "security", label: "Security", icon: <Lock /> },
+    { id: "dashboard", label: "Overview", icon: <FaChartLine className="size-4" /> },
+    { id: "blogs", label: "Blog", icon: <BookText className="size-4" /> },
+    { id: "content", label: "Content", icon: <LayoutTemplate className="size-4" /> },
+    { id: "tasks", label: "Tasks", icon: <ListTodo className="size-4" /> },
+    { id: "notes", label: "Notes", icon: <StickyNote className="size-4" /> },
+    { id: "finance", label: "Finance", icon: <Banknote className="size-4" /> },
+    { id: "security", label: "Security", icon: <Lock className="size-4" /> },
   ];
 
   const handleActionCompleted = () => {
     setInitialAction(null);
   };
+  
+  const activeTabInfo = tabs.find((tab) => tab.id === activeTab);
 
   const StatCard: React.FC<{
     title: string;
     value: string | number;
     icon?: JSX.Element;
     className?: string;
-  }> = ({ title, value, icon, className }) => (
-    <Card className={className}>
+    bgColor?: string
+  }> = ({ title, value, icon, className, bgColor = "bg-white" }) => (
+    <Card className={`${className}  ${bgColor}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
@@ -139,7 +149,9 @@ export default function AdminDashboard({
         </div>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
-          <nav className="flex flex-row gap-1 lg:w-48 lg:flex-col">
+          {/* --- RESPONSIVE NAVIGATION --- */}
+          {/* Desktop Sidebar Navigation (Visible on lg screens and up) */}
+          <nav className="hidden lg:flex lg:w-48 lg:flex-col lg:gap-1">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
@@ -151,9 +163,42 @@ export default function AdminDashboard({
                 }}
               >
                 {tab.icon}
-                <span className="hidden lg:inline">{tab.label}</span>
+                <span>{tab.label}</span>
               </Button>
             ))}
+          </nav>
+
+          {/* Mobile Dropdown Navigation (Hidden on lg screens and up) */}
+          <nav className="lg:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="w-full justify-between">
+                  <div className="flex items-center gap-2">
+                    {activeTabInfo?.icon}
+                    <span>{activeTabInfo?.label}</span>
+                  </div>
+                  <ChevronDown className="size-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="w-[--radix-dropdown-menu-trigger-width]"
+                align="start"
+              >
+                {tabs.map((tab) => (
+                  <DropdownMenuItem
+                    key={tab.id}
+                    onClick={() => {
+                      setActiveTab(tab.id as ActiveTab);
+                      setInitialAction(null);
+                    }}
+                    className="gap-2"
+                  >
+                    {tab.icon}
+                    <span>{tab.label}</span>
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
           </nav>
 
           <main className="flex-1">
@@ -172,9 +217,9 @@ export default function AdminDashboard({
                       Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4" />} />
-                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4" />} />
-                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} />
+                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4" />} bgColor="bg-green-100" />
+                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4" />} bgColor="bg-red-100" />
+                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} bgColor={dashboardData.stats.monthlyNet >= 0 ? "bg-blue-100" : "bg-orange-100"} />
                       </>
                     )}
                   </div>
@@ -187,10 +232,10 @@ export default function AdminDashboard({
                       Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />} />
-                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} />
-                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} />
-                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} />
+                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />} bgColor="bg-purple-100"  />
+                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} bgColor="bg-green-100" />
+                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} bgColor="bg-orange-100" />
+                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} bgColor="bg-yellow-100" />
                       </>
                     )}
                   </div>

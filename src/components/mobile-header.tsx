@@ -90,12 +90,12 @@ export default function MobileHeader() {
               <div className="mt-auto">
                 <Button
                   variant="outline"
-                  className="w-full justify-start gap-3"
+                  className="w-full justify-center gap-3"
                   onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 >
-                  <Sun className="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                  <Moon className="absolute left-3 top-1/2 -translate-y-1/2 size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                  <span className="ml-1">Toggle Theme</span>
+                  <Sun className="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 block dark:hidden" />
+                  <Moon className="size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 hidden dark:block" />
+                  <span className="ml-1">Theme</span>
                 </Button>
               </div>
             </div>
