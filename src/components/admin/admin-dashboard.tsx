@@ -295,7 +295,7 @@ export default function AdminDashboard({
                 className="rounded-lg border border-border bg-card p-4 sm:p-6"
               >
                 {activeTab === "blogs" && <BlogManager startInCreateMode={initialAction === "createBlogPost"} onActionHandled={handleActionCompleted} />}
-                {activeTab === "content" && <ContentManager startInCreateMode={initialAction === "createPortfolioSection"} onActionHandled={handleActionCompleted} />}
+                {activeTab === "content" && <ContentManager />}
                 {activeTab === "tasks" && <TaskManager />}
                 {activeTab === "notes" && <NotesManager />}
                 {activeTab === "finance" && <FinanceManager />}
