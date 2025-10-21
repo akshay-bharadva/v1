@@ -58,7 +58,7 @@ export default function Projects({ children }: ProjectsProps) {
   }, []);
 
   return (
-    <section className="my-8 font-space">
+    <section className="my-8 ">
       <h2 className="mb-8 border-b-4 border-black pb-3 text-3xl font-black text-black">
         Projects
       </h2>

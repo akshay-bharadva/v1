@@ -44,7 +44,7 @@ desc: "The go-to tool for API testing and development. Simplifies debugging endp
 
 export default function Tools({ children }: ToolsProps) {
 return (
-<section className="my-12 font-space">
+<section className="my-12 ">
 <h2 className="mb-6 border-b-4 border-black pb-2 text-3xl font-black text-black">
 Tools I Use
 </h2>

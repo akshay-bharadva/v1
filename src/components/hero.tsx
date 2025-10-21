@@ -4,7 +4,7 @@ type HeroProps = PropsWithChildren;
 
 export default function Hero({ children }: HeroProps) {
 return (
-<section className="my-8 rounded-none border-2 border-black bg-yellow-100 p-6 py-8 font-space shadow-[6px_6px_0px_#000]">
+<section className="my-8 rounded-none border-2 border-black bg-yellow-100 p-6 py-8  shadow-[6px_6px_0px_#000]">
 <div className="flex flex-col gap-4">
 <p className="text-base leading-relaxed text-gray-800">
 Heya! I'm a full-stack developer and life-long learner from

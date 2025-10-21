@@ -7,7 +7,7 @@ import { supabase } from "@/supabase/client";
 import { Pin, PinOff, Edit, Trash2 } from "lucide-react";
 
 const buttonPrimaryClass =
-  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-150 font-space";
+  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all duration-150 ";
 
 export default function NotesManager() {
   const [notes, setNotes] = useState<Note[]>([]);
@@ -116,7 +116,7 @@ export default function NotesManager() {
   }
 
   return (
-    <div className="space-y-6 font-space">
+    <div className="space-y-6 ">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-black">Personal Notes</h2>

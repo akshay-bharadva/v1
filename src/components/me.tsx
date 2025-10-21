@@ -5,7 +5,7 @@ type MeProps = PropsWithChildren;
 
 export default function Me({ children }: MeProps) {
 return (
-<section className="py-8 font-space">
+<section className="py-8 ">
 <div className="mb-10 flex size-full flex-col items-center justify-center gap-5">
 <div className="flex flex-col items-center gap-4 rounded-none border-2 border-black bg-white p-4 shadow-[6px_6px_0px_#000] sm:flex-row sm:gap-6">
 <Image

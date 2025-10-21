@@ -788,7 +788,7 @@ export default function UiDocumentationPage() {
           }
         }
       `}</style>
-      <div className="flex min-h-[calc(100vh-var(--header-height))] flex-col bg-gray-100 font-space md:flex-row">
+      <div className="flex min-h-[calc(100vh-var(--header-height))] flex-col bg-gray-100  md:flex-row">
         {/* Left Sidebar */}
         <aside className="w-full overflow-y-auto border-b-2 border-black bg-yellow-100 p-3 shadow-[3px_0px_0px_#000_inset] md:sticky md:top-[var(--header-height)] md:h-[calc(100vh-var(--header-height))] md:w-[30%] md:max-w-xs md:border-b-0 md:border-r-4">
           <h2 className="mb-2 border-b-2 border-black pb-1.5 text-lg font-black text-black">

@@ -6,17 +6,17 @@ import BlogEditor from "./blog-editor";
 import { supabase } from "@/supabase/client";
 
 const inputClass =
-  "w-full px-3 py-2 border-2 border-black rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 font-space";
+  "w-full px-3 py-2 border-2 border-black rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 ";
 const selectClass =
-  "px-3 py-2 border-2 border-black rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white font-space";
+  "px-3 py-2 border-2 border-black rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white ";
 const buttonPrimaryClass = (fullWidth = false) =>
-  `bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150 font-space ${fullWidth ? "w-full" : ""}`;
+  `bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150  ${fullWidth ? "w-full" : ""}`;
 const buttonActionClass = (
   color: string,
   bgColorHover: string,
   textColor: string = "text-black",
 ) =>
-  `px-3 py-1 rounded-none text-sm font-semibold border-2 border-black shadow-[2px_2px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-[1px_1px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50 transition-all duration-100 font-space ${color} hover:${bgColorHover} ${textColor}`;
+  `px-3 py-1 rounded-none text-sm font-semibold border-2 border-black shadow-[2px_2px_0px_#000] hover:translate-x-[0.5px] hover:translate-y-[0.5px] hover:shadow-[1px_1px_0px_#000] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-50 transition-all duration-100  ${color} hover:${bgColorHover} ${textColor}`;
 
 interface BlogManagerProps {
   startInCreateMode?: boolean;
@@ -184,14 +184,14 @@ export default function BlogManager({ startInCreateMode, onActionHandled }: Blog
 
   if (isLoading && posts.length === 0 && !isCreating && !editingPost && !error) {
     return (
-      <div className="p-4 font-space font-semibold text-black">
+      <div className="p-4  font-semibold text-black">
         Loading blog posts...
       </div>
     );
   }
   if (error && !isCreating && !editingPost) {
     return (
-      <div className="rounded-none border-2 border-red-500 bg-red-100 p-4 font-space font-semibold text-red-700">
+      <div className="rounded-none border-2 border-red-500 bg-red-100 p-4  font-semibold text-red-700">
         {error}
       </div>
     );
@@ -208,7 +208,7 @@ export default function BlogManager({ startInCreateMode, onActionHandled }: Blog
   }
 
   return (
-    <div className="space-y-6 font-space">
+    <div className="space-y-6 ">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-black">Blog Posts</h2>
@@ -282,7 +282,7 @@ export default function BlogManager({ startInCreateMode, onActionHandled }: Blog
                           {post.title}
                         </h3>
                         <span
-                          className={`inline-flex items-center rounded-none border-2 border-black px-2 py-0.5 font-space text-xs font-bold ${post.published
+                          className={`inline-flex items-center rounded-none border-2 border-black px-2 py-0.5  text-xs font-bold ${post.published
                             ? "bg-green-300 text-black"
                             : "bg-yellow-300 text-black"
                             }`}
@@ -310,7 +310,7 @@ export default function BlogManager({ startInCreateMode, onActionHandled }: Blog
                           {post.tags.map((tag: string) => (
                               <span
                                 key={tag}
-                                className="inline-flex items-center rounded-none border border-black bg-gray-200 px-2 py-1 font-space text-xs text-black"
+                                className="inline-flex items-center rounded-none border border-black bg-gray-200 px-2 py-1  text-xs text-black"
                               >
                                 {tag}
                               </span>

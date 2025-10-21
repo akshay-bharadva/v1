@@ -1,6 +1,6 @@
 /*
 This file is completely redesigned to match the new kinetic typography and dark theme.
-- All neo-brutalist styles (`border-2`, `shadow-[...]`, `rounded-none`, `font-space`) have been removed.
+- All neo-brutalist styles (`border-2`, `shadow-[...]`, `rounded-none`, ``) have been removed.
 - The layout is now cleaner, using modern spacing and the redesigned `Card` component for stats.
 - The tab navigation has been replaced with the redesigned `Tabs` component for a more integrated feel.
 - The custom `StatCard` component is removed; `Card` and standard flexbox are used instead for a consistent look.

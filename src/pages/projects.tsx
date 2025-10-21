@@ -2,7 +2,7 @@
 This file is updated for the new design system.
 - The `Layout` component provides the page structure.
 - All specific styling and presentation are now handled by the `ProjectsComponent`, which will be updated next.
-- The `font-space` class is removed, as `font-sans` is the new global default.
+- The `` class is removed, as `font-sans` is the new global default.
 - Head tags and metadata remain unchanged.
 */
 import Layout from "@/components/layout";

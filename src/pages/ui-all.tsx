@@ -408,7 +408,7 @@ export default function UiPage() {
 
   return (
     <Layout>
-      <div className="container mx-auto px-4 py-12 font-space">
+      <div className="container mx-auto px-4 py-12 ">
         <h1 className="mb-12 border-b-4 border-black pb-4 text-center text-5xl font-black">
           UI Component Showcase
         </h1>

@@ -10,9 +10,9 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 const buttonPrimaryClass =
-  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded-none font-bold border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 font-space";
+  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-3 rounded-none font-bold border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 ";
 const buttonDangerClass =
-  "bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded-none font-bold border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 font-space";
+  "bg-red-500 hover:bg-red-600 text-white py-2 px-3 rounded-none font-bold border-2 border-black shadow-[3px_3px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[1.5px_1.5px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed transition-all duration-150 ";
 
 export default function SecuritySettings() {
   const [factors, setFactors] = useState<Factor[]>([]);
@@ -108,7 +108,7 @@ export default function SecuritySettings() {
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-4xl font-space"
+      className="mx-auto max-w-4xl "
     >
       <div className="rounded-none border-2 border-black bg-white">
         <div className="border-b-2 border-black bg-gray-100 px-6 py-4">
@@ -145,7 +145,7 @@ export default function SecuritySettings() {
                 </p>
               </div>
               <span
-                className={`inline-flex items-center rounded-none border-2 border-black px-2.5 py-0.5 font-space text-xs font-bold ${
+                className={`inline-flex items-center rounded-none border-2 border-black px-2.5 py-0.5  text-xs font-bold ${
                   mfaEnabled
                     ? "bg-green-300 text-black"
                     : "bg-yellow-300 text-black"

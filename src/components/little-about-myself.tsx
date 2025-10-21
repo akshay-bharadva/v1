@@ -9,7 +9,7 @@ export default function LittleAboutMyself({
 children,
 }: LittleAboutMyselfProps) {
 return (
-<section className="py-16 font-space">
+<section className="py-16 ">
 <div className="flex size-full flex-col items-center justify-center gap-8 text-center">
 <div className="flex flex-col gap-1 text-5xl sm:text-6xl md:text-7xl">
 <p className="text-4xl text-gray-700 sm:text-5xl">Heya, I'm</p>

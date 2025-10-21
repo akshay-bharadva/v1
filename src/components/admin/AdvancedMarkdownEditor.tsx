@@ -39,7 +39,7 @@ export default function AdvancedMarkdownEditor({
   return (
     <div
       className={cn(
-        "rounded-none border-2 border-black font-space bg-white",
+        "rounded-none border-2 border-black  bg-white",
         isFullScreen && "fixed inset-0 z-50 flex flex-col",
       )}
     >
@@ -51,7 +51,7 @@ export default function AdvancedMarkdownEditor({
           <button
             type="button"
             onClick={onImageUploadRequest}
-            className="w-full flex-1 rounded-none border-2 border-black bg-blue-500 px-3 py-1 font-space text-xs text-white shadow-[2px_2px_0px_#000] transition-all hover:bg-blue-600 active:translate-x-px active:translate-y-px active:shadow-none sm:w-auto sm:flex-initial"
+            className="w-full flex-1 rounded-none border-2 border-black bg-blue-500 px-3 py-1  text-xs text-white shadow-[2px_2px_0px_#000] transition-all hover:bg-blue-600 active:translate-x-px active:translate-y-px active:shadow-none sm:w-auto sm:flex-initial"
           >
             Upload Image to Content
           </button>

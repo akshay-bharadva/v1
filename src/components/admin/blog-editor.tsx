@@ -16,12 +16,12 @@ interface BlogEditorProps {
 const bucketName = process.env.NEXT_PUBLIC_BUCKET_NAME || "blog-assets";
 
 const inputClass = (hasError: boolean) =>
-  `w-full px-3 py-2 border-2 rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 font-space ${hasError ? "border-red-500" : "border-black"}`;
+  `w-full px-3 py-2 border-2 rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500  ${hasError ? "border-red-500" : "border-black"}`;
 
 const buttonPrimaryClass =
-  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150 font-space";
+  "bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150 ";
 const buttonSecondaryClass =
-  "bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150 font-space";
+  "bg-gray-200 hover:bg-gray-300 text-black py-2 px-4 rounded-none font-bold border-2 border-black shadow-[4px_4px_0px_#000] hover:translate-x-[1px] hover:translate-y-[1px] hover:shadow-[2px_2px_0px_#000] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none disabled:opacity-70 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-x-0 disabled:translate-y-0 transition-all duration-150 ";
 
 export default function BlogEditor({
   post,
@@ -194,7 +194,7 @@ export default function BlogEditor({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-6xl font-space"
+      className="mx-auto max-w-6xl "
     >
       <div className="overflow-hidden rounded-none border-2 border-black bg-white">
         <div className="border-b-2 border-black bg-gray-100 px-4 py-4 sm:px-6">
@@ -395,7 +395,7 @@ export default function BlogEditor({
                   ref={coverImageFileInputRef}
                   accept="image/*"
                   onChange={(e) => onFileSelected(e, true)}
-                  className="w-full rounded-none border-2 border-black p-2 font-space text-sm file:mr-2 file:border-0 file:bg-indigo-100 file:px-2 file:py-1 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-200"
+                  className="w-full rounded-none border-2 border-black p-2  text-sm file:mr-2 file:border-0 file:bg-indigo-100 file:px-2 file:py-1 file:text-sm file:font-semibold file:text-indigo-700 hover:file:bg-indigo-200"
                 />
                 {formData.cover_image_url && (
                   <img

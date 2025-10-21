@@ -83,7 +83,7 @@ export default function AdminIndexPage() {
         animate="animate"
         exit="exit"
         variants={pageVariants}
-        className="flex min-h-screen items-center justify-center bg-indigo-100 font-space"
+        className="flex min-h-screen items-center justify-center bg-indigo-100 "
       >
         <div className="rounded-none border-2 border-black bg-white p-8 text-center">
           <div className="mx-auto mb-4 size-12 animate-spin rounded-none border-y-4 border-indigo-600"></div>

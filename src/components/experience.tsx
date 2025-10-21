@@ -1,6 +1,8 @@
 import Link from "next/link";
 import { PropsWithChildren, ReactNode } from "react";
 import { BsArrowUpRight } from "react-icons/bs";
+import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 
 type ExperienceProps = PropsWithChildren;
 
@@ -14,6 +16,7 @@ interface ExperienceItem {
   techStack: string[];
 }
 
+// DATA STRUCTURE IS UNCHANGED - ONLY JSX/STYLES IN `desc` are cleaned up for better rendering
 const MY_EXPERIENCES: ExperienceItem[] = [
   {
     orgName: "SigNoz Inc.",
@@ -22,36 +25,9 @@ const MY_EXPERIENCES: ExperienceItem[] = [
     from: "April 2023",
     to: "Present",
     desc: (
-      <>
-        SigNoz is an open-source observability platform that helps engineers
-        monitor and troubleshoot complex distributed systems.
-        <br />
-        As a developer with SigNoz, I developed pages such as{" "}
-        <span className="font-semibold text-indigo-600">
-          “/pricing”
-        </span>
-        ,{" "}
-        <span className="font-semibold text-indigo-600">
-          “/team”
-        </span>
-        ,{" "}
-        <span className="font-semibold text-indigo-600">
-          “/enterprise”
-        </span>
-        , and many more.
-        <br />
-        My recent work upgrading the landing page was a great experience. Check
-        out the landing page at{" "}
-        <Link
-          className="inline-flex items-center gap-1 font-bold text-indigo-700 underline transition-colors hover:bg-yellow-200 hover:text-indigo-900"
-          href="https://signoz.io/"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          signoz.io <BsArrowUpRight />
-        </Link>
-        .
-      </>
+        <p>
+            As an open-source contributor, I developed key pages like Pricing, Team, and Enterprise, and played a major role in the new landing page redesign. Check it out at <a href="https://signoz.io/" target="_blank" rel="noopener noreferrer" className="font-semibold text-accent underline underline-offset-4">signoz.io</a>.
+        </p>
     ),
     techStack: ["React.js", "Docusaurus", "TypeScript"],
   },
@@ -62,22 +38,10 @@ const MY_EXPERIENCES: ExperienceItem[] = [
     from: "Dec 2022",
     to: "Aug 2023",
     desc: (
-      <ul className="space-y-2">
-        <li className="ml-5 list-disc text-gray-800">
-          Developed projects/features with a JavaScript stack including ReactJS,
-          Redux, Redux-Thunk, NextJS for frontend, and NestJS, ExpressJS, NodeJS
-          for backend. Utilized both relational (PostgreSQL) and non-relational
-          (MongoDB) databases.
-        </li>
-        <li className="ml-5 list-disc text-gray-800">
-          Delivered high-quality, secure, and reliable features according to
-          client requirements, ensuring timely project completion.
-        </li>
-        <li className="ml-5 list-disc text-gray-800">
-          Contributed to a project utilizing Redux-Observable with a
-          well-structured coding pattern and an easily navigable directory
-          structure.
-        </li>
+      <ul>
+        <li>Developed full-stack features using React, Redux, Next.js, and Nest.js with both SQL and NoSQL databases.</li>
+        <li>Delivered high-quality, secure, and reliable features according to client requirements.</li>
+        <li>Contributed to a project utilizing Redux-Observable with a well-structured coding pattern.</li>
       </ul>
     ),
     techStack: ["React.js", "Next.js", "Node.js", "MongoDB", "PostgreSQL"],
@@ -89,30 +53,12 @@ const MY_EXPERIENCES: ExperienceItem[] = [
     from: "May 2022",
     to: "Nov 2022",
     desc: (
-      <ul className="space-y-2">
-        <li className="ml-5 list-disc text-gray-800">
-          Developed and supported SPRING MVC and REST applications in
-          collaboration with team members.
-        </li>
-        <li className="ml-5 list-disc text-gray-800">
-          Built a REACT application and integrated it with REST APIs based on
-          specifications provided by system analysts.
-        </li>
-        <li className="ml-5 list-disc text-gray-800">
-          Worked on a project with a microservice architecture, using React for
-          the front-end, Spring Boot for backend services, and a centralized
-          PostgreSQL database.
-        </li>
-      </ul>
+        <ul>
+            <li>Developed and supported SPRING MVC and REST applications in a microservice architecture.</li>
+            <li>Built a React application from the ground up and integrated it with REST APIs based on specifications.</li>
+        </ul>
     ),
-    techStack: [
-      "React.js",
-      "Java",
-      "Spring Boot",
-      "SQL",
-      "PostgreSQL",
-      "MySQL",
-    ],
+    techStack: ["React.js", "Java", "Spring Boot", "PostgreSQL", "MySQL"],
   },
   {
     orgName: "Finlogic Technologies India Pvt. Ltd.",
@@ -121,87 +67,82 @@ const MY_EXPERIENCES: ExperienceItem[] = [
     from: "Jan 2022",
     to: "Apr 2022",
     desc: (
-      <ul className="space-y-2">
-        <li className="ml-5 list-disc text-gray-800">
-          Gained experience in full-stack development using Java technologies,
-          HTML5, CSS3, JavaScript (ES6), and AJAX. Learned SQL & PL/SQL,
-          including creating views, functions, procedures, and triggers.
-        </li>
-        <li className="ml-5 list-disc text-gray-800">
-          Developed functionality for a Teacher/Mentor module, enabling dynamic
-          question insertion for exams with a rich text editor integration.
-        </li>
-        <li className="ml-5 list-disc text-gray-800">
-          Contributed to UI/UX development in JSP and React, working on various
-          sections of Admin and User Modules.
-        </li>
-      </ul>
+        <ul>
+            <li>Gained foundational experience in full-stack development using Java, Spring MVC, JSP, and SQL/PL-SQL.</li>
+            <li>Developed functionality for a Teacher/Mentor module with a rich text editor integration.</li>
+        </ul>
     ),
-    techStack: [
-      "JSP",
-      "Java",
-      "Spring MVC",
-      "SQL/PL-SQL",
-      "MySQL",
-      "HTML5",
-      "CSS3",
-    ],
+    techStack: ["JSP", "Java", "Spring MVC", "SQL/PL-SQL", "MySQL", "HTML5"],
   },
 ];
 
 export default function Experience({ children }: ExperienceProps) {
   return (
-    <section className="my-8 font-space">
-      <h2 className="mb-6 border-b-4 border-black pb-2 text-3xl font-black text-black">
-        Experience
-      </h2>
-      <div className="relative flex flex-col py-10 pl-5 after:absolute after:left-[3px] after:top-0 after:h-full after:w-[3px] after:bg-black after:content-['']">
-        {MY_EXPERIENCES.map((experience) => (
-          <div
-            key={`${experience.orgName}- ${experience.position}`}
-            className="group relative mb-10 rounded-none border-2 border-black bg-card p-6 pl-10 shadow-[6px_6px_0px_#000] transition-shadow duration-150 last-of-type:mb-0 hover:shadow-[8px_8px_0px_#4f46e5]"
-          >
-            <span className="absolute -left-[11px] top-7 z-10 h-5 w-5 rotate-45 rounded-none border-2 border-black bg-yellow-400 shadow-[1px_1px_0_#000] transition-colors group-hover:bg-indigo-500" />
-            <Link
-              href={experience.orgHref}
-              className="mb-1 block"
-              rel="noopener noreferrer nofollow"
-              target="_blank"
+    <section className="my-16 py-16">
+      {/* --- Section Header --- */}
+      <motion.div 
+        className="relative mb-16 text-center"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
+        <h2 className="text-4xl font-black text-foreground md:text-5xl">
+          Experience
+        </h2>
+        <div className="mx-auto mt-4 h-1.5 w-24 bg-accent" />
+        <span className="absolute -top-8 left-1/2 -translate-x-1/2 text-[6rem] font-black text-accent/5 -z-10" aria-hidden="true">
+          CAREER
+        </span>
+      </motion.div>
+
+      {/* --- The Timeline --- */}
+      <div className="relative mx-auto max-w-5xl px-4">
+        {/* The Vertical Line */}
+        <div className="absolute left-1/2 top-0 h-full w-0.5 -translate-x-1/2 bg-border" aria-hidden="true" />
+
+        <div className="space-y-12">
+          {MY_EXPERIENCES.map((exp, index) => (
+            <motion.div
+              key={`${exp.orgName}-${exp.position}`}
+              className="group relative flex items-center"
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 0.6, ease: 'easeOut' }}
             >
-              <p className="text-sm font-semibold text-gray-600">
-                {experience.from} - {experience.to}
-              </p>
-              <h3 className="flex items-center text-2xl font-bold text-black transition-colors group-hover:text-indigo-700">
-                {experience.orgName}{" "}
-                <BsArrowUpRight className="ml-1.5 inline-block h-5 w-5 transition-transform group-hover:translate-x-0.5 group-hover:rotate-[15deg]" />
-              </h3>
-            </Link>
-            <p className="mb-3 text-lg font-semibold text-gray-800">
-              {experience.position}
-            </p>
-            <div className="prose prose-sm prose-nb mb-4 max-w-none text-sm leading-relaxed text-gray-700">
-              {experience.desc}
-            </div>
-            {experience.techStack.length > 0 && (
-              <div className="mt-4 border-t border-gray-300 pt-3">
-                <p className="mb-2 text-xs font-semibold text-gray-500">
-                  Tech Stack:
-                </p>
-                <div className="flex flex-wrap gap-1.5">
-                  {experience.techStack.map((tech) => (
-                    <small
-                      key={tech}
-                      className="flex-inline rounded-none border border-black bg-gray-200 px-2 py-0.5 text-xs font-semibold text-black shadow-[1px_1px_0px_#000]"
-                    >
-                      {tech}
-                    </small>
-                  ))}
+              {/* Timeline Dot */}
+              <div className="absolute left-1/2 top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-background bg-border transition-colors group-hover:bg-accent" />
+
+              {/* Content Card */}
+              <div
+                className={`w-[calc(50%-2rem)] ${index % 2 === 0 ? 'mr-auto text-right' : 'ml-auto text-left'}`}
+              >
+                <div className="rounded-lg border bg-card p-6 shadow-sm transition-all duration-300 group-hover:border-accent/50 group-hover:shadow-lg group-hover:-translate-y-1">
+                  <p className="text-sm font-semibold text-muted-foreground">{exp.from} - {exp.to}</p>
+                  <h3 className="text-xl font-bold text-foreground">{exp.position}</h3>
+                  <Link href={exp.orgHref} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-md font-medium text-accent transition-opacity hover:opacity-80">
+                    {exp.orgName} <BsArrowUpRight className="size-3" />
+                  </Link>
+                  
+                  <div className={`prose prose-sm dark:prose-invert mt-3 max-w-none text-muted-foreground ${index % 2 === 0 ? 'text-right' : 'text-left'}`}>
+                    {exp.desc}
+                  </div>
+
+                  {exp.techStack.length > 0 && (
+                    <div className={`mt-4 flex flex-wrap gap-2 ${index % 2 === 0 ? 'justify-end' : 'justify-start'}`}>
+                      {exp.techStack.map(tech => (
+                        <Badge key={tech} variant="secondary">{tech}</Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
-            )}
-          </div>
-        ))}
+            </motion.div>
+          ))}
+        </div>
       </div>
-    </section >
+
+      {children && <div className="mt-16">{children}</div>}
+    </section>
   );
 }

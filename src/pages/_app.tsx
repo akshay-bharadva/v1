@@ -45,7 +45,7 @@ export default function App({ Component, pageProps }: AppProps) {
         initial={false}
         onExitComplete={() => window.scrollTo(0, 0)}
       >
-        <main className={`${tahuFont.variable} font-space`}>
+        <main className={`${tahuFont.variable} `}>
           {/* Wrap the component with motion.div */}
           <motion.div
             key={router.asPath} // Key is crucial for AnimatePresence to detect page changes

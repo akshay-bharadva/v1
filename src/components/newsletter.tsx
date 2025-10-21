@@ -39,7 +39,7 @@ export default function Newsletter() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.4, duration: 0.5 }}
-      className="mb-12 rounded-none border-2 border-black bg-yellow-100 p-6 font-space shadow-[6px_6px_0px_#000]"
+      className="mb-12 rounded-none border-2 border-black bg-yellow-100 p-6  shadow-[6px_6px_0px_#000]"
     >
       <h2 className="mb-2 text-2xl font-black text-black">JOIN THE LIST</h2>
       <p className="mb-4 font-medium text-gray-800">

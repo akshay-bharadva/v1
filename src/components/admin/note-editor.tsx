@@ -12,7 +12,7 @@ interface NoteEditorProps {
   onCancel: () => void;
 }
 
-const inputClass = "w-full px-3 py-2 border-2 rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500 font-space border-black";
+const inputClass = "w-full px-3 py-2 border-2 rounded-none focus:outline-none focus:ring-2 focus:ring-indigo-500  border-black";
 
 export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) {
   const [formData, setFormData] = useState({
@@ -51,7 +51,7 @@ export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="mx-auto max-w-4xl font-space"
+      className="mx-auto max-w-4xl "
     >
       <div className="rounded-none border-2 border-black bg-white">
         <div className="border-b-2 border-black bg-gray-100 px-4 py-4">

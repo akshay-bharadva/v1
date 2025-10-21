@@ -10,7 +10,7 @@ type ProjectCardProps = PropsWithChildren & {
 export default function ProjectCard({ children, project }: ProjectCardProps) {
   return (
     <div
-      className="group flex h-full flex-col overflow-hidden rounded-none border-2 border-black bg-card font-space shadow-[6px_6px_0px_#000] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#4f46e5] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0px_#4f46e5]"
+      className="group flex h-full flex-col overflow-hidden rounded-none border-2 border-black bg-card  shadow-[6px_6px_0px_#000] transition-all duration-150 hover:-translate-x-1 hover:-translate-y-1 hover:shadow-[8px_8px_0px_#4f46e5] active:translate-x-0 active:translate-y-0 active:shadow-[2px_2px_0px_#4f46e5]"
       key={project.id}
     >
       <div className="grow p-5">
