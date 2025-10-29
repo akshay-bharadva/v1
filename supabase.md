@@ -28,6 +28,7 @@ $$ language 'plpgsql';
 These tables store the main content for the public-facing portfolio and blog.
 
 #### `portfolio_sections` Table
+
 Stores the main sections of the website, like "Work Experience", "Projects", "Services", etc.
 
 ```sql
@@ -64,6 +65,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 ```
 
 #### `portfolio_items` Table
+
 Stores individual items within a `list_items` section (e.g., a specific job in "Experience", or a specific project in "Projects").
 
 ```sql
@@ -105,6 +107,7 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 ```
 
 #### `blog_posts` Table
+
 Stores all blog articles and their content.
 
 ```sql
@@ -340,3 +343,80 @@ CREATE POLICY "Admin can delete files in blog-assets"
 ON storage.objects FOR DELETE
 USING ( bucket_id = 'blog-assets' AND auth.role() = 'authenticated' );
 ```
+
+-- ========= FINANCE V2 SCHEMA UPGRADE =========
+
+-- Drop types if they exist, to ensure a clean run
+DROP TYPE IF EXISTS transaction_frequency;
+
+-- Step 1: Create new ENUM types for recurring transactions
+CREATE TYPE transaction_frequency AS ENUM ('daily', 'weekly', 'monthly', 'yearly');
+
+-- Step 2: Create the 'recurring_transactions' table
+CREATE TABLE IF NOT EXISTS recurring_transactions (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+description TEXT NOT NULL,
+amount NUMERIC(10, 2) NOT NULL,
+type transaction_type NOT NULL, -- Reuses the type from the transactions table
+category TEXT,
+frequency transaction_frequency NOT NULL,
+start_date DATE NOT NULL,
+end_date DATE, -- Optional: for subscriptions that have an end date
+created_at TIMESTAMPTZ DEFAULT now(),
+updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Step 3: Set up RLS and Triggers for 'recurring_transactions'
+ALTER TABLE recurring_transactions ENABLE ROW LEVEL SECURITY;
+
+-- Drop policy if it exists to avoid errors on re-run
+DROP POLICY IF EXISTS "Admin can manage their own recurring transactions" ON recurring_transactions;
+
+CREATE POLICY "Admin can manage their own recurring transactions"
+ON recurring_transactions FOR ALL
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Drop trigger if it exists
+DROP TRIGGER IF EXISTS update_recurring_transactions_updated_at ON recurring_transactions;
+
+CREATE TRIGGER update_recurring_transactions_updated_at
+BEFORE UPDATE ON recurring_transactions
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Step 4: Create the 'financial_goals' table
+CREATE TABLE IF NOT EXISTS financial_goals (
+id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+name TEXT NOT NULL,
+description TEXT,
+target_amount NUMERIC(12, 2) NOT NULL,
+current_amount NUMERIC(12, 2) NOT NULL DEFAULT 0,
+target_date DATE,
+created_at TIMESTAMPTZ DEFAULT now(),
+updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Step 5: Set up RLS and Triggers for 'financial_goals'
+ALTER TABLE financial_goals ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Admin can manage their own financial goals" ON financial_goals;
+
+CREATE POLICY "Admin can manage their own financial goals"
+ON financial_goals FOR ALL
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+DROP TRIGGER IF EXISTS update_financial_goals_updated_at ON financial_goals;
+
+CREATE TRIGGER update_financial_goals_updated_at
+BEFORE UPDATE ON financial_goals
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+-- Step 6: Add the foreign key column to the EXISTING 'transactions' table
+-- This links a transaction to a recurring rule, if it was generated from one.
+ALTER TABLE transactions
+ADD COLUMN IF NOT EXISTS recurring_transaction_id UUID REFERENCES recurring_transactions(id) ON DELETE SET NULL;
+
+-- ========= END OF SCRIPT =========

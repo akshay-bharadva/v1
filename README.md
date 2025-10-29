@@ -1,4 +1,5 @@
 # Personal Portfolio
+
 This repository contains the source code for my personal portfolio and blog, completely redesigned with a minimalist dark theme. It's a full-stack application built with Next.js and Supabase, featuring a comprehensive, secure admin panel for content management.
 
 ---
@@ -7,55 +8,55 @@ This repository contains the source code for my personal portfolio and blog, com
 
 ### Public-Facing Site
 
-*   **Minimalist Dark Theme:** A sleek, modern design built with Tailwind CSS and shadcn/ui.
-*   **Kinetic Typography:** Engaging animated headings on the homepage for a dynamic first impression.
-*   **Fully Responsive:** Optimized for all devices, from mobile phones to desktops.
-*   **Interactive Project Showcase:** An elegant project list with hover-to-preview image effects.
-*   **Dynamic Content Sections:** "Work Experience," "Tech Stack," and "Tools" sections are all dynamically populated from the CMS.
-*   **Full-Featured Blog:**
-    *   Clean, readable article layout using Tailwind Prose.
-    *   Reading progress bar for long articles.
-    *   Server-side rendering (SSR) for fast loads and SEO.
-    *   View counter for posts.
+- **Minimalist Dark Theme:** A sleek, modern design built with Tailwind CSS and shadcn/ui.
+- **Kinetic Typography:** Engaging animated headings on the homepage for a dynamic first impression.
+- **Fully Responsive:** Optimized for all devices, from mobile phones to desktops.
+- **Interactive Project Showcase:** An elegant project list with hover-to-preview image effects.
+- **Dynamic Content Sections:** "Work Experience," "Tech Stack," and "Tools" sections are all dynamically populated from the CMS.
+- **Full-Featured Blog:**
+  - Clean, readable article layout using Tailwind Prose.
+  - Reading progress bar for long articles.
+  - Server-side rendering (SSR) for fast loads and SEO.
+  - View counter for posts.
 
 ### 🔐 Admin Panel
 
-*   **Secure Authentication:**
-    *   Email/Password login powered by Supabase Auth.
-    *   **Mandatory Two-Factor Authentication (MFA/TOTP)** for admin access, ensuring high security.
-*   **Comprehensive Dashboard:**
-    *   At-a-glance statistics: Monthly earnings/expenses, task progress, total notes, and blog views.
-    *   Quick access to recently updated blog posts and pinned notes.
-*   **Content Management System (CMS):**
-    *   Manage all public-facing portfolio sections ("Experience," "Projects," "Services," etc.).
-    *   Drag-and-drop reordering for sections.
-    *   CRUD (Create, Read, Update, Delete) functionality for all portfolio items.
-*   **Blog Manager:**
-    *   Full CRUD for blog posts.
-    *   Advanced Markdown editor with live preview and image upload support.
-    *   Image compression and conversion to WEBP on upload.
-    *   Manage tags, slugs, excerpts, and publish status.
-*   **Personal Management Tools:**
-    *   **Task Manager:** A Kanban-style board to track tasks with sub-task support, priorities, and due dates.
-    *   **Notes Manager:** A simple, effective tool for personal notes with pinning functionality.
-    *   **Finance Tracker:** Log earnings and expenses and view monthly/yearly summaries.
-*   **Security Settings:**
-    *   Manage MFA authenticators.
-    *   Securely change the admin account password.
+- **Secure Authentication:**
+  - Email/Password login powered by Supabase Auth.
+  - **Mandatory Two-Factor Authentication (MFA/TOTP)** for admin access, ensuring high security.
+- **Comprehensive Dashboard:**
+  - At-a-glance statistics: Monthly earnings/expenses, task progress, total notes, and blog views.
+  - Quick access to recently updated blog posts and pinned notes.
+- **Content Management System (CMS):**
+  - Manage all public-facing portfolio sections ("Experience," "Projects," "Services," etc.).
+  - Drag-and-drop reordering for sections.
+  - CRUD (Create, Read, Update, Delete) functionality for all portfolio items.
+- **Blog Manager:**
+  - Full CRUD for blog posts.
+  - Advanced Markdown editor with live preview and image upload support.
+  - Image compression and conversion to WEBP on upload.
+  - Manage tags, slugs, excerpts, and publish status.
+- **Personal Management Tools:**
+  - **Task Manager:** A Kanban-style board to track tasks with sub-task support, priorities, and due dates.
+  - **Notes Manager:** A simple, effective tool for personal notes with pinning functionality.
+  - **Finance Tracker:** Log earnings and expenses and view monthly/yearly summaries.
+- **Security Settings:**
+  - Manage MFA authenticators.
+  - Securely change the admin account password.
 
 ---
 
 ## 🛠️ Tech Stack
 
-*   **Framework:** [Next.js](https://nextjs.org/) (React)
-*   **Backend & Database:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage, Edge Functions)
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
-*   **UI Components:** [shadcn/ui](https://ui.shadcn.com/) (built on Radix UI)
-*   **Animation:** [Framer Motion](https://www.framer.com/motion/)
-*   **Forms:** [React Hook Form](https://react-hook-form.com/) with [Zod](https://zod.dev/) for validation
-*   **Markdown:** [ReactMarkdown](https://github.com/remarkjs/react-markdown)
-*   **Language:** [TypeScript](https://www.typescriptlang.org/)
-*   **Deployment:** GitHub Pages (for static export) / Vercel
+- **Framework:** [Next.js](https://nextjs.org/) (React)
+- **Backend & Database:** [Supabase](https://supabase.com/) (PostgreSQL, Auth, Storage, Edge Functions)
+- **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components:** [shadcn/ui](https://ui.shadcn.com/) (built on Radix UI)
+- **Animation:** [Framer Motion](https://www.framer.com/motion/)
+- **Forms:** [React Hook Form](https://react-hook-form.com/) with [Zod](https://zod.dev/) for validation
+- **Markdown:** [ReactMarkdown](https://github.com/remarkjs/react-markdown)
+- **Language:** [TypeScript](https://www.typescriptlang.org/)
+- **Deployment:** GitHub Pages (for static export) / Vercel
 
 ---
 
@@ -91,8 +92,8 @@ Follow these steps to get the project running on your local machine.
 
 ### 1. Prerequisites
 
-*   [Node.js](https://nodejs.org/en/) (v18 or later)
-*   [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
+- [Node.js](https://nodejs.org/en/) (v18 or later)
+- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 
 ### 2. Clone the Repository
 
@@ -112,13 +113,15 @@ npm install
 This project is tightly integrated with Supabase. You'll need a free Supabase account.
 
 1.  **Create a Supabase Project:**
-    *   Go to [supabase.com](https://supabase.com) and create a new project.
-    *   Once created, navigate to **Project Settings** > **API**.
-    *   Find your **Project URL** and **`anon`, `public` key**.
+
+    - Go to [supabase.com](https://supabase.com) and create a new project.
+    - Once created, navigate to **Project Settings** > **API**.
+    - Find your **Project URL** and **`anon`, `public` key**.
 
 2.  **Create Environment File:**
-    *   In the root of the project, create a new file named `.env`.
-    *   Copy the contents of `.env.example` (if provided) or add the following, replacing the values with your Supabase credentials:
+
+    - In the root of the project, create a new file named `.env`.
+    - Copy the contents of `.env.example` (if provided) or add the following, replacing the values with your Supabase credentials:
 
     ```env
     NEXT_PUBLIC_SUPABASE_URL=YOUR_SUPABASE_PROJECT_URL
@@ -128,21 +131,23 @@ This project is tightly integrated with Supabase. You'll need a free Supabase ac
     ```
 
 3.  **Run SQL Setup Scripts:**
-    *   Navigate to the **SQL Editor** in your Supabase dashboard.
-    *   Click **+ New query**.
-    *   Copy the entire SQL script from the `supabase.md` file in this repository and paste it into the SQL editor.
-    *   Click **Run**. This will create all the necessary tables, policies (RLS), triggers, and functions.
+
+    - Navigate to the **SQL Editor** in your Supabase dashboard.
+    - Click **+ New query**.
+    - Copy the entire SQL script from the `supabase.md` file in this repository and paste it into the SQL editor.
+    - Click **Run**. This will create all the necessary tables, policies (RLS), triggers, and functions.
 
 4.  **Create Storage Bucket:**
-    *   Navigate to **Storage** in your Supabase dashboard.
-    *   Click **Create a new bucket**.
-    *   Enter the bucket name you defined in your `.env` file (e.g., `blog-assets`).
-    *   Toggle **Public bucket** to ON.
-    *   Click **Create bucket**. The RLS policies from the SQL script will automatically apply.
+
+    - Navigate to **Storage** in your Supabase dashboard.
+    - Click **Create a new bucket**.
+    - Enter the bucket name you defined in your `.env` file (e.g., `blog-assets`).
+    - Toggle **Public bucket** to ON.
+    - Click **Create bucket**. The RLS policies from the SQL script will automatically apply.
 
 5.  **Enable MFA:**
-    *   Navigate to **Authentication** > **Settings** > **MFA**.
-    *   Enable **TOTP**.
+    - Navigate to **Authentication** > **Settings** > **MFA**.
+    - Enable **TOTP**.
 
 ### 5. Run the Development Server
 
@@ -160,11 +165,11 @@ The application will be available at `http://localhost:8888`.
 2.  **Create Your Admin Account:** Since this is a new setup, you don't have a user yet. **Use the sign-up form on the login page** to create your admin account. Supabase will send a confirmation email.
 3.  **Confirm Your Email:** Click the link in the confirmation email.
 4.  **First Login & MFA Setup:**
-    *   Log in again with your new credentials.
-    *   You will be automatically redirected to the MFA setup page (`/admin/setup-mfa`).
-    *   Scan the QR code with your authenticator app (e.g., Google Authenticator, Authy).
-    *   Enter the 6-digit code to verify and complete the setup.
-    *   You will be redirected to the admin dashboard.
+    - Log in again with your new credentials.
+    - You will be automatically redirected to the MFA setup page (`/admin/setup-mfa`).
+    - Scan the QR code with your authenticator app (e.g., Google Authenticator, Authy).
+    - Enter the 6-digit code to verify and complete the setup.
+    - You will be redirected to the admin dashboard.
 5.  **Subsequent Logins:** For all future logins, you will be prompted to enter an MFA code after your password.
 
 ---
@@ -197,10 +202,10 @@ To allow GitHub Actions to build your site, you must add your Supabase credentia
 1.  Go to your GitHub repository.
 2.  Click on **Settings** > **Secrets and variables** > **Actions**.
 3.  Click **New repository secret** for each of the following variables from your `.env` file:
-    *   `NEXT_PUBLIC_SUPABASE_URL`
-    *   `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-    *   `NEXT_PUBLIC_BUCKET_NAME`
-    *   `NEXT_PUBLIC_SITE_URL` (Set this to your public GitHub Pages URL, e.g., `https://your-username.github.io/your-repo-name`)
+    - `NEXT_PUBLIC_SUPABASE_URL`
+    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+    - `NEXT_PUBLIC_BUCKET_NAME`
+    - `NEXT_PUBLIC_SITE_URL` (Set this to your public GitHub Pages URL, e.g., `https://your-username.github.io/your-repo-name`)
 
 ### 3. Create the GitHub Actions Workflow
 
@@ -273,7 +278,7 @@ jobs:
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
         run: ${{ steps.detect-package-manager.outputs.manager }} ${{ steps.detect-package-manager.outputs.command }}
-      
+
       - name: Create .env file
         run: |
           echo "NEXT_PUBLIC_SUPABASE_URL=${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}" >> .env
@@ -317,9 +322,9 @@ Your site will be deployed and available at the URL shown on the Pages settings 
 
 ## 📜 Available Scripts
 
-*   `npm run dev`: Starts the development server.
-*   `npm run build`: Creates a production build of the application.
-*   `npm run start`: Starts the production server (after building).
-*   `npm run lint`: Runs the ESLint linter.
-*   `npm run export`: Exports the application to static HTML, which can be deployed anywhere.
-*   `npm run format`: Formats all code using Prettier.
+- `npm run dev`: Starts the development server.
+- `npm run build`: Creates a production build of the application.
+- `npm run start`: Starts the production server (after building).
+- `npm run lint`: Runs the ESLint linter.
+- `npm run export`: Exports the application to static HTML, which can be deployed anywhere.
+- `npm run format`: Formats all code using Prettier.
