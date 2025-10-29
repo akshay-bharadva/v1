@@ -1,9 +1,9 @@
-name: Supabase Keepalive
+name: Supabase Keep alive
 
 on:
   schedule:
     - cron: "*/2 * * * *" # Every 2 minutes
-  workflow_dispatch: # Allow manual trigger
+  workflow_dispatch:
 
 jobs:
   ping-supabase:
@@ -12,12 +12,15 @@ jobs:
     steps:
       - name: Ping Supabase RPC Function
         id: ping
+        env:
+          SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
         run: |
           echo "Pinging Supabase..."
           HTTP_STATUS=$(curl -s -w "%{http_code}" -o response.txt \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Content-Type: application/json" \
-            https://adwfotemqepkoizczbrb.supabase.co/rest/v1/rpc/ping)
+            "$SUPABASE_URL/rest/v1/rpc/ping")
 
           RESPONSE_BODY=$(cat response.txt)
           echo "HTTP_STATUS=$HTTP_STATUS" >> $GITHUB_ENV
@@ -27,12 +30,12 @@ jobs:
 
       - name: Send result to Discord
         env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK_URL }}
           HTTP_STATUS: ${{ env.HTTP_STATUS }}
           RESPONSE_BODY: ${{ env.RESPONSE_BODY }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_RUN_ID: ${{ github.run_id }}
         run: |
-          echo "Preparing Discord message..."
-
           STATUS_EMOJI="🟢"
           MESSAGE="✅ Supabase ping succeeded!"
           COLOR=3066993  # Green
@@ -50,9 +53,9 @@ jobs:
             --arg msg "$MESSAGE" \
             --arg body "$RESPONSE_BODY" \
             --arg time "$TIMESTAMP" \
-            --arg repo "${{ github.repository }}" \
-            --arg run "${{ github.run_id }}" \
-            --arg url "https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}" \
+            --arg repo "$GITHUB_REPOSITORY" \
+            --arg run "$GITHUB_RUN_ID" \
+            --arg url "https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             --argjson color "$COLOR" \
             '{
               "username": "Supabase Monitor",
