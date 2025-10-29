@@ -468,6 +468,18 @@ export default function FinanceManager() {
                                                 <b>${goal.target_amount.toLocaleString()}</b>
                                             </CardDescription>
                                         </CardHeader>
+                                        <CardContent className="flex-grow">
+                                            <Progress value={progress} />
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button
+                                                size="sm"
+                                            // onClick={() => setDialogState({ type: "addFunds", data: goal })}
+                                            >
+                                                <Plus className="mr-2 size-4" />
+                                                Add Funds
+                                            </Button>
+                                        </CardFooter>
                                     </Card>
                                 );
                             })}
