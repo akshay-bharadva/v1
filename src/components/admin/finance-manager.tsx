@@ -353,6 +353,74 @@ export default function FinanceManager() {
                         </Table>
                     </Card>
                 </TabsContent>
+                <TabsContent value="recurring">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Recurring Transactions</CardTitle>
+                            <CardDescription>
+                                Automate your regular income and expenses to forecast cash flow.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Description</TableHead>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Frequency</TableHead>
+                                        <TableHead>Start Date</TableHead>
+                                        <TableHead className="text-center">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recurring.map((r) => (
+                                        <TableRow key={r.id}>
+                                            <TableCell className="font-medium">
+                                                {r.description}
+                                            </TableCell>
+                                            <TableCell
+                                                className={
+                                                    r.type === "earning"
+                                                        ? "text-green-600"
+                                                        : "text-red-600"
+                                                }
+                                            >
+                                                ${r.amount.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="capitalize">
+                                                {r.frequency}
+                                            </TableCell>
+                                            <TableCell>
+                                                {format(new Date(r.start_date), "MMM dd, yyyy")}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8"
+                                                    onClick={() =>
+                                                        setDialogState({ type: "recurring", data: r })
+                                                    }
+                                                >
+                                                    <Edit className="size-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8 hover:bg-destructive/10 hover:text-destructive"
+                                                    onClick={() => handleDeleteRecurring(r.id)}
+                                                >
+                                                    <Trash2 className="size-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                
 
                 <Dialog
                     open={!!dialogState.type}
