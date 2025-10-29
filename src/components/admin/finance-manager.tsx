@@ -4,20 +4,25 @@ import { motion } from "framer-motion";
 import type { FinancialGoal, RecurringTransaction, Transaction } from "@/types";
 import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import TransactionForm from "@/components/admin/transaction-form";
-import { CalendarIcon, Edit, Search, Trash2 } from "lucide-react";
+import { CalendarIcon, Edit, Plus, Repeat, Search, Target, Trash2 } from "lucide-react";
 import { Input } from "../ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { Calendar } from "../ui/calendar";
 import { DateRange } from "react-day-picker";
 import { addDays, format, startOfMonth } from "date-fns";
 import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
+import { Progress } from "../ui/progress";
+import { Label } from "../ui/label";
+import FinancialGoalForm from "./financial-goal-form";
+import RecurringTransactionForm from "./recurring-transaction-form";
 
 const chartConfig = {
     earning: { label: "Earnings", color: "hsl(var(--chart-2))" },
@@ -189,21 +194,24 @@ export default function FinanceManager() {
 
     return (
         <div className="space-y-6 ">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                    <h2 className="text-2xl font-bold text-black">Finance Dashboard</h2>
-                    <p className="text-gray-700">Track your earnings and expenses.</p>
+                    <h2 className="text-2xl font-bold">Finance Dashboard</h2>
+                    <p className="text-muted-foreground">
+                        Strategic overview, planning, and transaction management.
+                    </p>
                 </div>
-                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                    <DialogTrigger asChild><Button onClick={() => setEditingTransaction(null)}>+ Add Transaction</Button></DialogTrigger>
-                    <DialogContent>
-                        <DialogHeader><DialogTitle>{editingTransaction ? "Edit" : "Add"} Transaction</DialogTitle></DialogHeader>
-                        <TransactionForm
-                            transaction={editingTransaction}
-                            onSuccess={() => { setIsDialogOpen(false); loadTransactions(); }}
-                        />
-                    </DialogContent>
-                </Dialog>
+                <div className="flex gap-2">
+                    <Button onClick={() => setDialogState({ type: "goal" })}>
+                        <Target className="mr-2 size-4" /> New Goal
+                    </Button>
+                    <Button onClick={() => setDialogState({ type: "recurring" })}>
+                        <Repeat className="mr-2 size-4" /> New Recurring
+                    </Button>
+                    <Button onClick={() => setDialogState({ type: "transaction" })}>
+                        <Plus className="mr-2 size-4" /> New Transaction
+                    </Button>
+                </div>
             </div>
 
             <Tabs defaultValue="dashboard">
@@ -345,6 +353,219 @@ export default function FinanceManager() {
                         </Table>
                     </Card>
                 </TabsContent>
+                <TabsContent value="recurring">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Recurring Transactions</CardTitle>
+                            <CardDescription>
+                                Automate your regular income and expenses to forecast cash flow.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Description</TableHead>
+                                        <TableHead>Amount</TableHead>
+                                        <TableHead>Frequency</TableHead>
+                                        <TableHead>Start Date</TableHead>
+                                        <TableHead className="text-center">Actions</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {recurring.map((r) => (
+                                        <TableRow key={r.id}>
+                                            <TableCell className="font-medium">
+                                                {r.description}
+                                            </TableCell>
+                                            <TableCell
+                                                className={
+                                                    r.type === "earning"
+                                                        ? "text-green-600"
+                                                        : "text-red-600"
+                                                }
+                                            >
+                                                ${r.amount.toFixed(2)}
+                                            </TableCell>
+                                            <TableCell className="capitalize">
+                                                {r.frequency}
+                                            </TableCell>
+                                            <TableCell>
+                                                {format(new Date(r.start_date), "MMM dd, yyyy")}
+                                            </TableCell>
+                                            <TableCell className="text-center">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8"
+                                                    onClick={() =>
+                                                        setDialogState({ type: "recurring", data: r })
+                                                    }
+                                                >
+                                                    <Edit className="size-4" />
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="size-8 hover:bg-destructive/10 hover:text-destructive"
+                                                    onClick={() => handleDeleteRecurring(r.id)}
+                                                >
+                                                    <Trash2 className="size-4" />
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="goals">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Financial Goals</CardTitle>
+                            <CardDescription>
+                                Set targets and track your progress towards them.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {goals.map((goal) => {
+                                const progress = Math.min(
+                                    (goal.current_amount / goal.target_amount) * 100,
+                                    100,
+                                );
+                                return (
+                                    <Card key={goal.id} className="flex flex-col">
+                                        <CardHeader>
+                                            <div className="flex justify-between items-start">
+                                                <CardTitle>{goal.name}</CardTitle>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-7 -mt-2 -mr-2 text-muted-foreground"
+                                                        >
+                                                            <Edit className="size-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                setDialogState({ type: "goal", data: goal })
+                                                            }
+                                                        >
+                                                            Edit Goal
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="text-red-500"
+                                                            onClick={() => handleDeleteGoal(goal.id)}
+                                                        >
+                                                            Delete Goal
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                            <CardDescription>
+                                                ${goal.current_amount.toLocaleString()} /{" "}
+                                                <b>${goal.target_amount.toLocaleString()}</b>
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-grow">
+                                            <Progress value={progress} />
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button
+                                                size="sm"
+                                                onClick={() =>
+                                                    setDialogState({ type: "addFunds", data: goal })
+                                                }
+                                            >
+                                                <Plus className="mr-2 size-4" />
+                                                Add Funds
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
+                                );
+                            })}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+
+                <Dialog
+                    open={!!dialogState.type}
+                    onOpenChange={(open) => !open && setDialogState({ type: null })}
+                >
+                    <DialogContent>
+                        {dialogState.type === "transaction" && (
+                            <>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {dialogState.data ? "Edit" : "Add"} Transaction
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <TransactionForm
+                                    transaction={dialogState.data}
+                                    onSuccess={handleSaveSuccess}
+                                />
+                            </>
+                        )}
+                        {dialogState.type === "recurring" && (
+                            <>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {dialogState.data ? "Edit" : "Add"} Recurring Rule
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <RecurringTransactionForm
+                                    recurringTransaction={dialogState.data}
+                                    onSuccess={handleSaveSuccess}
+                                />
+                            </>
+                        )}
+                        {dialogState.type === "goal" && (
+                            <>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        {dialogState.data ? "Edit" : "Create"} Financial Goal
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <FinancialGoalForm
+                                    goal={dialogState.data}
+                                    onSuccess={handleSaveSuccess}
+                                />
+                            </>
+                        )}
+                        {dialogState.type === "addFunds" && (
+                            <>
+                                <DialogHeader>
+                                    <DialogTitle>
+                                        Add Funds to "{dialogState.data?.name}"
+                                    </DialogTitle>
+                                </DialogHeader>
+                                <form onSubmit={handleAddFunds} className="space-y-4 pt-4">
+                                    <div>
+                                        <Label htmlFor="add-funds-amount">Amount</Label>
+                                        <Input
+                                            id="add-funds-amount"
+                                            name="amount"
+                                            type="number"
+                                            step="1"
+                                            required
+                                            autoFocus
+                                        />
+                                    </div>
+                                    <div className="flex justify-end gap-2">
+                                        <DialogClose asChild>
+                                            <Button variant="ghost">Cancel</Button>
+                                        </DialogClose>
+                                        <Button type="submit">Confirm Contribution</Button>
+                                    </div>
+                                </form>
+                            </>
+                        )}
+                    </DialogContent>
+                </Dialog>
             </Tabs>
         </div>
     );
