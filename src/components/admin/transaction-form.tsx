@@ -10,13 +10,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 interface TransactionFormProps {
   transaction: Transaction | null;
   onSuccess: () => void;
-  existingCategories: string[]; // <-- NEW PROP
 }
 
 export default function TransactionForm({
   transaction,
   onSuccess,
-  existingCategories,
 }: TransactionFormProps) {
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
@@ -114,11 +112,6 @@ export default function TransactionForm({
           placeholder="e.g., Work, Food, Bills"
           list="category-suggestions"
         />
-        <datalist id="category-suggestions">
-          {existingCategories.map((cat) => (
-            <option key={cat} value={cat} />
-          ))}
-        </datalist>
       </div>
       <div>
         <Label>Type *</Label>
