@@ -430,7 +430,7 @@ export default function FinanceManager() {
                         </CardHeader>
                         <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {goals.map((goal) => {
-                                const progress = Math.min((goal.current_amount / goal.target_amount) * 100,100,);
+                                const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100,);
                                 return (
                                     <Card key={goal.id} className="flex flex-col">
                                         <CardHeader>
@@ -468,18 +468,6 @@ export default function FinanceManager() {
                                                 <b>${goal.target_amount.toLocaleString()}</b>
                                             </CardDescription>
                                         </CardHeader>
-                                        <CardContent className="flex-grow">
-                                            <Progress value={progress} />
-                                        </CardContent>
-                                        <CardFooter>
-                                            <Button
-                                                size="sm"
-                                                onClick={() => setDialogState({ type: "addFunds", data: goal })}
-                                            >
-                                                <Plus className="mr-2 size-4" />
-                                                Add Funds
-                                            </Button>
-                                        </CardFooter>
                                     </Card>
                                 );
                             })}
