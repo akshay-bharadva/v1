@@ -420,7 +420,24 @@ export default function FinanceManager() {
                         </CardContent>
                     </Card>
                 </TabsContent>
-                
+                <TabsContent value="goals">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Financial Goals</CardTitle>
+                            <CardDescription>
+                                Set targets and track your progress towards them.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {goals.map((goal) => {
+                                const progress = Math.min((goal.current_amount / goal.target_amount) * 100,100,);
+                                return (
+                                    <></>
+                                );
+                            })}
+                        </CardContent>
+                    </Card>
+                </TabsContent>
 
                 <Dialog
                     open={!!dialogState.type}
