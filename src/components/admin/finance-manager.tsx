@@ -469,12 +469,12 @@ export default function FinanceManager() {
                                             </CardDescription>
                                         </CardHeader>
                                         <CardContent className="flex-grow">
-                                            <Progress value={progress} />
+                                            {/* <Progress value={progress} /> */}
                                         </CardContent>
                                         <CardFooter>
                                             <Button
                                                 size="sm"
-                                            // onClick={() => setDialogState({ type: "addFunds", data: goal })}
+                                                onClick={() => setDialogState({ type: "addFunds", data: goal })}
                                             >
                                                 <Plus className="mr-2 size-4" />
                                                 Add Funds
