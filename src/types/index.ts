@@ -116,4 +116,31 @@ export interface Transaction {
   category?: string | null;
   created_at?: string;
   updated_at?: string;
+  recurring_transaction_id?: string | null;
+}
+
+export interface RecurringTransaction {
+  id: string;
+  user_id?: string;
+  description: string;
+  amount: number;
+  type: "earning" | "expense";
+  category?: string | null;
+  frequency: "daily" | "weekly" | "monthly" | "yearly";
+  start_date: string;
+  end_date?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface FinancialGoal {
+  id: string;
+  user_id?: string;
+  name: string;
+  description?: string | null;
+  target_amount: number;
+  current_amount: number;
+  target_date?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }

@@ -10,9 +10,14 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 interface TransactionFormProps {
   transaction: Transaction | null;
   onSuccess: () => void;
+  existingCategories: string[]; // <-- NEW PROP
 }
 
-export default function TransactionForm({ transaction, onSuccess }: TransactionFormProps) {
+export default function TransactionForm({
+  transaction,
+  onSuccess,
+  existingCategories,
+}: TransactionFormProps) {
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
@@ -22,15 +27,13 @@ export default function TransactionForm({ transaction, onSuccess }: TransactionF
 
   useEffect(() => {
     if (transaction) {
-      // Supabase date format is YYYY-MM-DD
       setDate(transaction.date);
       setDescription(transaction.description);
       setAmount(String(transaction.amount));
       setType(transaction.type);
       setCategory(transaction.category || "");
     } else {
-      // Set date to today's date in YYYY-MM-DD format
-      const today = new Date().toISOString().split('T')[0];
+      const today = new Date().toISOString().split("T")[0];
       setDate(today);
       setDescription("");
       setAmount("");
@@ -42,7 +45,6 @@ export default function TransactionForm({ transaction, onSuccess }: TransactionF
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
-
     if (!date || !description || !amount) {
       setError("Please fill all required fields.");
       return;
@@ -53,11 +55,14 @@ export default function TransactionForm({ transaction, onSuccess }: TransactionF
       description,
       amount: parseFloat(amount),
       type,
-      category: category || null
+      category: category.trim() || null,
     };
 
     const { error: dbError } = transaction
-      ? await supabase.from("transactions").update(transactionData).eq("id", transaction.id)
+      ? await supabase
+          .from("transactions")
+          .update(transactionData)
+          .eq("id", transaction.id)
       : await supabase.from("transactions").insert(transactionData);
 
     if (dbError) setError(dbError.message);
@@ -65,28 +70,63 @@ export default function TransactionForm({ transaction, onSuccess }: TransactionF
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 pt-4 ">
+    <form onSubmit={handleSubmit} className="space-y-4 pt-4">
       <div className="grid grid-cols-2 gap-4">
         <div>
           <Label htmlFor="date">Date *</Label>
-          <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} required />
+          <Input
+            id="date"
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
         </div>
         <div>
           <Label htmlFor="amount">Amount *</Label>
-          <Input id="amount" type="number" step="0.01" value={amount} onChange={e => setAmount(e.target.value)} placeholder="0.00" required />
+          <Input
+            id="amount"
+            type="number"
+            step="0.01"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            placeholder="0.00"
+            required
+          />
         </div>
       </div>
       <div>
         <Label htmlFor="description">Description *</Label>
-        <Input id="description" value={description} onChange={e => setDescription(e.target.value)} required />
+        <Input
+          id="description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          required
+        />
       </div>
       <div>
         <Label htmlFor="category">Category</Label>
-        <Input id="category" value={category} onChange={e => setCategory(e.target.value)} placeholder="e.g., Work, Food, Bills" />
+        {/* --- NEW: Input with datalist for suggestions --- */}
+        <Input
+          id="category"
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          placeholder="e.g., Work, Food, Bills"
+          list="category-suggestions"
+        />
+        <datalist id="category-suggestions">
+          {existingCategories.map((cat) => (
+            <option key={cat} value={cat} />
+          ))}
+        </datalist>
       </div>
       <div>
         <Label>Type *</Label>
-        <RadioGroup value={type} onValueChange={(v: "earning" | "expense") => setType(v)} className="flex items-center gap-4 pt-2">
+        <RadioGroup
+          value={type}
+          onValueChange={(v: "earning" | "expense") => setType(v)}
+          className="flex items-center gap-4 pt-2"
+        >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="expense" id="type-expense" />
             <Label htmlFor="type-expense">Expense</Label>
@@ -99,9 +139,11 @@ export default function TransactionForm({ transaction, onSuccess }: TransactionF
       </div>
 
       {error && <p className="text-sm font-semibold text-red-600">{error}</p>}
-      
+
       <div className="flex justify-end pt-4">
-        <Button type="submit">{transaction ? "Save Changes" : "Add Transaction"}</Button>
+        <Button type="submit">
+          {transaction ? "Save Changes" : "Add Transaction"}
+        </Button>
       </div>
     </form>
   );
