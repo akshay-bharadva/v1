@@ -432,7 +432,55 @@ export default function FinanceManager() {
                             {goals.map((goal) => {
                                 const progress = Math.min((goal.current_amount / goal.target_amount) * 100,100,);
                                 return (
-                                    <></>
+                                    <Card key={goal.id} className="flex flex-col">
+                                        <CardHeader>
+                                            <div className="flex justify-between items-start">
+                                                <CardTitle>{goal.name}</CardTitle>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="icon"
+                                                            className="size-7 -mt-2 -mr-2 text-muted-foreground"
+                                                        >
+                                                            <Edit className="size-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent>
+                                                        <DropdownMenuItem
+                                                            onClick={() =>
+                                                                setDialogState({ type: "goal", data: goal })
+                                                            }
+                                                        >
+                                                            Edit Goal
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="text-red-500"
+                                                            onClick={() => handleDeleteGoal(goal.id)}
+                                                        >
+                                                            Delete Goal
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                            <CardDescription>
+                                                ${goal.current_amount.toLocaleString()} /
+                                                <b>${goal.target_amount.toLocaleString()}</b>
+                                            </CardDescription>
+                                        </CardHeader>
+                                        <CardContent className="flex-grow">
+                                            <Progress value={progress} />
+                                        </CardContent>
+                                        <CardFooter>
+                                            <Button
+                                                size="sm"
+                                                onClick={() => setDialogState({ type: "addFunds", data: goal })}
+                                            >
+                                                <Plus className="mr-2 size-4" />
+                                                Add Funds
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
                                 );
                             })}
                         </CardContent>
