@@ -420,3 +420,7 @@ ALTER TABLE transactions
 ADD COLUMN IF NOT EXISTS recurring_transaction_id UUID REFERENCES recurring_transactions(id) ON DELETE SET NULL;
 
 -- ========= END OF SCRIPT =========
+
+-- Adds a column to track the last time a recurring rule was processed for automation.
+ALTER TABLE recurring_transactions
+ADD COLUMN IF NOT EXISTS last_processed_date DATE;
