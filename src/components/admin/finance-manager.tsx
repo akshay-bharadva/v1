@@ -410,7 +410,7 @@ export default function FinanceManager() {
                                                     </span>
                                                 </p>
                                             </div>
-                                            {/* <Progress value={progress} /> */}
+                                            <Progress value={progress} />
                                         </div>
                                     );
                                 })
