@@ -1,32 +1,27 @@
 "use client";
 import React, { useState, useEffect, useMemo, FormEvent, useCallback } from "react";
-import { motion } from "framer-motion";
-import type { FinancialGoal, RecurringTransaction, Transaction } from "@/types";
 import { supabase } from "@/supabase/client";
-import { addDays, format, startOfMonth } from "date-fns";
+import type { FinancialGoal, RecurringTransaction, Transaction } from "@/types";
 import { DateRange } from "react-day-picker";
-import { toast } from "sonner";
-import { CalendarIcon, Edit, Plus, Repeat, Search, Target, Trash2 } from "lucide-react";
-
-// UI Components (assuming these paths are correct)
+import { addDays, format, startOfMonth, subMonths } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig } from "@/components/ui/chart";
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
-import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Input } from "../ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
-import { Calendar } from "../ui/calendar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "../ui/dropdown-menu";
-import { Progress } from "../ui/progress";
-import { Label } from "../ui/label";
-
-// Form Components
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogClose, } from "@/components/ui/dialog";
 import TransactionForm from "@/components/admin/transaction-form";
-import FinancialGoalForm from "./financial-goal-form";
-import RecurringTransactionForm from "./recurring-transaction-form";
+import RecurringTransactionForm from "@/components/admin/recurring-transaction-form";
+import FinancialGoalForm from "@/components/admin/financial-goal-form";
+import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig, } from "@/components/ui/chart";
+import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Pie, PieChart, Cell, } from "recharts";
+import { Edit, Trash2, Calendar as CalendarIcon, Search, TrendingUp, TrendingDown, PiggyBank, Target, Plus, Repeat, } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table";
+import { toast } from "sonner";
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, } from "@/components/ui/dropdown-menu";
 
 // Chart configuration is static and can be defined outside the component
 const chartConfig = {
@@ -89,6 +84,8 @@ export default function FinanceManager() {
         loadAllFinancialData();
     }, [loadAllFinancialData]);
 
+    const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d",];
+
     // --- DERIVED DATA & MEMOIZATION ---
     // useMemo is used for expensive calculations to prevent re-computing on every render.
     const filteredTransactions = useMemo(() => {
@@ -107,42 +104,46 @@ export default function FinanceManager() {
         });
     }, [transactions, searchTerm, date]);
 
-    const dashboardData = useMemo(() => {
-        const now = new Date();
-        const currentMonth = now.getMonth();
-        const currentYear = now.getFullYear();
-
-        const currentMonthTransactions = transactions.filter(t => {
-            const tDate = new Date(t.date);
-            return tDate.getMonth() === currentMonth && tDate.getFullYear() === currentYear;
-        });
-
-        const totalEarnings = currentMonthTransactions.filter(t => t.type === 'earning').reduce((acc, t) => acc + t.amount, 0);
-        const totalExpenses = currentMonthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
-
-        const monthlyData = Array.from({ length: 6 }).map((_, i) => {
-            const d = new Date(currentYear, currentMonth - i, 1);
-            const monthName = d.toLocaleString('default', { month: 'short' });
-            const yearShort = d.getFullYear().toString().slice(-2);
-
-            const monthTransactions = transactions.filter(t => {
-                const tDate = new Date(t.date);
-                return tDate.getMonth() === d.getMonth() && tDate.getFullYear() === d.getFullYear();
-            });
-
+    const { totalEarnings, totalExpenses, netIncome, expenseByCategory } =
+        useMemo(() => {
+            let earnings = 0,
+                expenses = 0;
+            const categoryMap: Record<string, number> = {};
+            for (const t of filteredTransactions) {
+                if (t.type === "earning") earnings += t.amount;
+                else {
+                    expenses += t.amount;
+                    const category = t.category || "Uncategorized";
+                    categoryMap[category] = (categoryMap[category] || 0) + t.amount;
+                }
+            }
+            const expenseData = Object.entries(categoryMap)
+                .map(([name, value]) => ({ name, value }))
+                .sort((a, b) => b.value - a.value);
             return {
-                name: `${monthName} '${yearShort}`,
-                earning: monthTransactions.filter(t => t.type === 'earning').reduce((acc, t) => acc + t.amount, 0),
-                expense: monthTransactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0),
+                totalEarnings: earnings,
+                totalExpenses: expenses,
+                netIncome: earnings - expenses,
+                expenseByCategory: expenseData,
             };
-        }).reverse();
+        }, [filteredTransactions]);
 
-        return {
-            totalEarnings,
-            totalExpenses,
-            netSavings: totalEarnings - totalExpenses,
-            monthlyData
-        };
+    const cashFlowData = useMemo(() => {
+        const monthlyData: Record<string, { earning: number; expense: number }> =
+            {};
+        const sixMonthsAgo = subMonths(new Date(), 5);
+        const relevantTransactions = transactions.filter(
+            (t) => new Date(t.date) >= startOfMonth(sixMonthsAgo),
+        );
+        for (const t of relevantTransactions) {
+            const month = format(new Date(t.date), "MMM yy");
+            if (!monthlyData[month]) monthlyData[month] = { earning: 0, expense: 0 };
+            if (t.type === "earning") monthlyData[month].earning += t.amount;
+            else monthlyData[month].expense += t.amount;
+        }
+        return Object.entries(monthlyData)
+            .map(([name, values]) => ({ name, ...values }))
+            .slice(-6);
     }, [transactions]);
 
     // --- EVENT HANDLERS ---
@@ -245,26 +246,179 @@ export default function FinanceManager() {
                 </TabsList>
 
                 {/* Dashboard Tab */}
-                <TabsContent value="dashboard" className="space-y-6">
-                    <div className="grid gap-4 md:grid-cols-3">
-                        <Card><CardHeader><CardTitle>This Month's Earnings</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold text-green-600">${dashboardData.totalEarnings.toFixed(2)}</p></CardContent></Card>
-                        <Card><CardHeader><CardTitle>This Month's Expenses</CardTitle></CardHeader><CardContent><p className="text-2xl font-bold text-red-600">${dashboardData.totalExpenses.toFixed(2)}</p></CardContent></Card>
-                        <Card><CardHeader><CardTitle>This Month's Net</CardTitle></CardHeader><CardContent><p className={`text-2xl font-bold ${dashboardData.netSavings >= 0 ? 'text-blue-600' : 'text-orange-600'}`}>${dashboardData.netSavings.toFixed(2)}</p></CardContent></Card>
+                <TabsContent value="dashboard" className="mt-6 space-y-6">
+                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                        <Card>
+                            <CardHeader className="flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Net Income
+                                </CardTitle>
+                                <TrendingUp className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div
+                                    className={`text-2xl font-bold ${netIncome >= 0 ? "text-green-600" : "text-red-600"}`}
+                                >
+                                    ${netIncome.toFixed(2)}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    For selected period
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Total Expenses
+                                </CardTitle>
+                                <TrendingDown className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    ${totalExpenses.toFixed(2)}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    For selected period
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">
+                                    Savings Rate
+                                </CardTitle>
+                                <PiggyBank className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">
+                                    {totalEarnings > 0
+                                        ? `${((netIncome / totalEarnings) * 100).toFixed(1)}%`
+                                        : "N/A"}
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    Net / Gross Income
+                                </p>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardHeader className="flex-row items-center justify-between pb-2">
+                                <CardTitle className="text-sm font-medium">Goals</CardTitle>
+                                <Target className="size-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">{goals.length} Active</div>
+                                <p className="text-xs text-muted-foreground">
+                                    View in Goals tab
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </div>
+                    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                        <Card className="lg:col-span-2">
+                            <CardHeader>
+                                <CardTitle>Cash Flow (Last 6 Months)</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer config={chartConfig} className="h-64 w-full">
+                                    <BarChart data={cashFlowData}>
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis
+                                            dataKey="name"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickMargin={8}
+                                        />
+                                        <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                                        <ChartTooltip content={<ChartTooltipContent />} />
+                                        <ChartLegend content={<ChartLegendContent />} />
+                                        <Bar
+                                            dataKey="earning"
+                                            fill="var(--color-earning)"
+                                            radius={4}
+                                        />
+                                        <Bar
+                                            dataKey="expense"
+                                            fill="var(--color-expense)"
+                                            radius={4}
+                                        />
+                                    </BarChart>
+                                </ChartContainer>
+                            </CardContent>
+                        </Card>
+                        <Card className="lg:col-span-1">
+                            <CardHeader>
+                                <CardTitle>Expense Breakdown</CardTitle>
+                                <CardDescription>For selected period</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                {expenseByCategory.length > 0 ? (
+                                    <ChartContainer config={{}} className="h-64 w-full">
+                                        <PieChart>
+                                            <Pie
+                                                data={expenseByCategory}
+                                                dataKey="value"
+                                                nameKey="name"
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius={50}
+                                                outerRadius={80}
+                                            >
+                                                {expenseByCategory.map((_, index) => (
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={COLORS[index % COLORS.length]}
+                                                    />
+                                                ))}
+                                            </Pie>
+                                            <ChartTooltip
+                                                content={<ChartTooltipContent nameKey="name" />}
+                                            />
+                                            <ChartLegend
+                                                content={<ChartLegendContent nameKey="name" />}
+                                            />
+                                        </PieChart>
+                                    </ChartContainer>
+                                ) : (
+                                    <div className="flex h-64 items-center justify-center">
+                                        <p className="text-muted-foreground">
+                                            No expense data to display.
+                                        </p>
+                                    </div>
+                                )}
+                            </CardContent>
+                        </Card>
                     </div>
                     <Card>
-                        <CardHeader><CardTitle>Last 6 Months Overview</CardTitle></CardHeader>
-                        <CardContent>
-                            <ChartContainer config={chartConfig} className="min-h-[250px] w-full">
-                                <BarChart data={dashboardData.monthlyData} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
-                                    <CartesianGrid vertical={false} />
-                                    <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
-                                    <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                                    <ChartTooltip content={<ChartTooltipContent />} />
-                                    <ChartLegend content={<ChartLegendContent />} />
-                                    <Bar dataKey="earning" fill="var(--color-earning)" radius={4} />
-                                    <Bar dataKey="expense" fill="var(--color-expense)" radius={4} />
-                                </BarChart>
-                            </ChartContainer>
+                        <CardHeader>
+                            <CardTitle>Financial Goals Progress</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-4">
+                            {goals.length > 0 ? (
+                                goals.map((goal) => {
+                                    const progress = Math.min(
+                                        (goal.current_amount / goal.target_amount) * 100,
+                                        100,
+                                    );
+                                    return (
+                                        <div key={goal.id}>
+                                            <div className="mb-1 flex justify-between">
+                                                <p className="font-medium">{goal.name}</p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    ${goal.current_amount.toLocaleString()} /{" "}
+                                                    <span className="font-semibold">
+                                                        ${goal.target_amount.toLocaleString()}
+                                                    </span>
+                                                </p>
+                                            </div>
+                                            {/* <Progress value={progress} /> */}
+                                        </div>
+                                    );
+                                })
+                            ) : (
+                                <p className="text-muted-foreground">
+                                    No goals set. Go to the 'Goals' tab to create one.
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
                 </TabsContent>
