@@ -95,9 +95,9 @@ export default function FinanceManager() {
         return transactions.filter((t) => {
             const transactionDate = new Date(t.date);
             const descriptionMatch = t.description.toLowerCase().includes(searchTerm.toLowerCase());
-            
+
             if (!date?.from) return descriptionMatch; // If no date range, just filter by search
-            
+
             const toDate = date.to ? addDays(date.to, 1) : new Date(8640000000000000); // Far future date if 'to' is not set
             const fromDate = date.from;
 
@@ -174,7 +174,7 @@ export default function FinanceManager() {
         }
 
         const newCurrentAmount = goal.current_amount + amount;
-        
+
         const { error: goalError } = await supabase
             .from("financial_goals")
             .update({ current_amount: newCurrentAmount })
@@ -200,7 +200,7 @@ export default function FinanceManager() {
         } else {
             toast.success(`$${amount.toFixed(2)} added to "${goal.name}"`);
         }
-        
+
         await handleSaveSuccess();
     };
 
@@ -243,7 +243,7 @@ export default function FinanceManager() {
                     <TabsTrigger value="recurring">Recurring</TabsTrigger>
                     <TabsTrigger value="goals">Goals</TabsTrigger>
                 </TabsList>
-                
+
                 {/* Dashboard Tab */}
                 <TabsContent value="dashboard" className="space-y-6">
                     <div className="grid gap-4 md:grid-cols-3">
@@ -363,7 +363,7 @@ export default function FinanceManager() {
                                             </div>
                                             <CardDescription>${goal.current_amount.toLocaleString()} / <b>${goal.target_amount.toLocaleString()}</b></CardDescription>
                                         </CardHeader>
-                                        <CardContent className="flex-grow"><Progress value={progress} /></CardContent>
+                                        {/* <CardContent className="flex-grow"><Progress value={progress} /></CardContent> */}
                                         <CardFooter><Button size="sm" onClick={() => setDialogState({ type: "addFunds", data: goal })}><Plus className="mr-2 size-4" /> Add Funds</Button></CardFooter>
                                     </Card>
                                 );
@@ -372,7 +372,7 @@ export default function FinanceManager() {
                     </Card>
                 </TabsContent>
             </Tabs>
-            
+
             {/* Dialogs / Modals */}
             <Dialog open={!!dialogState.type} onOpenChange={(open) => !open && setDialogState({ type: null })}>
                 <DialogContent>
