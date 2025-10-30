@@ -3,7 +3,7 @@ import React, { useState, useEffect, useMemo, FormEvent, useCallback } from "rea
 import { supabase } from "@/supabase/client";
 import type { FinancialGoal, RecurringTransaction, Transaction } from "@/types";
 import { DateRange } from "react-day-picker";
-import { addDays, addMonths, addWeeks, addYears, format, startOfMonth, subMonths, differenceInDays, isBefore, isAfter, isSameDay } from "date-fns";
+import { addDays, addMonths, addWeeks, addYears, format, startOfMonth, subMonths, differenceInDays, isBefore, isAfter, isSameDay, nextDay, setDate } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle, } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -23,6 +23,8 @@ import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, } from "@/components/ui/dropdown-menu";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { motion } from "framer-motion";
+import { Separator } from "../ui/separator";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
 
 const chartConfig = { earning: { label: "Earnings", color: "hsl(var(--chart-2))" }, expense: { label: "Expenses", color: "hsl(var(--chart-5))" } };
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
@@ -42,7 +44,7 @@ const GoalCard = ({ goal, onAddFunds, onEdit, onDelete }: { goal: FinancialGoal,
                 animate={{ height: `${progress}%` }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
             />
-            
+
             {/* All content sits above the fill effect */}
             <div className="relative z-10 flex h-full flex-col">
                 <CardHeader>
@@ -96,6 +98,26 @@ const GoalCard = ({ goal, onAddFunds, onEdit, onDelete }: { goal: FinancialGoal,
     );
 };
 
+const getNextOccurrence = (cursor: Date, rule: RecurringTransaction): Date => {
+    let next = new Date(cursor);
+    switch (rule.frequency) {
+        case 'daily': return addDays(next, 1);
+        case 'weekly':
+            return rule.occurrence_day !== null && rule.occurrence_day !== undefined
+                ? nextDay(next, rule.occurrence_day as any) // nextDay(date, dayOfWeek)
+                : addWeeks(next, 1);
+        case 'bi-weekly':
+            return rule.occurrence_day !== null && rule.occurrence_day !== undefined
+                ? nextDay(addWeeks(next, 1), rule.occurrence_day as any) // Find next occurrence in the following week
+                : addWeeks(next, 2);
+        case 'monthly':
+            next = addMonths(next, 1);
+            return rule.occurrence_day ? setDate(next, rule.occurrence_day) : next;
+        case 'yearly': return addYears(next, 1);
+        default: return addDays(next, 1);
+    }
+};
+
 export default function FinanceManager() {
     const [transactions, setTransactions] = useState<Transaction[]>([]);
     const [goals, setGoals] = useState<FinancialGoal[]>([]);
@@ -107,64 +129,127 @@ export default function FinanceManager() {
     const [dialogState, setDialogState] = useState<DialogState>({ type: null });
     const [analyticsYear, setAnalyticsYear] = useState(new Date().getFullYear());
 
-     const processRecurringTransactions = useCallback(async (rules: RecurringTransaction[]) => {
-        const newTransactions: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>[] = [];
+   const processRecurringTransactions = useCallback(async (rules: RecurringTransaction[], existingTransactions: Transaction[]) => {
+        const newTransactionsPayload: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>[] = [];
         const rulesToUpdate: { id: string; last_processed_date: string }[] = [];
         const today = new Date();
+        today.setHours(0, 0, 0, 0); // Normalize to start of day
     
         for (const rule of rules) {
-            let cursor = rule.last_processed_date ? new Date(rule.last_processed_date) : new Date(rule.start_date);
-            // Move cursor to the next potential occurrence after the last processed date
-            if (rule.last_processed_date) {
-                switch (rule.frequency) {
-                    case 'daily': cursor = addDays(cursor, 1); break;
-                    case 'weekly': cursor = addWeeks(cursor, 1); break;
-                    case 'monthly': cursor = addMonths(cursor, 1); break;
-                    case 'yearly': cursor = addYears(cursor, 1); break;
+            // 1. Get a clean set of dates that have ALREADY been logged for this rule.
+            const existingDates = new Set(
+                existingTransactions
+                    .filter(t => t.recurring_transaction_id === rule.id)
+                    .map(t => format(new Date(t.date), 'yyyy-MM-dd'))
+            );
+
+            // 2. Determine the starting point for checking
+            // Parse date strings properly to avoid timezone issues
+            let cursor = new Date(rule.start_date + 'T00:00:00');
+            
+            // For weekly/bi-weekly rules with occurrence_day specified,
+            // ensure cursor starts on the correct day of week
+            if ((rule.frequency === 'weekly' || rule.frequency === 'bi-weekly') && 
+                rule.occurrence_day !== null && 
+                rule.occurrence_day !== undefined) {
+                const cursorDay = cursor.getDay();
+                if (cursorDay !== rule.occurrence_day) {
+                    // Find the next occurrence of the specified day on or after start_date
+                    cursor = nextDay(cursor, rule.occurrence_day as any);
                 }
             }
-
-            // Ensure cursor doesn't start before the rule's actual start date
-            if (isBefore(cursor, new Date(rule.start_date))) {
-                cursor = new Date(rule.start_date);
+            
+            // For monthly rules with occurrence_day specified,
+            // ensure cursor starts on the correct day of month
+            if (rule.frequency === 'monthly' && 
+                rule.occurrence_day !== null && 
+                rule.occurrence_day !== undefined) {
+                const cursorDayOfMonth = cursor.getDate();
+                if (cursorDayOfMonth !== rule.occurrence_day) {
+                    // If the occurrence day hasn't happened this month yet, use it
+                    if (cursorDayOfMonth < rule.occurrence_day) {
+                        const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
+                        cursor = setDate(cursor, Math.min(rule.occurrence_day, daysInMonth));
+                    } else {
+                        // Otherwise move to next month and set the day
+                        cursor = addMonths(cursor, 1);
+                        const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
+                        cursor = setDate(cursor, Math.min(rule.occurrence_day, daysInMonth));
+                    }
+                }
             }
-
-            const ruleEndDate = rule.end_date ? new Date(rule.end_date) : null;
-            let lastProcessedThisRun: Date | null = null;
+            
+            // IMPORTANT: If the start date is in the past and there's no last_processed_date,
+            // move cursor to today to avoid backdating transactions
+            if (!rule.last_processed_date && isBefore(cursor, today)) {
+                // Fast-forward to find the first occurrence on or after today
+                while (isBefore(cursor, today)) {
+                    cursor = getNextOccurrence(cursor, rule);
+                }
+            }
+            
+            // If we have a last_processed_date, start from the next occurrence after it
+            if (rule.last_processed_date) {
+                const lastProcessed = new Date(rule.last_processed_date + 'T00:00:00');
+                
+                // Only process from the next occurrence after last_processed_date
+                cursor = getNextOccurrence(lastProcessed, rule);
+            }
+            
+            const ruleEndDate = rule.end_date ? new Date(rule.end_date + 'T00:00:00') : null;
+            
+            let mostRecentLoggedDate: Date | null = null;
+            
+            // Safety check: prevent infinite loops
+            let iterations = 0;
+            const MAX_ITERATIONS = 1000;
     
-            while (isBefore(cursor, today) || isSameDay(cursor, today)) {
+            // 3. Only process dates that are due (today or earlier)
+            while ((isBefore(cursor, today) || isSameDay(cursor, today)) && iterations < MAX_ITERATIONS) {
+                iterations++;
+                
                 if (ruleEndDate && isAfter(cursor, ruleEndDate)) break;
     
-                newTransactions.push({
-                    date: format(cursor, 'yyyy-MM-dd'),
-                    description: rule.description,
-                    amount: rule.amount,
-                    type: rule.type,
-                    category: rule.category,
-                    recurring_transaction_id: rule.id,
-                });
-                lastProcessedThisRun = cursor;
-    
-                switch (rule.frequency) {
-                    case 'daily': cursor = addDays(cursor, 1); break;
-                    case 'weekly': cursor = addWeeks(cursor, 1); break;
-                    case 'monthly': cursor = addMonths(cursor, 1); break;
-                    case 'yearly': cursor = addYears(cursor, 1); break;
+                const dateString = format(cursor, 'yyyy-MM-dd');
+                
+                // 4. If this theoretical date has NOT been logged yet, add it to our payload.
+                if (!existingDates.has(dateString)) {
+                    newTransactionsPayload.push({
+                        date: dateString,
+                        description: rule.description,
+                        amount: rule.amount,
+                        type: rule.type,
+                        category: rule.category,
+                        recurring_transaction_id: rule.id,
+                    });
+                    mostRecentLoggedDate = new Date(cursor);
                 }
+    
+                // 5. Advance cursor to the next theoretical date.
+                cursor = getNextOccurrence(cursor, rule);
             }
-            if (lastProcessedThisRun) {
-                rulesToUpdate.push({ id: rule.id, last_processed_date: format(lastProcessedThisRun, 'yyyy-MM-dd') });
+
+            // 6. If we logged anything, prepare to update the rule's status.
+            if (mostRecentLoggedDate) {
+                rulesToUpdate.push({ id: rule.id, last_processed_date: format(mostRecentLoggedDate, 'yyyy-MM-dd') });
             }
         }
     
-        if (newTransactions.length > 0) {
-            const { error: insertError } = await supabase.from('transactions').insert(newTransactions);
-            if (insertError) { toast.error("Auto-log failed", { description: insertError.message }); return false; }
+        if (newTransactionsPayload.length > 0) {
+            const { error: insertError } = await supabase.from('transactions').insert(newTransactionsPayload);
+            if (insertError) {
+                toast.error("Auto-log failed", { description: insertError.message });
+                return false;
+            }
             
-            const { error: updateError } = await supabase.from('recurring_transactions').upsert(rulesToUpdate);
-            if (updateError) { toast.warning("Transactions logged, but failed to update rule status.", { description: updateError.message }); }
+            if (rulesToUpdate.length > 0) {
+                const { error: updateError } = await supabase.from('recurring_transactions').upsert(rulesToUpdate);
+                if (updateError) {
+                    toast.warning("Transactions logged, but failed to update rule status.", { description: updateError.message });
+                }
+            }
             
-            toast.success(`${newTransactions.length} recurring transaction(s) automatically logged.`);
+            toast.success(`${newTransactionsPayload.length} recurring transaction(s) automatically logged.`);
             return true;
         }
         return false;
@@ -180,18 +265,22 @@ export default function FinanceManager() {
             ]);
 
             if (tranRes.error || goalRes.error || recurRes.error) throw new Error(tranRes.error?.message || "Failed to load data");
-
-            const wasUpdated = await processRecurringTransactions(recurRes.data || []);
-
+            
+            const wasUpdated = await processRecurringTransactions(recurRes.data || [], tranRes.data || []);
+            
             if (wasUpdated) {
                 const finalTranRes = await supabase.from("transactions").select("*").order("date", { ascending: false });
                 setTransactions(finalTranRes.data || []);
             } else { setTransactions(tranRes.data || []); }
-
-            setGoals(goalRes.data || []); setRecurring(recurRes.data || []);
-        } catch (err: any) {
-            setError(err.message); toast.error("Error", { description: err.message });
-        } finally { setIsLoading(false); }
+            
+            setGoals(goalRes.data || []); 
+            setRecurring(recurRes.data || []);
+        } catch (err: any) { 
+            setError(err.message); 
+            toast.error("Data Load Error", { description: err.message });
+        } finally { 
+            setIsLoading(false); 
+        }
     }, [processRecurringTransactions]);
 
     useEffect(() => { loadAllFinancialData(); }, [loadAllFinancialData]);
@@ -305,41 +394,34 @@ export default function FinanceManager() {
     };
     // --- NEW: Forecast Calculation ---
     const forecast = useMemo(() => {
-        let upcomingIncome = 0;
-        let upcomingExpenses = 0;
+        const upcomingTransactions: { description: string, amount: number, type: 'earning' | 'expense', date: Date }[] = [];
         const today = new Date();
         const next30Days = addDays(today, 30);
 
         recurring.forEach(rule => {
             let cursor = rule.last_processed_date ? new Date(rule.last_processed_date) : new Date(rule.start_date);
-            if (rule.last_processed_date) {
-                switch (rule.frequency) {
-                    case 'daily': cursor = addDays(cursor, 1); break;
-                    case 'weekly': cursor = addWeeks(cursor, 1); break;
-                    case 'monthly': cursor = addMonths(cursor, 1); break;
-                    case 'yearly': cursor = addYears(cursor, 1); break;
-                }
+            if (isBefore(cursor, new Date(rule.start_date))) {
+                cursor = new Date(rule.start_date);
             }
-            if (isBefore(cursor, new Date(rule.start_date))) cursor = new Date(rule.start_date);
+
+            let nextOccurrence = new Date(cursor);
+            if (rule.last_processed_date && (isAfter(nextOccurrence, today) || isSameDay(nextOccurrence, today))) {
+                // If last processed is in the future, it's our first candidate
+            } else {
+                nextOccurrence = getNextOccurrence(cursor, rule);
+            }
 
             const ruleEndDate = rule.end_date ? new Date(rule.end_date) : null;
 
-            while (isBefore(cursor, next30Days)) {
-                if (ruleEndDate && isAfter(cursor, ruleEndDate)) break;
-                if (isAfter(cursor, today) || isSameDay(cursor, today)) {
-                    if (rule.type === 'earning') upcomingIncome += rule.amount;
-                    else upcomingExpenses += rule.amount;
+            while (isBefore(nextOccurrence, next30Days)) {
+                if (ruleEndDate && isAfter(nextOccurrence, ruleEndDate)) break;
+                if ((isAfter(nextOccurrence, today) || isSameDay(nextOccurrence, today))) {
+                    upcomingTransactions.push({ description: rule.description, amount: rule.amount, type: rule.type, date: nextOccurrence });
                 }
-                switch (rule.frequency) {
-                    case 'daily': cursor = addDays(cursor, 1); break;
-                    case 'weekly': cursor = addWeeks(cursor, 1); break;
-                    case 'monthly': cursor = addMonths(cursor, 1); break;
-                    case 'yearly': cursor = addYears(cursor, 1); break;
-                }
+                nextOccurrence = getNextOccurrence(nextOccurrence, rule);
             }
         });
-
-        return { upcomingIncome, upcomingExpenses };
+        return { upcomingTransactions: upcomingTransactions.sort((a, b) => a.date.getTime() - b.date.getTime()) };
     }, [recurring]);
 
 
@@ -350,190 +432,143 @@ export default function FinanceManager() {
                 <TabsList className="grid w-full grid-cols-5"><TabsTrigger value="dashboard">Dashboard</TabsTrigger><TabsTrigger value="transactions">Transactions</TabsTrigger><TabsTrigger value="recurring">Recurring</TabsTrigger><TabsTrigger value="goals">Goals</TabsTrigger><TabsTrigger value="analytics">Analytics</TabsTrigger></TabsList>
                 {/* Dashboard Tab */}
                 <TabsContent value="dashboard" className="mt-6 space-y-6">
-                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <Card>
-                            <CardHeader className="flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Net Income
-                                </CardTitle>
-                                <TrendingUp className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div
-                                    className={`text-2xl font-bold ${netIncome >= 0 ? "text-green-600" : "text-red-600"}`}
-                                >
-                                    ${netIncome.toFixed(2)}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    For selected period
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Total Expenses
-                                </CardTitle>
-                                <TrendingDown className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    ${totalExpenses.toFixed(2)}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    For selected period
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">
-                                    Savings Rate
-                                </CardTitle>
-                                <PiggyBank className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">
-                                    {totalEarnings > 0
-                                        ? `${((netIncome / totalEarnings) * 100).toFixed(1)}%`
-                                        : "N/A"}
-                                </div>
-                                <p className="text-xs text-muted-foreground">
-                                    Net / Gross Income
-                                </p>
-                            </CardContent>
-                        </Card>
-                        <Card>
-                            <CardHeader className="flex-row items-center justify-between pb-2">
-                                <CardTitle className="text-sm font-medium">Goals</CardTitle>
-                                <Target className="size-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold">{goals.length} Active</div>
-                                <p className="text-xs text-muted-foreground">
-                                    View in Goals tab
-                                </p>
-                            </CardContent>
-                        </Card>
-                    </div>
                     <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-                        <Card className="lg:col-span-2">
-                            <CardHeader>
-                                <CardTitle>Cash Flow (Last 6 Months)</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} className="h-64 w-full">
-                                    <BarChart data={cashFlowData}>
-                                        <CartesianGrid vertical={false} />
-                                        <XAxis
-                                            dataKey="name"
-                                            tickLine={false}
-                                            axisLine={false}
-                                            tickMargin={8}
-                                        />
-                                        <YAxis tickLine={false} axisLine={false} tickMargin={8} />
-                                        <ChartTooltip content={<ChartTooltipContent />} />
-                                        <ChartLegend content={<ChartLegendContent />} />
-                                        <Bar
-                                            dataKey="earning"
-                                            fill="var(--color-earning)"
-                                            radius={4}
-                                        />
-                                        <Bar
-                                            dataKey="expense"
-                                            fill="var(--color-expense)"
-                                            radius={4}
-                                        />
-                                    </BarChart>
-                                </ChartContainer>
-                            </CardContent>
-                        </Card>
-                        <Card className="lg:col-span-1">
-                            <CardHeader>
-                                <CardTitle>Expense Breakdown</CardTitle>
-                                <CardDescription>For selected period</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                {expenseByCategory.length > 0 ? (
-                                    <ChartContainer config={{}} className="h-64 w-full">
-                                        <PieChart>
-                                            <Pie
-                                                data={expenseByCategory}
-                                                dataKey="value"
-                                                nameKey="name"
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={50}
-                                                outerRadius={80}
-                                            >
-                                                {expenseByCategory.map((_, index) => (
-                                                    <Cell
-                                                        key={`cell-${index}`}
-                                                        fill={COLORS[index % COLORS.length]}
-                                                    />
-                                                ))}
-                                            </Pie>
-                                            <ChartTooltip
-                                                content={<ChartTooltipContent nameKey="name" />}
-                                            />
-                                            <ChartLegend
-                                                content={<ChartLegendContent nameKey="name" />}
-                                            />
-                                        </PieChart>
-                                    </ChartContainer>
-                                ) : (
-                                    <div className="flex h-64 items-center justify-center">
-                                        <p className="text-muted-foreground">
-                                            No expense data to display.
-                                        </p>
+                        {/* --- MAIN CONTENT AREA --- */}
+                        <div className="lg:col-span-2 space-y-6">
+                            {/* Hero KPI: Net Income */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Net Income Overview</CardTitle>
+                                    <CardDescription>
+                                        Total earnings minus total expenses for the selected period: {date?.from ? format(date.from, "LLL dd, y") : '...'} - {date?.to ? format(date.to, "LLL dd, y") : '...'}
+                                    </CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <div className={`text-5xl font-bold ${netIncome >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                        {netIncome >= 0 ? '+' : '-'}${Math.abs(netIncome).toFixed(2)}
                                     </div>
+                                    <div className="flex justify-around items-center pt-4 border-t">
+                                        <div className="text-center">
+                                            <p className="text-sm text-muted-foreground flex items-center gap-1"><TrendingUp className="size-4 text-green-500" /> Total Earnings</p>
+                                            <p className="text-2xl font-semibold">${totalEarnings.toFixed(2)}</p>
+                                        </div>
+                                        <Separator orientation="vertical" className="h-12" />
+                                        <div className="text-center">
+                                            <p className="text-sm text-muted-foreground flex items-center gap-1"><TrendingDown className="size-4 text-red-500" /> Total Expenses</p>
+                                            <p className="text-2xl font-semibold">${totalExpenses.toFixed(2)}</p>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
+                            {/* Cash Flow Chart */}
+                            <Card>
+                                <CardHeader><CardTitle>Cash Flow (Last 6 Months)</CardTitle></CardHeader>
+                                <CardContent>
+                                    <ChartContainer config={chartConfig} className="h-64 w-full">
+                                        <BarChart data={cashFlowData}>
+                                            <CartesianGrid vertical={false} />
+                                            <XAxis dataKey="name" tickLine={false} axisLine={false} tickMargin={8} />
+                                            <YAxis tickLine={false} axisLine={false} tickMargin={8} />
+                                            <ChartTooltip content={<ChartTooltipContent />} />
+                                            <ChartLegend content={<ChartLegendContent />} />
+                                            <Bar dataKey="earning" fill="var(--color-earning)" radius={4} />
+                                            <Bar dataKey="expense" fill="var(--color-expense)" radius={4} />
+                                        </BarChart>
+                                    </ChartContainer>
+                                </CardContent>
+                            </Card>
+
+                            {/* Goals at a Glance */}
+                            <Card>
+                                <CardHeader>
+                                    <CardTitle>Goals at a Glance</CardTitle>
+                                    <CardDescription>A summary of your active financial targets.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    {goals.length > 0 ? goals.map(goal => {
+                                        const progress = Math.min((goal.current_amount / goal.target_amount) * 100, 100);
+                                        const remainingAmount = goal.target_amount - goal.current_amount;
+                                        const remainingDays = goal.target_date ? differenceInDays(new Date(goal.target_date), new Date()) : null;
+
+                                        return (
+                                            <div key={goal.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                                <div className="flex-grow">
+                                                    <p className="font-semibold">{goal.name}</p>
+                                                    <p className="text-sm text-muted-foreground">${goal.current_amount.toLocaleString()} / ${goal.target_amount.toLocaleString()}</p>
+                                                </div>
+                                                <div className="flex items-center gap-4 w-full sm:w-auto">
+                                                    <TooltipProvider delayDuration={100}>
+                                                        <Tooltip>
+                                                            <TooltipTrigger asChild>
+                                                                <div className="relative h-6 w-28 rounded-full bg-muted overflow-hidden">
+                                                                    <motion.div
+                                                                        className="absolute left-0 top-0 h-full rounded-full bg-primary"
+                                                                        initial={{ width: 0 }}
+                                                                        animate={{ width: `${progress}%` }}
+                                                                        transition={{ duration: 0.8, ease: "easeOut" }}
+                                                                    />
+                                                                    <span className="absolute inset-0 flex items-center justify-center text-xs font-bold text-primary">
+                                                                        {progress.toFixed(0)}%
+                                                                    </span>
+                                                                </div>
+                                                            </TooltipTrigger>
+                                                            {remainingDays !== null && (
+                                                                <TooltipContent>
+                                                                    <p>{remainingDays < 0 ? `${Math.abs(remainingDays)} days overdue` : `${remainingDays} days remaining`}</p>
+                                                                </TooltipContent>
+                                                            )}
+                                                        </Tooltip>
+                                                    </TooltipProvider>
+                                                    <div className="text-right w-24">
+                                                        <p className="text-xs text-muted-foreground">Remaining</p>
+                                                        <p className="font-bold text-base">${remainingAmount > 0 ? remainingAmount.toLocaleString() : 0}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        )
+                                    }) : <p className="text-muted-foreground text-sm py-4 text-center">No goals set. Create one in the 'Goals' tab to see progress here.</p>}
+                                </CardContent>
+                                {goals.length > 0 && (
+                                    <CardFooter>
+                                        <p className="text-xs text-muted-foreground">Manage your goals in the 'Goals' tab.</p>
+                                    </CardFooter>
                                 )}
-                            </CardContent>
-                        </Card>
-                    </div>
-                    <Card>
-                        <CardHeader>
-                            <CardTitle>Financial Goals Progress</CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                            {goals.length > 0 ? (
-                                goals.map((goal) => {
-                                    const progress = Math.min(
-                                        (goal.current_amount / goal.target_amount) * 100,
-                                        100,
-                                    );
-                                    return (
-                                        <div key={goal.id}>
-                                            <div className="mb-1 flex justify-between">
-                                                <p className="font-medium">{goal.name}</p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    ${goal.current_amount.toLocaleString()} /{" "}
-                                                    <span className="font-semibold">
-                                                        ${goal.target_amount.toLocaleString()}
-                                                    </span>
+                            </Card>
+                        </div>
+
+                        {/* --- SIDEBAR AREA --- */}
+                        <div className="lg:col-span-1 space-y-6">
+                            {/* Expense Breakdown */}
+                            <Card>
+                                <CardHeader><CardTitle>Expense Breakdown</CardTitle></CardHeader>
+                                <CardContent>
+                                    {expenseByCategory.length > 0 ? <ChartContainer config={{}} className="h-64 w-full"><PieChart><Pie data={expenseByCategory} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={50} outerRadius={80}>{expenseByCategory.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}</Pie><ChartTooltip content={<ChartTooltipContent nameKey="name" />} /></PieChart></ChartContainer> : <div className="flex h-64 items-center justify-center"><p className="text-muted-foreground text-center">No expense data for this period.</p></div>}
+                                </CardContent>
+                            </Card>
+
+                            {/* Upcoming Transactions */}
+                            <Card>
+                                <CardHeader><CardTitle>Upcoming in 30 Days</CardTitle></CardHeader>
+                                <CardContent className="space-y-3">
+
+                                    {forecast.upcomingTransactions.length > 0 ? forecast.upcomingTransactions.map((t, i) => (
+                                        <div key={i} className="flex justify-between items-center text-sm">
+                                            <div>
+                                                <p className="font-semibold">{t.description}</p>
+                                                <p className="text-xs text-muted-foreground">
+                                                    Due in {differenceInDays(t.date, new Date())} days ({format(t.date, 'MMM dd')})
                                                 </p>
                                             </div>
+                                            <p className={`font-bold ${t.type === 'earning' ? 'text-green-600' : 'text-red-600'}`}>
+                                                {t.type === 'earning' ? '+' : '-'}${t.amount.toFixed(2)}
+                                            </p>
                                         </div>
-                                    );
-                                })
-                            ) : (
-                                <p className="text-muted-foreground">
-                                    No goals set. Go to the 'Goals' tab to create one.
-                                </p>
-                            )}
-                        </CardContent>
-                    </Card>
-                    <Card className="col-span-1 md:col-span-2 lg:col-span-1">
-                        <CardHeader className="flex-row items-center justify-between pb-2">
-                            <CardTitle className="text-sm font-medium">Next 30-Day Forecast</CardTitle>
-                            <AlertCircle className="size-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold text-green-600">+${forecast.upcomingIncome.toFixed(2)}</div>
-                            <div className="text-2xl font-bold text-red-600">-${forecast.upcomingExpenses.toFixed(2)}</div>
-                            <p className="text-xs text-muted-foreground">Based on recurring transactions</p>
-                        </CardContent>
-                    </Card>
+                                    )) : <p className="text-sm text-muted-foreground text-center py-8">No upcoming recurring transactions.</p>}
+                                </CardContent>
+                            </Card>
+                        </div>
+                    </div>
                 </TabsContent>
 
                 {/* Transactions Tab */}
@@ -583,16 +618,32 @@ export default function FinanceManager() {
                 </TabsContent>
 
                 <TabsContent value="recurring">
-                    <Card>
-                        <CardHeader><CardTitle>Recurring Transactions</CardTitle><CardDescription>Automate your regular income and expenses to forecast cash flow. Due transactions are logged automatically.</CardDescription></CardHeader>
+                    <Card><CardHeader><CardTitle>Recurring Transactions</CardTitle><CardDescription>Automate your regular income and expenses to forecast cash flow. Due transactions are logged automatically.</CardDescription></CardHeader>
                         <CardContent><Table>
-                            <TableHeader><TableRow><TableHead>Description</TableHead><TableHead>Amount</TableHead><TableHead>Frequency</TableHead><TableHead>Start Date</TableHead><TableHead className="text-center">Actions</TableHead></TableRow></TableHeader>
+                            {/* --- UPGRADED RECURRING TABLE --- */}
+                            <TableHeader><TableRow><TableHead>Description</TableHead><TableHead>Amount</TableHead><TableHead>Schedule</TableHead><TableHead>Next Due</TableHead><TableHead className="text-center">Actions</TableHead></TableRow></TableHeader>
                             <TableBody>
-                                {recurring.map((r) => (<TableRow key={r.id}><TableCell className="font-medium">{r.description}</TableCell><TableCell className={r.type === 'earning' ? 'text-green-600' : 'text-red-600'}>${r.amount.toFixed(2)}</TableCell><TableCell className="capitalize">{r.frequency}</TableCell><TableCell>{format(new Date(r.start_date), "MMM dd, yyyy")}</TableCell><TableCell className="text-center"><Button variant="ghost" size="icon" className="size-8" onClick={() => setDialogState({ type: 'recurring', data: r })}><Edit className="size-4" /></Button><Button variant="ghost" size="icon" className="size-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete("recurring_transactions", r.id, `Delete rule "${r.description}"?`)}><Trash2 className="size-4" /></Button></TableCell></TableRow>))}
+                                {recurring.map((r) => {
+                                    let schedule: string = r.frequency;
+                                    if ((r.frequency === 'weekly' || r.frequency === 'bi-weekly') && r.occurrence_day !== null && r.occurrence_day !== undefined) {
+                                        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+                                        schedule = `${r.frequency} on ${days[r.occurrence_day]}`;
+                                    } else if (r.frequency === 'monthly' && r.occurrence_day) {
+                                        schedule = `monthly on the ${r.occurrence_day}th`;
+                                    }
+                                    let nextDueDate = 'N/A';
+                                    try {
+                                        let cursor = r.last_processed_date ? new Date(r.last_processed_date) : new Date(r.start_date);
+                                        if (isBefore(cursor, new Date(r.start_date))) cursor = new Date(r.start_date);
+                                        const next = (r.last_processed_date && isAfter(new Date(r.last_processed_date), new Date())) ? cursor : getNextOccurrence(cursor, r);
+                                        nextDueDate = format(next, 'MMM dd, yyyy');
+                                    } catch (e) { console.error("Date calculation error", e); }
+
+                                    return (<TableRow key={r.id}><TableCell className="font-medium">{r.description}</TableCell><TableCell className={r.type === 'earning' ? 'text-green-600' : 'text-red-600'}>${r.amount.toFixed(2)}</TableCell><TableCell className="capitalize">{schedule}</TableCell><TableCell>{nextDueDate}</TableCell><TableCell className="text-center"><Button variant="ghost" size="icon" className="size-8" onClick={() => setDialogState({ type: 'recurring', data: r })}><Edit className="size-4" /></Button><Button variant="ghost" size="icon" className="size-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete("recurring_transactions", r.id, `Delete rule "${r.description}"?`)}><Trash2 className="size-4" /></Button></TableCell></TableRow>)
+                                })}
                                 {recurring.length === 0 && <TableRow><TableCell colSpan={5} className="h-24 text-center">No recurring transaction rules found.</TableCell></TableRow>}
                             </TableBody>
-                        </Table></CardContent>
-                    </Card>
+                        </Table></CardContent></Card>
                 </TabsContent>
 
                 <TabsContent value="goals">
