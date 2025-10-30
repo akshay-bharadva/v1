@@ -424,3 +424,29 @@ ADD COLUMN IF NOT EXISTS recurring_transaction_id UUID REFERENCES recurring_tran
 -- Adds a column to track the last time a recurring rule was processed for automation.
 ALTER TABLE recurring_transactions
 ADD COLUMN IF NOT EXISTS last_processed_date DATE;
+
+-- ========= FINANCE V3 SCHEMA UPGRADE (Precise Scheduling) =========
+
+-- Step 1: We must drop the existing frequency type to add a new value.
+-- This is a standard procedure in PostgreSQL for altering ENUM types.
+ALTER TYPE transaction_frequency RENAME TO transaction_frequency_old;
+
+-- Step 2: Create the NEW frequency type with 'bi-weekly' included.
+CREATE TYPE transaction_frequency AS ENUM ('daily', 'weekly', 'bi-weekly', 'monthly', 'yearly');
+
+-- Step 3: Update the recurring_transactions table to use the new type.
+ALTER TABLE recurring_transactions 
+ALTER COLUMN frequency TYPE transaction_frequency 
+USING frequency::text::transaction_frequency;
+
+-- Step 4: Drop the old type now that it's no longer in use.
+DROP TYPE transaction_frequency_old;
+
+-- Step 5: Add the new column to store the specific day/date of the occurrence.
+-- For weekly/bi-weekly, this is day of week (0=Sun, 1=Mon, ..., 6=Sat).
+-- For monthly, this is date of month (1-31).
+-- For daily/yearly, this is NULL as it's not needed.
+ALTER TABLE recurring_transactions
+ADD COLUMN IF NOT EXISTS occurrence_day INT;
+
+-- ========= END OF SCRIPT =========
