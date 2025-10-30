@@ -169,12 +169,12 @@ export default function FinanceManager() {
                     // If the occurrence day hasn't happened this month yet, use it
                     if (cursorDayOfMonth < rule.occurrence_day) {
                         const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
-                        cursor = setDate(cursor, Math.min(rule.occurrence_day, daysInMonth));
+                        cursor.setDate(Math.min(rule.occurrence_day, daysInMonth))
                     } else {
                         // Otherwise move to next month and set the day
                         cursor = addMonths(cursor, 1);
                         const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
-                        cursor = setDate(cursor, Math.min(rule.occurrence_day, daysInMonth));
+                        cursor.setDate(Math.min(rule.occurrence_day, daysInMonth))
                     }
                 }
             }
