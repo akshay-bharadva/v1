@@ -129,12 +129,12 @@ export default function FinanceManager() {
     const [dialogState, setDialogState] = useState<DialogState>({ type: null });
     const [analyticsYear, setAnalyticsYear] = useState(new Date().getFullYear());
 
-   const processRecurringTransactions = useCallback(async (rules: RecurringTransaction[], existingTransactions: Transaction[]) => {
+    const processRecurringTransactions = useCallback(async (rules: RecurringTransaction[], existingTransactions: Transaction[]) => {
         const newTransactionsPayload: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>[] = [];
         const rulesToUpdate: { id: string; last_processed_date: string }[] = [];
         const today = new Date();
         today.setHours(0, 0, 0, 0); // Normalize to start of day
-    
+
         for (const rule of rules) {
             // 1. Get a clean set of dates that have ALREADY been logged for this rule.
             const existingDates = new Set(
@@ -146,11 +146,11 @@ export default function FinanceManager() {
             // 2. Determine the starting point for checking
             // Parse date strings properly to avoid timezone issues
             let cursor = new Date(rule.start_date + 'T00:00:00');
-            
+
             // For weekly/bi-weekly rules with occurrence_day specified,
             // ensure cursor starts on the correct day of week
-            if ((rule.frequency === 'weekly' || rule.frequency === 'bi-weekly') && 
-                rule.occurrence_day !== null && 
+            if ((rule.frequency === 'weekly' || rule.frequency === 'bi-weekly') &&
+                rule.occurrence_day !== null &&
                 rule.occurrence_day !== undefined) {
                 const cursorDay = cursor.getDay();
                 if (cursorDay !== rule.occurrence_day) {
@@ -158,60 +158,58 @@ export default function FinanceManager() {
                     cursor = nextDay(cursor, rule.occurrence_day as any);
                 }
             }
-            
+
             // For monthly rules with occurrence_day specified,
             // ensure cursor starts on the correct day of month
-            if (rule.frequency === 'monthly' && 
-                rule.occurrence_day !== null && 
+            if (rule.frequency === 'monthly' &&
+                rule.occurrence_day !== null &&
                 rule.occurrence_day !== undefined) {
                 const cursorDayOfMonth = cursor.getDate();
                 if (cursorDayOfMonth !== rule.occurrence_day) {
                     // If the occurrence day hasn't happened this month yet, use it
                     if (cursorDayOfMonth < rule.occurrence_day) {
                         const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
-                        cursor.setDate(Math.min(rule.occurrence_day, daysInMonth))
+                        cursor.setDate(Math.min(rule.occurrence_day, daysInMonth));
                     } else {
                         // Otherwise move to next month and set the day
                         cursor = addMonths(cursor, 1);
                         const daysInMonth = new Date(cursor.getFullYear(), cursor.getMonth() + 1, 0).getDate();
-                        cursor.setDate(Math.min(rule.occurrence_day, daysInMonth))
+                        cursor.setDate(Math.min(rule.occurrence_day, daysInMonth));
                     }
                 }
             }
-            
+
             // IMPORTANT: If the start date is in the past and there's no last_processed_date,
-            // move cursor to today to avoid backdating transactions
+            // we should log all missed occurrences, not skip them
             if (!rule.last_processed_date && isBefore(cursor, today)) {
-                // Fast-forward to find the first occurrence on or after today
-                while (isBefore(cursor, today)) {
-                    cursor = getNextOccurrence(cursor, rule);
-                }
+                // Don't fast-forward - let the main loop catch up on missed transactions
+                // This ensures if someone creates a rule late, past due dates still get logged
             }
-            
+
             // If we have a last_processed_date, start from the next occurrence after it
             if (rule.last_processed_date) {
                 const lastProcessed = new Date(rule.last_processed_date + 'T00:00:00');
-                
+
                 // Only process from the next occurrence after last_processed_date
                 cursor = getNextOccurrence(lastProcessed, rule);
             }
-            
+
             const ruleEndDate = rule.end_date ? new Date(rule.end_date + 'T00:00:00') : null;
-            
+
             let mostRecentLoggedDate: Date | null = null;
-            
+
             // Safety check: prevent infinite loops
             let iterations = 0;
             const MAX_ITERATIONS = 1000;
-    
+
             // 3. Only process dates that are due (today or earlier)
             while ((isBefore(cursor, today) || isSameDay(cursor, today)) && iterations < MAX_ITERATIONS) {
                 iterations++;
-                
+
                 if (ruleEndDate && isAfter(cursor, ruleEndDate)) break;
-    
+
                 const dateString = format(cursor, 'yyyy-MM-dd');
-                
+
                 // 4. If this theoretical date has NOT been logged yet, add it to our payload.
                 if (!existingDates.has(dateString)) {
                     newTransactionsPayload.push({
@@ -224,7 +222,7 @@ export default function FinanceManager() {
                     });
                     mostRecentLoggedDate = new Date(cursor);
                 }
-    
+
                 // 5. Advance cursor to the next theoretical date.
                 cursor = getNextOccurrence(cursor, rule);
             }
@@ -234,21 +232,28 @@ export default function FinanceManager() {
                 rulesToUpdate.push({ id: rule.id, last_processed_date: format(mostRecentLoggedDate, 'yyyy-MM-dd') });
             }
         }
-    
+
         if (newTransactionsPayload.length > 0) {
             const { error: insertError } = await supabase.from('transactions').insert(newTransactionsPayload);
             if (insertError) {
                 toast.error("Auto-log failed", { description: insertError.message });
                 return false;
             }
-            
+
             if (rulesToUpdate.length > 0) {
-                const { error: updateError } = await supabase.from('recurring_transactions').upsert(rulesToUpdate);
-                if (updateError) {
-                    toast.warning("Transactions logged, but failed to update rule status.", { description: updateError.message });
+                // Update each rule individually to ensure the update succeeds
+                for (const update of rulesToUpdate) {
+                    const { error: updateError } = await supabase
+                        .from('recurring_transactions')
+                        .update({ last_processed_date: update.last_processed_date })
+                        .eq('id', update.id);
+
+                    if (updateError) {
+                        console.error('Failed to update rule:', update.id, updateError);
+                    }
                 }
             }
-            
+
             toast.success(`${newTransactionsPayload.length} recurring transaction(s) automatically logged.`);
             return true;
         }
@@ -265,21 +270,21 @@ export default function FinanceManager() {
             ]);
 
             if (tranRes.error || goalRes.error || recurRes.error) throw new Error(tranRes.error?.message || "Failed to load data");
-            
+
             const wasUpdated = await processRecurringTransactions(recurRes.data || [], tranRes.data || []);
-            
+
             if (wasUpdated) {
                 const finalTranRes = await supabase.from("transactions").select("*").order("date", { ascending: false });
                 setTransactions(finalTranRes.data || []);
             } else { setTransactions(tranRes.data || []); }
-            
-            setGoals(goalRes.data || []); 
+
+            setGoals(goalRes.data || []);
             setRecurring(recurRes.data || []);
-        } catch (err: any) { 
-            setError(err.message); 
+        } catch (err: any) {
+            setError(err.message);
             toast.error("Data Load Error", { description: err.message });
-        } finally { 
-            setIsLoading(false); 
+        } finally {
+            setIsLoading(false);
         }
     }, [processRecurringTransactions]);
 
