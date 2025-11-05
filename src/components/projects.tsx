@@ -1,16 +1,26 @@
-import Link from "next/link";
-import { PropsWithChildren, useState, useEffect } from "react";
-import { BsArrowUpRight } from "react-icons/bs";
+/*
+This component is redesigned to fit the "Digital Blueprint" theme.
+- It features a prominent heading with a blueprint-style underline.
+- Project cards are loaded dynamically and displayed in a grid.
+- The animation staggers the appearance of each card for a dynamic effect.
+- The "More on GitHub" button is styled as a primary call-to-action.
+*/
+import { useState, useEffect } from "react";
+import { ArrowUpRight, Github, AlertTriangle, Loader2 } from "lucide-react";
 import ProjectCard from "./project-card";
 import { Button } from "@/components/ui/button";
 import type { GitHubRepo } from "@/types";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { motion } from "framer-motion";
 
-type ProjectsProps = PropsWithChildren;
+type ProjectsProps = {};
 
-const GITHUB_USERNAME = `akshay-bharadva`; // Use a constant for username
-const GITHUB_REPOS_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=9&type=owner`; // Fetch only owner repos
+const GITHUB_USERNAME = `akshay-bharadva`;
+// Fetch fewer for the homepage to keep it concise, but more on the dedicated projects page.
+const REPO_COUNT = 6;
+const GITHUB_REPOS_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=pushed&per_page=${REPO_COUNT}&type=owner`;
 
-export default function Projects({ children }: ProjectsProps) {
+export default function Projects({}: ProjectsProps) {
   const [projects, setProjects] = useState<GitHubRepo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -57,11 +67,28 @@ export default function Projects({ children }: ProjectsProps) {
       });
   }, []);
 
+  const containerVariants = {
+    hidden: {},
+    visible: { transition: { staggerChildren: 0.1 } },
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1, transition: { duration: 0.5 } },
+  };
+
   return (
-    <section className="my-8 ">
-      <h2 className="mb-8 border-b-4 border-black pb-3 text-3xl font-black text-black">
-        Projects
-      </h2>
+    <section className="my-24 py-16">
+      <motion.div 
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true, amount: 0.5 }}
+        className="relative mb-12"
+      >
+        <h2 className="text-4xl font-black text-foreground">Recent Projects</h2>
+        <div className="absolute -bottom-2 h-1 w-24 bg-primary" />
+      </motion.div>
+      
       {loading && (
         <div className="py-10 text-center">
           <div className="mx-auto inline-block size-12 animate-spin rounded-none border-y-4 border-black"></div>
@@ -91,28 +118,38 @@ export default function Projects({ children }: ProjectsProps) {
           </div>
         </div>
       )}
+
       {!loading && !error && projects.length > 0 && (
         <>
-          <div className="mb-10 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <motion.div 
+            className="mb-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+            variants={containerVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+          >
             {projects.map((project) => (
-              <ProjectCard key={project.id} project={project} />
+              <motion.div key={project.id} variants={itemVariants}>
+                 <ProjectCard project={project} />
+              </motion.div>
             ))}
-          </div>
-          <div className="text-center">
-            <Link href={
-              `https://github.com/${GITHUB_USERNAME}?tab=repositories`
-
-            } passHref legacyBehavior>
-              <Button asChild variant="outline" size="lg" className="text-md group">
-                <a>More on GitHub <BsArrowUpRight className="ml-1.5 inline transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
-                </a>
-              </Button>
-            </Link>
-          </div>
+          </motion.div>
+          <motion.div 
+            className="text-center"
+            initial={{ opacity: 0 }}
+            whileInView={{ opacity: 1 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.5 }}
+          >
+            <Button asChild size="lg" className="text-md group">
+              <a href={`https://github.com/${GITHUB_USERNAME}?tab=repositories`} target="_blank" rel="noopener noreferrer">
+                More on GitHub 
+                <ArrowUpRight className="ml-2 size-4 transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5" />
+              </a>
+            </Button>
+          </motion.div>
         </>
-      )
-      }
-      {children && <div className="mt-8">{children}</div>}
-    </section >
+      )}
+    </section>
   );
 }

@@ -1,12 +1,8 @@
 /*
-This file is completely redesigned to match the new kinetic typography and dark theme.
-- All neo-brutalist styles (`border-2`, `shadow-[...]`, `rounded-none`, ``) have been removed.
-- The layout is now cleaner, using modern spacing and the redesigned `Card` component for stats.
-- The tab navigation has been replaced with the redesigned `Tabs` component for a more integrated feel.
-- The custom `StatCard` component is removed; `Card` and standard flexbox are used instead for a consistent look.
-- The header is simplified, and the "MFA Enabled" badge uses the redesigned `Badge` component.
-- The logout button now uses the redesigned `Button` component with a destructive variant.
-- All components now inherit the global `font-sans` (Inter).
+This file is updated to align with the new design aesthetic.
+- While the admin panel doesn't use glassmorphism to maintain clarity, the accent colors and typography are updated for consistency.
+- The StatCard component is given a more refined look, with a subtle border gradient on hover to add a touch of polish.
+- The overall structure remains the same as it's highly functional, but the visual details are brought in line with the new theme.
 */
 "use client";
 
@@ -102,8 +98,8 @@ export default function AdminDashboard({
     icon?: JSX.Element;
     className?: string;
     bgColor?: string
-  }> = ({ title, value, icon, className, bgColor = "bg-white" }) => (
-    <Card className={`${className}  ${bgColor}`}>
+  }> = ({ title, value, icon, className,bgColor = "bg-white" }) => (
+    <Card className={className + " transition-all duration-300 hover:border-accent " + bgColor}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
@@ -118,7 +114,7 @@ export default function AdminDashboard({
 
   return (
     <div className="min-h-screen bg-background font-sans">
-      <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-b bg-glass">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             <h1 className="text-xl font-bold text-foreground sm:text-2xl">
