@@ -14,29 +14,22 @@ import { useRouter } from "next/router";
 import { useTheme } from "next-themes";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Menu, Sun, Moon, X } from "lucide-react";
-import {
-  AiOutlineHome,
-  AiOutlineAppstore,
-  AiOutlineExperiment,
-  AiOutlineRead,
-} from "react-icons/ai";
-import { FaHandshake, FaRegUser } from "react-icons/fa";
-import { IconType } from "react-icons";
+import { Menu, Sun, Moon, X, Home, AppWindow, Code, BookOpen, User, Send } from "lucide-react";
+import type { Icon as LucideIcon } from "lucide-react";
 
 type NavLink = {
   href: string;
   label: string;
-  icon: IconType;
+  icon: LucideIcon;
 };
 
 const NAV_LINKS: NavLink[] = [
-  { href: "/", label: "Home", icon: AiOutlineHome },
-  { href: "/showcase", label: "Showcase", icon: AiOutlineAppstore },
-  { href: "/projects", label: "Projects", icon: AiOutlineExperiment },
-  { href: "/blog", label: "Blog", icon: AiOutlineRead },
-  { href: "/about", label: "About", icon: FaRegUser },
-  { href: "/contact", label: "Contact", icon: FaHandshake  },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/showcase", label: "Showcase", icon: AppWindow },
+  { href: "/projects", label: "Projects", icon: Code },
+  { href: "/blog", label: "Blog", icon: BookOpen },
+  { href: "/about", label: "About", icon: User },
+  { href: "/contact", label: "Contact", icon: Send  },
 ];
 
 export default function MobileHeader() {
@@ -61,7 +54,7 @@ export default function MobileHeader() {
           <SheetContent>
             <SheetHeader className="flex flex-row items-center justify-between">
               <SheetTitle>Navigation</SheetTitle>
-               <SheetClose className="!m-0 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-secondary">
+               <SheetClose>
                 <X className="size-5" />
                 <span className="sr-only">Close</span>
               </SheetClose>
@@ -95,7 +88,7 @@ export default function MobileHeader() {
                 >
                   <Sun className="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 block dark:hidden" />
                   <Moon className="size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 hidden dark:block" />
-                  <span className="ml-1">Theme</span>
+                  <span className="ml-1">Toggle Theme</span>
                 </Button>
               </div>
             </div>
