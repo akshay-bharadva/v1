@@ -1,9 +1,9 @@
+
 /*
-This file is updated to remove the neo-brutalist styling.
-- The hard `border-2` and `rounded-none` styles on `InputOTPSlot` are replaced with a modern input field aesthetic.
-- Each slot now has a standard border and `rounded-md`.
-- The active state (`isActive`) is updated to use the theme's `ring` color for focus, creating a consistent look with other input components.
-- The separator is simplified to be a subtle dot.
+This file is updated for the neo-brutalist aesthetic.
+- `InputOTPSlot` has been redesigned to use `border-2 border-black`, removing any rounded corners for a sharp, blocky look.
+- The active state is now indicated by a thick, high-contrast ring (`ring-2 ring-black ring-offset-2`).
+- The separator remains a simple dot.
 */
 "use client";
 
@@ -48,8 +48,8 @@ const InputOTPSlot = React.forwardRef<
     <div
       ref={ref}
       className={cn(
-        "relative flex h-10 w-10 items-center justify-center border-y border-r border-input text-sm transition-all first:border-l first:rounded-l-md last:rounded-r-md",
-        isActive && "z-10 ring-2 ring-ring ring-offset-background",
+        "relative flex h-10 w-10 items-center justify-center border-2 border-black text-sm transition-all rounded-none bg-white",
+        isActive && "z-10 ring-2 ring-black ring-offset-2",
         className
       )}
       {...props}
@@ -57,7 +57,7 @@ const InputOTPSlot = React.forwardRef<
       {char}
       {hasFakeCaret && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="h-4 w-px animate-caret-blink bg-foreground duration-1000" />
+          <div className="h-4 w-px animate-caret-blink bg-black duration-1000" />
         </div>
       )}
     </div>

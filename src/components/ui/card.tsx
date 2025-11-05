@@ -1,9 +1,9 @@
+
 /*
-This file is completely redesigned to remove the neo-brutalist style.
-- The `rounded-none`, `border-2`, and `shadow-[...]` classes are removed.
-- The component now uses a standard `border`, `rounded-lg`, and subtle `bg-card` from the theme.
-- The `CardHeader` and `CardFooter` now have a simple border separating them from the content, instead of a thick one.
-- Font weights and colors are updated to use theme variables for a clean, modern look.
+This file is completely redesigned to implement a neo-brutalist style.
+- Soft corners, subtle borders, and gentle shadows are replaced with `rounded-none`, `border-2 border-black`, and a hard `shadow-[6px_6px_0_#000]`.
+- The `CardHeader` and `CardFooter` are given a thick border to separate them from the content, reinforcing the blocky aesthetic.
+- Font styles are made bolder (`font-bold`) to match the new design's personality.
 */
 import * as React from "react";
 
@@ -16,7 +16,7 @@ const Card = React.forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
+      "rounded-none border-2 border-black bg-white text-black shadow-[6px_6px_0_#000]",
       className
     )}
     {...props}
@@ -43,7 +43,7 @@ const CardTitle = React.forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "text-2xl font-semibold leading-none tracking-tight",
+      "text-2xl font-bold leading-none tracking-tight",
       className
     )}
     {...props}
@@ -59,7 +59,7 @@ const CardDescription = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <p
     ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
+    className={cn("text-sm text-neutral-600", className)}
     {...props}
   />
 ));

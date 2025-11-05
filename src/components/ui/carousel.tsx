@@ -1,8 +1,9 @@
+
 /*
-This file is updated for the new kinetic typography design system.
-- The heavy neo-brutalist styles (`border-2`, `rounded-none`, `shadow-[...]`) on the main container are replaced with a simpler, cleaner look. The component is now borderless by default.
-- The previous and next navigation buttons are updated to use the redesigned `Button` component with the `outline` variant, making them more subtle.
-- The absolute positioning of the navigation buttons is adjusted for a more modern placement, partially overlapping the content area.
+This file is updated for the new neo-brutalist design.
+- The subtle, modern style of the navigation buttons is replaced with the newly designed brutalist `Button` component, featuring hard shadows and thick borders.
+- The `rounded-full` shape of the buttons is replaced with `rounded-none` to match the sharp aesthetic.
+- The overall container is now styled with a `border-2 border-black`, making it a distinct, blocky element.
 */
 "use client";
 
@@ -143,7 +144,7 @@ const Carousel = React.forwardRef<
         <div
           ref={ref}
           onKeyDownCapture={handleKeyDown}
-          className={cn("relative", className)}
+          className={cn("relative rounded-none border-2 border-black p-4", className)}
           role="region"
           aria-roledescription="carousel"
           {...props}
@@ -212,7 +213,7 @@ const CarouselPrevious = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute h-8 w-8 rounded-full",
+        "absolute h-8 w-8",
         orientation === "horizontal"
           ? "-left-12 top-1/2 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
@@ -241,7 +242,7 @@ const CarouselNext = React.forwardRef<
       variant={variant}
       size={size}
       className={cn(
-        "absolute h-8 w-8 rounded-full",
+        "absolute h-8 w-8",
         orientation === "horizontal"
           ? "-right-12 top-1/2 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",

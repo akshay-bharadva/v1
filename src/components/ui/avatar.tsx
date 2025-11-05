@@ -1,8 +1,8 @@
 /*
-This file is updated to match the new kinetic typography design.
-- The neo-brutalist `border-2 border-black` is removed. The component now has a cleaner, borderless look.
-- The `rounded-full` style is retained as it is standard for avatars.
-- The fallback background now uses the theme's `muted` color for better consistency.
+This file has been updated to match the new neo-brutalist design.
+- The `rounded-full` style has been replaced with `rounded-none` for a sharp, square look.
+- A `border-2 border-black` has been added to give the avatar a distinct frame, consistent with other elements.
+- The fallback background now uses a neutral color from the new theme.
 */
 "use client";
 
@@ -18,7 +18,7 @@ const Avatar = React.forwardRef<
   <AvatarPrimitive.Root
     ref={ref}
     className={cn(
-      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
+      "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-none border-2 border-black",
       className
     )}
     {...props}
@@ -45,7 +45,7 @@ const AvatarFallback = React.forwardRef<
   <AvatarPrimitive.Fallback
     ref={ref}
     className={cn(
-      "flex h-full w-full items-center justify-center rounded-full bg-muted",
+      "flex h-full w-full items-center justify-center rounded-none bg-neutral-100",
       className
     )}
     {...props}

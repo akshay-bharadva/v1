@@ -1,9 +1,10 @@
+
 /*
-This file is updated to style the `sonner` toast component according to the new design system.
-- The `toast` class is updated to use `rounded-lg`, a subtle `border`, and standard theme colors for `background` and `foreground`. The neo-brutalist `shadow` is removed.
-- `title` and `description` classes are updated to use the theme's font styles.
-- `actionButton` and `cancelButton` are restyled to match the new `Button` component variants.
-- `closeButton` is restyled to be a minimal icon button, consistent with other components like `Dialog` and `Sheet`.
+This file has been updated to style the `sonner` toast component for the neo-brutalist theme.
+- The `toast` class now applies `rounded-none`, `border-2 border-black`, and a hard `shadow-[...]`.
+- `title` and `description` classes are updated with bolder font weights.
+- `actionButton` and `cancelButton` are restyled to look like the new neo-brutalist `Button` component, inheriting its blocky, bordered appearance.
+- `closeButton` is styled as a simple, bordered icon button.
 */
 "use client";
 
@@ -22,15 +23,15 @@ const Toaster = ({ ...props }: ToasterProps) => {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border group-[.toaster]:shadow-lg group-[.toaster]:rounded-lg",
-          title: "group-[.toast]:font-semibold",
-          description: "group-[.toast]:text-muted-foreground",
+            "group toast group-[.toaster]:bg-white group-[.toaster]:text-black group-[.toaster]:border-2 group-[.toaster]:border-black group-[.toaster]:shadow-[6px_6px_0_#000] group-[.toaster]:rounded-none",
+          title: "group-[.toast]:font-bold",
+          description: "group-[.toast]:text-neutral-600",
           actionButton:
-            "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-md group-[.toast]:px-3 group-[.toast]:py-1.5 group-[.toast]:text-sm",
+            "group-[.toast]:bg-black group-[.toast]:text-white group-[.toast]:rounded-none group-[.toast]:border-2 group-[.toast]:border-black group-[.toast]:px-3 group-[.toast]:py-1.5 group-[.toast]:text-sm",
           cancelButton:
-            "group-[.toast]:bg-secondary group-[.toast]:text-secondary-foreground group-[.toast]:rounded-md group-[.toast]:px-3 group-[.toast]:py-1.5 group-[.toast]:text-sm",
+            "group-[.toast]:bg-neutral-200 group-[.toast]:text-black group-[.toast]:rounded-none group-[.toast]:border-2 group-[.toast]:border-black group-[.toast]:px-3 group-[.toast]:py-1.5 group-[.toast]:text-sm",
           closeButton:
-            "group-[.toast]:bg-transparent group-[.toast]:text-muted-foreground group-[.toast]:border-0 hover:group-[.toast]:bg-secondary group-[.toast]:p-1 group-[.toast]:rounded-md group-[.toast]:right-2 group-[.toast]:top-2",
+            "group-[.toast]:bg-transparent group-[.toast]:text-neutral-500 group-[.toast]:border-2 group-[.toast]:border-transparent hover:group-[.toast]:border-black group-[.toast]:p-1 group-[.toast]:rounded-none group-[.toast]:right-2 group-[.toast]:top-2",
         },
       }}
       {...props}

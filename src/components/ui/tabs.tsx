@@ -1,8 +1,9 @@
+
 /*
-This file is updated to remove the neo-brutalist styling.
-- `TabsList` is redesigned to be a clean, contained group of triggers with a `muted` background and rounded corners. The heavy border and shadow are gone.
-- `TabsTrigger` is restyled for a modern look. The active state now uses the `background` color to stand out against the `muted` list background, and it has a subtle shadow for depth.
-- `TabsContent` no longer has a heavy border and shadow, appearing as a clean content area.
+This file is updated for the neo-brutalist style.
+- `TabsList` is now a simple container with a thick bottom border, removing the contained, rounded look.
+- `TabsTrigger` is restyled for a raw feel. The active state is now indicated by a thick bottom border in a high-contrast color (yellow), creating a classic tab appearance.
+- `TabsContent` has a hard-edged border and shadow for a contained, blocky presentation.
 */
 "use client";
 
@@ -20,7 +21,7 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center rounded-md bg-muted p-1 text-muted-foreground",
+      "inline-flex h-10 items-center justify-center gap-4 border-b-2 border-black p-1",
       className
     )}
     {...props}
@@ -35,7 +36,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
+      "inline-flex items-center justify-center whitespace-nowrap rounded-none px-3 py-1.5 text-sm font-bold ring-offset-background transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black disabled:pointer-events-none disabled:opacity-50 data-[state=active]:text-black data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-yellow-400 text-neutral-500",
       className
     )}
     {...props}
@@ -50,7 +51,7 @@ const TabsContent = React.forwardRef<
   <TabsPrimitive.Content
     ref={ref}
     className={cn(
-      "mt-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+      "mt-2 rounded-none border-2 border-black p-4 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-black shadow-[6px_6px_0_#000]",
       className
     )}
     {...props}

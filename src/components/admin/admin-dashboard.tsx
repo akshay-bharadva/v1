@@ -1,12 +1,13 @@
+
 /*
-This file is completely redesigned to match the new kinetic typography and dark theme.
-- All neo-brutalist styles (`border-2`, `shadow-[...]`, `rounded-none`, ``) have been removed.
-- The layout is now cleaner, using modern spacing and the redesigned `Card` component for stats.
-- The tab navigation has been replaced with the redesigned `Tabs` component for a more integrated feel.
-- The custom `StatCard` component is removed; `Card` and standard flexbox are used instead for a consistent look.
-- The header is simplified, and the "MFA Enabled" badge uses the redesigned `Badge` component.
-- The logout button now uses the redesigned `Button` component with a destructive variant.
-- All components now inherit the global `font-sans` (Inter).
+This file has been completely restyled to adopt the neo-brutalist aesthetic.
+- All modern, subtle styles (`rounded-lg`, `shadow-sm`, theme variables) have been replaced with hard shadows, thick borders, and a high-contrast palette.
+- The layout is simplified, using bold `Card` components with hard shadows for stats.
+- The `Tabs` component has been replaced with simple, bordered buttons for a rawer feel.
+- A custom `StatCard` component is introduced to encapsulate the brutalist card style.
+- The header is made bolder with a thick bottom border. "MFA Enabled" uses a custom, bordered badge.
+- The logout button now uses the redesigned `Button` component with its new destructive variant style.
+- The font is switched to 'Space Mono' via the global `font-mono` class.
 */
 "use client";
 
@@ -101,37 +102,38 @@ export default function AdminDashboard({
     value: string | number;
     icon?: JSX.Element;
     className?: string;
-    bgColor?: string
-  }> = ({ title, value, icon, className, bgColor = "bg-white" }) => (
-    <Card className={`${className}  ${bgColor}`}>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-      </CardContent>
-    </Card>
+  }> = ({ title, value, icon, className }) => (
+    <div className={className}>
+      <div className="h-full rounded-none border-2 border-black bg-white p-4">
+        <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <h3 className="text-sm font-bold text-neutral-600 uppercase">
+            {title}
+          </h3>
+          {icon && <div className="text-neutral-500">{icon}</div>}
+        </div>
+        <div>
+          <div className="text-2xl font-bold">{value}</div>
+        </div>
+      </div>
+    </div>
   );
 
   return (
-    <div className="min-h-screen bg-background font-sans">
-      <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
+    <div className="min-h-screen bg-background font-mono">
+      <header className="sticky top-0 z-10 border-b-2 border-black bg-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <h1 className="text-xl font-bold text-foreground sm:text-2xl">
-              Admin
+            <h1 className="text-xl font-bold text-black sm:text-2xl">
+              ADMIN
             </h1>
             <div className="flex items-center gap-4">
               {isMfaEnabled && (
-                <Badge variant="secondary" className="border-green-500/50">
+                <Badge>
                   <Lock className="mr-1.5 size-3" /> MFA Enabled
                 </Badge>
               )}
               <Button variant="destructive" size="sm" onClick={onLogout}>
-                <LogOut className="mr-1.5 size-4" /> Logout
+                <LogOut className="mr-1.5 size-4" /> LOGOUT
               </Button>
             </div>
           </div>
@@ -139,10 +141,10 @@ export default function AdminDashboard({
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
+        <div className="mb-8">
           <div>
             <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-            <p className="text-muted-foreground">
+            <p className="text-neutral-600">
               Manage your portfolio and content.
             </p>
           </div>
@@ -217,9 +219,9 @@ export default function AdminDashboard({
                       Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4" />} bgColor="bg-green-100" />
-                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4" />} bgColor="bg-red-100" />
-                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} bgColor={dashboardData.stats.monthlyNet >= 0 ? "bg-blue-100" : "bg-orange-100"} />
+                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4 text-green-500" />} />
+                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4 text-red-500" />} />
+                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} />
                       </>
                     )}
                   </div>
@@ -232,10 +234,10 @@ export default function AdminDashboard({
                       Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />} bgColor="bg-purple-100"  />
-                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} bgColor="bg-green-100" />
-                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} bgColor="bg-orange-100" />
-                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} bgColor="bg-yellow-100" />
+                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />}  />
+                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} />
+                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} />
+                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews.toLocaleString()} icon={<Eye className="size-4" />} />
                       </>
                     )}
                   </div>
@@ -249,7 +251,7 @@ export default function AdminDashboard({
                         <Card key={note.id}>
                           <CardHeader><CardTitle className="truncate text-base">{note.title || "Untitled Note"}</CardTitle></CardHeader>
                           <CardContent>
-                            <p className="line-clamp-3 text-sm text-muted-foreground">{note.content}</p>
+                            <p className="line-clamp-3 text-sm text-neutral-600">{note.content}</p>
                             <Button size="sm" variant="secondary" className="mt-4 text-xs" onClick={() => setActiveTab("notes")}>Go to Note</Button>
                           </CardContent>
                         </Card>
@@ -262,12 +264,12 @@ export default function AdminDashboard({
                   <div>
                     <h3 className="mb-3 text-xl font-bold">Recently Updated Blog Posts</h3>
                     <Card>
-                      <CardContent className="p-4 space-y-3">
+                      <CardContent className="space-y-3 p-4">
                         {dashboardData.recentPosts.map((post) => (
-                          <div key={post.id} className="flex flex-col items-start gap-2 rounded-lg p-3 hover:bg-secondary sm:flex-row sm:items-center sm:justify-between">
+                          <div key={post.id} className="flex flex-col items-start gap-2 rounded-none bg-white p-3 sm:flex-row sm:items-center sm:justify-between hover:bg-neutral-50 border-y-2 border-transparent hover:border-black">
                             <div>
-                              <button onClick={() => setActiveTab("blogs")} className="text-left font-semibold text-foreground hover:text-accent hover:underline">{post.title}</button>
-                              <p className="text-xs text-muted-foreground">Updated: {new Date(post.updated_at || "").toLocaleDateString()}</p>
+                              <button onClick={() => setActiveTab("blogs")} className="text-left font-semibold text-black hover:text-blue-600 hover:underline">{post.title}</button>
+                              <p className="text-xs text-neutral-500">Updated: {new Date(post.updated_at || "").toLocaleDateString()}</p>
                             </div>
                             <div className="flex w-full shrink-0 space-x-2 sm:w-auto">
                               <Button asChild variant="ghost" size="sm" className="flex-1">
@@ -292,7 +294,7 @@ export default function AdminDashboard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="rounded-lg border border-border bg-card p-4 sm:p-6"
+                className="rounded-none border-2 border-black bg-white p-4 sm:p-6"
               >
                 {activeTab === "blogs" && <BlogManager startInCreateMode={initialAction === "createBlogPost"} onActionHandled={handleActionCompleted} />}
                 {activeTab === "content" && <ContentManager />}

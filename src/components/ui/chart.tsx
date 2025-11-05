@@ -1,9 +1,10 @@
+
 /*
-This file is updated for the new design system.
-- The neo-brutalist styles (`border-2`, `rounded-none`, `shadow-[...]`) on `ChartContainer` are replaced with a modern, clean card-like style using theme variables.
-- The Recharts default styles are overridden more cleanly to use theme colors for grid lines, text, and cursors.
-- The `ChartTooltipContent` is restyled to match the new `Card` and `Popover` aesthetic (rounded corners, subtle border, theme background).
-- The `ChartLegendContent` is simplified, removing the border and background on the indicators for a cleaner look.
+This file is updated for the neo-brutalist design.
+- The `ChartContainer` is now styled like a `Card` with `border-2`, `rounded-none`, and `shadow-[...]`.
+- Grid lines, text, and cursors are updated to use the high-contrast black/neutral colors of the new theme.
+- The `ChartTooltipContent` is restyled to match the new `Card` and `Popover` aesthetic: `rounded-none`, thick border, hard shadow.
+- The `ChartLegendContent` indicators are made into small squares for a blockier feel.
 */
 "use client";
 
@@ -58,7 +59,7 @@ const ChartContainer = React.forwardRef<
         data-chart={chartId}
         ref={ref}
         className={cn(
-          "flex aspect-video justify-center text-xs [&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-polar-angle-axis_tick_value]:fill-muted-foreground [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_line]:stroke-border [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-none",
+          "flex aspect-video justify-center rounded-none border-2 border-black bg-white p-4 shadow-[6px_6px_0_#000] text-xs [&_.recharts-cartesian-axis-tick_text]:fill-neutral-600 [&_.recharts-cartesian-grid_line]:stroke-neutral-300 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-black [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-none [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-neutral-300 [&_.recharts-polar-angle-axis_tick_value]:fill-neutral-600 [&_.recharts-radial-bar-background-sector]:fill-neutral-100 [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-neutral-200 [&_.recharts-reference-line_line]:stroke-neutral-400 [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-none",
           className
         )}
         {...props}
@@ -154,7 +155,7 @@ const ChartTooltipContent = React.forwardRef<
 
       if (labelFormatter) {
         return (
-          <div className={cn("font-medium", labelClassName)}>
+          <div className={cn("font-bold", labelClassName)}>
             {labelFormatter(value, payload)}
           </div>
         );
@@ -164,7 +165,7 @@ const ChartTooltipContent = React.forwardRef<
         return null;
       }
 
-      return <div className={cn("font-medium", labelClassName)}>{value}</div>;
+      return <div className={cn("font-bold", labelClassName)}>{value}</div>;
     }, [
       label,
       labelFormatter,
@@ -185,7 +186,7 @@ const ChartTooltipContent = React.forwardRef<
       <div
         ref={ref}
         className={cn(
-          "grid min-w-[8rem] items-start gap-1.5 rounded-lg border bg-background p-2.5 text-sm shadow-xl",
+          "grid min-w-[8rem] items-start gap-1.5 rounded-none border-2 border-black bg-white p-2.5 text-sm shadow-[4px_4px_0_#000]",
           className
         )}
       >
@@ -195,13 +196,13 @@ const ChartTooltipContent = React.forwardRef<
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor =
-              color || item.payload.fill || item.color || "hsl(var(--foreground))";
+              color || item.payload.fill || item.color || "#000";
 
             return (
               <div
                 key={item.dataKey || index}
                 className={cn(
-                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
+                  "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-neutral-500",
                   indicator === "dot" && "items-center"
                 )}
               >
@@ -215,7 +216,7 @@ const ChartTooltipContent = React.forwardRef<
                       !hideIndicator && (
                         <div
                           className={cn(
-                            "shrink-0 rounded-[2px]",
+                            "shrink-0",
                             {
                               "h-2.5 w-2.5": indicator === "dot",
                               "w-1": indicator === "line",
@@ -238,12 +239,12 @@ const ChartTooltipContent = React.forwardRef<
                     >
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">
+                        <span className="text-neutral-500">
                           {itemConfig?.label || item.name}
                         </span>
                       </div>
                       {item.value && (
-                        <span className="font-mono font-medium tabular-nums text-foreground">
+                        <span className="font-bold tabular-nums text-black">
                           {item.value.toLocaleString()}
                         </span>
                       )}
@@ -297,14 +298,14 @@ const ChartLegendContent = React.forwardRef<
             <div
               key={item.value}
               className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-neutral-500"
               )}
             >
               {itemConfig?.icon && !hideIcon ? (
                 <itemConfig.icon />
               ) : (
                 <div
-                  className="h-2 w-2 shrink-0 rounded-[2px]"
+                  className="h-2 w-2 shrink-0 rounded-none border border-black"
                   style={{
                     backgroundColor: item.color,
                   }}
@@ -320,7 +321,6 @@ const ChartLegendContent = React.forwardRef<
 );
 ChartLegendContent.displayName = "ChartLegendContent";
 
-// Helper to extract item config from payload
 function getPayloadConfigFromPayload(
   config: ChartConfig,
   payload: unknown,

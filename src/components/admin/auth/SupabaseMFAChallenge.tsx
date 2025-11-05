@@ -1,10 +1,11 @@
+
 /*
-This file is updated for the new kinetic typography design system.
-- All neo-brutalist styles are replaced with the minimalist dark theme.
-- The OTP input is now using the redesigned `InputOTP` component for a modern look.
-- The countdown timer is styled to be less obtrusive and more integrated.
-- The loading state is simplified with a single spinner icon.
-- Replaced custom button with the redesigned `Button` from the UI kit.
+This file is updated to adopt the neo-brutalist aesthetic.
+- The minimalist dark theme is replaced with a high-contrast style: off-white background, black text, and thick borders.
+- The `InputOTP` component is restyled with sharp corners and heavy borders to match the new design language.
+- The countdown timer styling is made bolder.
+- The main container now features a hard shadow and thick border.
+- All components now use the 'Space Mono' font.
 */
 "use client";
 
@@ -83,8 +84,8 @@ export default function SupabaseMFAChallenge() {
     return () => clearInterval(timer);
   }, []);
 
-  const handleVerify = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleVerify = async (e: React.FormEvent | string) => {
+    if (typeof e !== 'string') e.preventDefault();
     if (!factorId) {
       setError("MFA factor ID is missing. Please try logging in again.");
       return;
@@ -92,9 +93,11 @@ export default function SupabaseMFAChallenge() {
     setIsLoadingState(true);
     setError("");
 
+    const codeToVerify = typeof e === 'string' ? e : otp;
+    
     const { error: verifyError } = await supabase.auth.mfa.challengeAndVerify({
       factorId: factorId,
-      code: otp,
+      code: codeToVerify,
     });
 
     setIsLoadingState(false);
@@ -123,7 +126,7 @@ export default function SupabaseMFAChallenge() {
         exit="exit"
         className="flex min-h-screen items-center justify-center bg-background"
       >
-        <Loader2 className="size-8 animate-spin text-muted-foreground" />
+        <Loader2 className="size-8 animate-spin text-neutral-500" />
       </motion.div>
     );
   }
@@ -136,17 +139,17 @@ export default function SupabaseMFAChallenge() {
       animate="animate"
       exit="exit"
       transition={{ duration: 0.3 }}
-      className="flex min-h-screen items-center justify-center bg-background px-4"
+      className="flex min-h-screen items-center justify-center bg-background px-4 font-mono"
     >
-      <div className="w-full max-w-sm space-y-8 rounded-lg border border-border bg-card p-8">
+      <div className="w-full max-w-sm space-y-8 rounded-none border-2 border-black bg-white p-8 shadow-[8px_8px_0_#000]">
         <div className="text-center">
-          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-full bg-secondary">
-            <KeyRound className="size-6 text-foreground" />
+          <div className="mx-auto mb-4 flex size-12 items-center justify-center rounded-none border-2 border-black bg-yellow-300">
+            <KeyRound className="size-6 text-black" />
           </div>
-          <h2 className="text-3xl font-black text-foreground">
+          <h2 className="text-3xl font-bold text-black">
             Two-Factor Authentication
           </h2>
-          <p className="mt-2 text-muted-foreground">
+          <p className="mt-2 text-neutral-600">
             Enter the code from your authenticator app
           </p>
         </div>
@@ -172,11 +175,11 @@ export default function SupabaseMFAChallenge() {
               </InputOTPGroup>
             </InputOTP>
             <div
-              className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-center text-xs text-muted-foreground"
+              className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-center text-xs text-neutral-500"
               aria-hidden="true"
             >
               Code resets in{" "}
-              <span className="font-mono font-bold text-foreground">
+              <span className="font-bold text-black">
                 {remainingTime}s
               </span>
             </div>
@@ -188,9 +191,9 @@ export default function SupabaseMFAChallenge() {
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: "auto" }}
                 exit={{ opacity: 0, height: 0 }}
-                className="rounded-md border border-destructive/50 bg-destructive/10 p-3"
+                className="rounded-none border-2 border-destructive bg-red-100 p-3"
               >
-                <p className="text-sm font-medium text-destructive">{error}</p>
+                <p className="text-sm font-bold text-destructive">{error}</p>
               </motion.div>
             )}
           </AnimatePresence>
@@ -214,7 +217,7 @@ export default function SupabaseMFAChallenge() {
             <Button
               type="button"
               variant="link"
-              className="text-sm text-muted-foreground"
+              className="text-sm"
               onClick={async () => {
                 setIsLoadingState(true);
                 await supabase.auth.signOut();
