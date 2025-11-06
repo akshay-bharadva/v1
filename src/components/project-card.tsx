@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import type { GitHubRepo } from "@/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -48,3 +49,4 @@ export default function ProjectCard({ project }: ProjectCardProps) {
     </Card>
   );
 }
+

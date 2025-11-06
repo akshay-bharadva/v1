@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -185,9 +186,9 @@ export default function AdminDashboard({
                       Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4" />} bgColor="bg-green-100" />
-                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4" />} bgColor="bg-red-100" />
-                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} bgColor={dashboardData.stats.monthlyNet >= 0 ? "bg-blue-100" : "bg-orange-100"} />
+                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4" />} />
+                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4" />} />
+                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} />
                       </>
                     )}
                   </div>
@@ -200,10 +201,10 @@ export default function AdminDashboard({
                       Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />} bgColor="bg-purple-100"  />
-                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} bgColor="bg-green-100" />
-                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} bgColor="bg-orange-100" />
-                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} bgColor="bg-yellow-100" />
+                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />}  />
+                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} />
+                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} />
+                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} />
                       </>
                     )}
                   </div>

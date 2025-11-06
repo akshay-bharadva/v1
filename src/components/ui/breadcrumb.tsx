@@ -1,10 +1,4 @@
-/*
-This file is updated to match the new minimalist design.
-- The link color is changed from a hardcoded indigo to the theme's `accent` color for consistency.
-- The current page (`BreadcrumbPage`) now uses the standard `foreground` color.
-- The separator color is updated to `muted-foreground`.
-- Font weights are adjusted for a cleaner, more modern typographic hierarchy.
-*/
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { ChevronRight, MoreHorizontal } from "lucide-react";

@@ -1,11 +1,4 @@
-/*
-This file is updated for the new kinetic typography design.
-- The neo-brutalist `border-2`, `rounded-none`, and `shadow-[...]` styles are removed.
-- The component now uses the standard theme `border` and `rounded-lg`.
-- Day selection colors are updated to use the theme's `primary` and `accent` colors for a more cohesive look.
-- The "today" highlight is changed to use the `accent` color.
-- Font styles are updated to use theme defaults (`font-medium` instead of `font-bold`).
-*/
+
 "use client";
 
 import * as React from "react";
@@ -61,8 +54,8 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        // IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-        // IconRight: () => <ChevronRight className="h-4 w-4" />,
+        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
+        IconRight: () => <ChevronRight className="h-4 w-4" />,
       }}
       {...props}
     />

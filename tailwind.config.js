@@ -80,16 +80,11 @@ module.exports = {
           "0%, 70%, 100%": { opacity: "1" },
           "20%, 50%": { opacity: "0" },
         },
-        "slide-in-blur": {
-          "from": { transform: 'translateY(10px)', filter: 'blur(5px)', opacity: '0' },
-          "to": { transform: 'translateY(0)', filter: 'blur(0)', opacity: '1' },
-        }
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "caret-blink": "caret-blink 1.2s ease-out infinite",
-        "slide-in-blur": "slide-in-blur 0.6s ease-out forwards",
       },
     },
   },

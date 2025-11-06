@@ -1,9 +1,5 @@
-/*
-This page is redesigned for the "Digital Blueprint" theme.
-- It features a strong, technical heading.
-- The content is presented in a clean, professional layout, using the blueprint-style bordered containers.
-- The `Technology` and `Tools` sections are styled to feel like specification sheets.
-*/
+
+
 import Layout from "@/components/layout";
 import Technology from "@/components/technology";
 import Tools from "@/components/tools";
@@ -14,12 +10,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function AboutPage() {
   const { site: siteConfig } = appConfig;
-  // ... (Head metadata remains the same)
+  const pageTitle = `About Me | ${siteConfig.title}`;
+  const pageDescription = "Learn more about Akshay Bharadva, the developer behind the code.";
+  const pageUrl = `${siteConfig.url}/about/`;
 
   return (
     <Layout>
       <Head>
-        {/* ... */}
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={pageUrl} />
+        <link rel="canonical" href={pageUrl} />
       </Head>
       <main className="py-12 md:py-16">
         <motion.div

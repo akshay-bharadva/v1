@@ -1,10 +1,4 @@
-/*
-This file is updated for the "Digital Blueprint" design system.
-- The layout is structured as clear, numbered steps with technical typography.
-- The QR code is presented in a clean, focused manner against a solid background.
-- The manual entry key section is redesigned for better readability, using the monospace font.
-- All UI elements are styled to be consistent with the new theme.
-*/
+
 "use client";
 
 import React, { useEffect, useState } from "react";
@@ -19,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Loader2, Smartphone, Copy, Eye, EyeOff } from "lucide-react";
 import { config } from "@/lib/config";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 export default function SupabaseMFASetup() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
@@ -99,14 +94,10 @@ export default function SupabaseMFASetup() {
     router.replace("/admin/dashboard");
   };
 
-  const copySecret = async (button: HTMLButtonElement) => {
+  const copySecret = async () => {
     try {
       await navigator.clipboard.writeText(manualEntryKey);
-      const originalText = button.innerHTML;
-      button.innerHTML = "Copied!";
-      setTimeout(() => {
-        button.innerHTML = originalText;
-      }, 2000);
+      // Optional: Add toast notification for success
     } catch (err) {
       console.error("Failed to copy secret:", err);
       setError("Failed to copy. Please copy manually.");
@@ -157,7 +148,15 @@ export default function SupabaseMFASetup() {
         </div>
 
         <AnimatePresence>
-          {error && !factorId && ( /* ... */ )}
+          {error && !factorId && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
+              <Alert variant="destructive">
+                <AlertTitle>Enrollment Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
+              <Button className="mt-4 w-full" onClick={() => router.push("/admin/login")}>Return to Login</Button>
+            </motion.div>
+          )}
         </AnimatePresence>
 
         {factorId && (
@@ -167,13 +166,17 @@ export default function SupabaseMFASetup() {
                 <span className="mr-2 text-primary">1.</span> Scan QR Code
               </h3>
               <p className="text-sm text-muted-foreground">
-                Open your authenticator app and scan this QR code.
+                Open your authenticator app (e.g., Google Authenticator, Authy) and scan this QR code.
               </p>
               {qrCodeUrl ? (
                 <div className="flex justify-center rounded-lg bg-white p-2">
                   <img src={qrCodeUrl} alt="QR Code for MFA setup" className="size-48" />
                 </div>
-              ) : ( /* ... */ )}
+              ) : (
+                <div className="flex h-48 items-center justify-center rounded-lg bg-secondary">
+                  <Loader2 className="animate-spin text-muted-foreground" />
+                </div>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -190,7 +193,7 @@ export default function SupabaseMFASetup() {
                 <Button type="button" variant="ghost" size="icon" onClick={() => setShowSecret(!showSecret)} aria-label={showSecret ? "Hide key" : "Show key"}>
                   {showSecret ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                 </Button>
-                <Button type="button" variant="ghost" size="icon" onClick={(e) => copySecret(e.currentTarget)} aria-label="Copy key">
+                <Button type="button" variant="ghost" size="icon" onClick={copySecret} aria-label="Copy key">
                   <Copy className="size-4" />
                 </Button>
               </div>
@@ -208,14 +211,18 @@ export default function SupabaseMFASetup() {
                   <div className="mt-2">
                     <InputOTP maxLength={6} value={otp} onChange={(value) => setOtp(value)}>
                       <InputOTPGroup className="w-full justify-center">
-                         {/* ... InputOTPSlot components ... */}
+                        <InputOTPSlot index={0} /><InputOTPSlot index={1} /><InputOTPSlot index={2} /><InputOTPSlot index={3} /><InputOTPSlot index={4} /><InputOTPSlot index={5} />
                       </InputOTPGroup>
                     </InputOTP>
                   </div>
                 </div>
 
                 <AnimatePresence>
-                   {/* ... error motion.div ... */}
+                   {error && (
+                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                         <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
+                      </motion.div>
+                   )}
                 </AnimatePresence>
 
                 <div className="flex flex-col gap-3 sm:flex-row-reverse">

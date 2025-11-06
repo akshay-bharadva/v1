@@ -1,9 +1,4 @@
-/*
-This hero is redesigned to be the centerpiece of the "Digital Blueprint" theme.
-- Asymmetrical layout on desktop.
-- Kinetic typography for the name and title.
-- A "Status Panel" on the right provides key, at-a-glance information, similar to a developer's dashboard.
-*/
+
 import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";

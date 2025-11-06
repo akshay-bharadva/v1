@@ -1,10 +1,4 @@
-/*
-This component is redesigned to fit the "Digital Blueprint" theme.
-- It features a prominent heading with a blueprint-style underline.
-- Project cards are loaded dynamically and displayed in a grid.
-- The animation staggers the appearance of each card for a dynamic effect.
-- The "More on GitHub" button is styled as a primary call-to-action.
-*/
+
 import { useState, useEffect } from "react";
 import { ArrowUpRight, Github, AlertTriangle, Loader2 } from "lucide-react";
 import ProjectCard from "./project-card";
@@ -16,7 +10,6 @@ import { motion } from "framer-motion";
 type ProjectsProps = {};
 
 const GITHUB_USERNAME = `akshay-bharadva`;
-// Fetch fewer for the homepage to keep it concise, but more on the dedicated projects page.
 const REPO_COUNT = 6;
 const GITHUB_REPOS_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=pushed&per_page=${REPO_COUNT}&type=owner`;
 
@@ -85,38 +78,27 @@ export default function Projects({}: ProjectsProps) {
         viewport={{ once: true, amount: 0.5 }}
         className="relative mb-12"
       >
-        <h2 className="text-4xl font-black text-foreground">Recent Projects</h2>
-        <div className="absolute -bottom-2 h-1 w-24 bg-primary" />
+        <h2 className="font-mono text-4xl font-bold text-foreground">/projects</h2>
       </motion.div>
       
       {loading && (
-        <div className="py-10 text-center">
-          <div className="mx-auto inline-block size-12 animate-spin rounded-none border-y-4 border-black"></div>
-          <p className="mt-4 text-lg font-bold text-black">
-            Loading Projects from GitHub...
-          </p>
+        <div className="py-10 text-center flex items-center justify-center gap-3 text-muted-foreground">
+          <Loader2 className="size-6 animate-spin" />
+          <p className="text-lg">Loading Projects from GitHub...</p>
         </div>
       )}
       {error && !loading && (
-        <div className="rounded-none border-2 border-red-500 bg-red-100 p-4 font-semibold text-red-700 shadow-[3px_3px_0_#B91C1C]">
-          Error: {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
       {!loading && !error && projects.length === 0 && (
-        <div className="rounded-none border-2 border-black bg-yellow-100 p-8 py-16 text-center shadow-[6px_6px_0_#000]">
-          <div className="mx-auto max-w-md">
-            <div className="mx-auto mb-6 flex size-24 items-center justify-center rounded-none border-2 border-black bg-black text-5xl font-black text-yellow-300">
-              ?
-            </div>
-            <h3 className="mb-2 text-2xl font-bold text-black">
-              NO PUBLIC PROJECTS FOUND.
-            </h3>
-            <p className="font-medium text-gray-700">
-              I might be working on something new, or they are private. Check
-              GitHub for more!
-            </p>
+         <div className="py-16 text-center text-muted-foreground">
+            <h3 className="text-lg font-bold">No public projects found.</h3>
+            <p>I might be working on something new, or they are private. Check GitHub for more!</p>
           </div>
-        </div>
       )}
 
       {!loading && !error && projects.length > 0 && (
@@ -153,3 +135,4 @@ export default function Projects({}: ProjectsProps) {
     </section>
   );
 }
+

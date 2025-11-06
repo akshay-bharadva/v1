@@ -1,10 +1,4 @@
-/*
-This button component is redesigned for the "Digital Blueprint" theme.
-- The default variant is now the electric blue accent color.
-- A new `shine` pseudo-element is added for a sleek hover effect on the primary button.
-- The `outline` variant has a glowing border on hover, reinforcing the tech aesthetic.
-- All other variants are styled to be consistent with the new monochromatic palette.
-*/
+
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";

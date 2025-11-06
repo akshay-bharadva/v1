@@ -1,8 +1,10 @@
+
+
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { Button } from "./ui/button";
 import Container from "./container";
 import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
 
 interface NavLink { href: string; label: string; }
 
@@ -34,14 +36,21 @@ export default function Header() {
             AKSHAY<span className="text-primary">.</span>DEV
           </Link>
           <nav className="flex items-center gap-x-2 rounded-lg p-1">
-            {NAV_LINKS.map((link) => (
-              <Link className={linkClasses(link.href)} href={link.href} key={link.href}>
-                {link.label}
-                 {router.pathname === link.href && (
-                  <span className="absolute bottom-0 left-1/2 h-0.5 w-4 -translate-x-1/2 bg-primary"></span>
-                 )}
-              </Link>
-            ))}
+            {NAV_LINKS.map((link) => {
+              const isActive = router.pathname === link.href || (link.href !== "/" && router.pathname.startsWith(link.href));
+              return (
+                <Link className={linkClasses(link.href)} href={link.href} key={link.href}>
+                  {isActive && (
+                    <motion.span
+                      layoutId="header-active-link"
+                      className="absolute inset-0 z-[-1] rounded-md bg-secondary"
+                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                    />
+                  )}
+                  {link.label}
+                </Link>
+              )
+            })}
           </nav>
         </div>
       </Container>

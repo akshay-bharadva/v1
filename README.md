@@ -330,3 +330,128 @@ Your site will be deployed and available at the URL shown on the Pages settings 
 - `npm run lint`: Runs the ESLint linter.
 - `npm run export`: Exports the application to static HTML, which can be deployed anywhere.
 - `npm run format`: Formats all code using Prettier.
+
+
+
+
+---
+
+This tree maps each page file to the primary, non-UI custom components it renders. It helps visualize the architecture and how components are composed to build the final views.
+
+### Legend
+
+-   `🌳` **Root** (The main application wrapper)
+-   `📄` **Page** (A file within the `src/pages/` directory)
+-   `🧩` **Component** (A reusable component from `src/components/`)
+-   `🔒` **Admin Component** (A component specific to the admin panel)
+-   `(Internal)` A component defined and used only within that specific page file.
+-   `(Conditional)` A component that is rendered based on user interaction (e.g., clicking a tab).
+
+---
+
+### Component Tree
+
+```
+🌳 src/pages/_app.tsx
+└── 🧩 ThemeProvider (Wraps all pages)
+
+    ├── 📄 src/pages/index.tsx (Home Page)
+    │   └── 🧩 Layout
+    │       ├── 🧩 Hero
+    │       ├── 🧩 Projects
+    │       │   └── 🧩 ProjectCard (Repeated)
+    │       └── 🧩 Experience
+    │
+    ├── 📄 src/pages/about.tsx
+    │   └── 🧩 Layout
+    │       ├── 🧩 Technology
+    │       └── 🧩 Tools
+    │
+    ├── 📄 src/pages/blog/index.tsx
+    │   └── 🧩 Layout (Contains logic for listing blog posts)
+    │
+    ├── 📄 src/pages/blog/[slug].tsx
+    │   └── 🧩 Layout
+    │       ├── (Internal) PostHeader
+    │       ├── (Internal) AuthorInfo
+    │       ├── (Internal) PostContent
+    │       │   └── (Internal) CodeBlock (For Markdown rendering)
+    │       └── (Internal) PostTagsSidebar
+    │
+    ├── 📄 src/pages/contact.tsx
+    │   └── 🧩 Layout (Contains logic for displaying services)
+    │
+    ├── 📄 src/pages/experience.tsx
+    │   └── 🧩 Layout
+    │       └── 🧩 Experience
+    │
+    ├── 📄 src/pages/projects.tsx
+    │   └── 🧩 Layout
+    │       └── 🧩 Projects
+    │           └── 🧩 ProjectCard (Repeated)
+    │
+    ├── 📄 src/pages/showcase.tsx
+    │   └── 🧩 Layout
+    │       └── (Internal) ShowcaseItemCard (Repeated)
+    │
+    ├── 📄 src/pages/404.tsx
+    │   └── 🧩 Layout
+    │       └── 🧩 NotFound
+    │
+    ├── 📄 src/pages/ui.tsx (And other UI documentation pages)
+    │   └── 🧩 Layout
+    │       └── (Internal) ComponentDisplay (Demonstrates all `ui/` components)
+    │
+    ├─ 🔒 Admin Section
+    │   ├── 📄 src/pages/admin/index.tsx
+    │   │   └── 🧩 Layout (Contains redirection logic)
+    │   │
+    │   ├── 📄 src/pages/admin/login.tsx
+    │   │   └── 🧩 Layout
+    │   │       └── 🔒 SupabaseLogin
+    │   │
+    │   ├── 📄 src/pages/admin/mfa-challenge.tsx
+    │   │   └── 🧩 Layout
+    │   │       └── 🔒 SupabaseMFAChallenge
+    │   │
+    │   ├── 📄 src/pages/admin/setup-mfa.tsx
+    │   │   └── 🧩 Layout
+    │   │       └── 🔒 SupabaseMFASetup
+    │   │
+    │   └── 📄 src/pages/admin/dashboard.tsx
+    │       └── 🧩 Layout
+    │           └── 🔒 AdminDashboard
+    │               ├── 🔒 BlogManager (Conditional)
+    │               │   └── 🔒 BlogEditor
+    │               │       └── 🔒 AdvancedMarkdownEditor
+    │               │           └── 🔒 MarkdownEditor
+    │               ├── 🔒 ContentManager (Conditional)
+    │               │   └── (Internal) SectionEditor
+    │               ├── 🔒 TaskManager (Conditional)
+    │               │   ├── (Internal) TaskCard
+    │               │   └── (Internal) SubTaskList
+    │               ├── 🔒 NotesManager (Conditional)
+    │               │   └── 🔒 NoteEditor
+    │               ├── 🔒 FinanceManager (Conditional)
+    │               │   ├── (Internal) GoalCard
+    │               │   ├── 🔒 TransactionForm
+    │               │   ├── 🔒 RecurringTransactionForm
+    │               │   └── 🔒 FinancialGoalForm
+    │               └── 🔒 SecuritySettings (Conditional)
+    │
+    └─ 🧩 Shared Layout Components (Used by `Layout`)
+        ├── 🧩 Header
+        │   └── 🧩 Container
+        ├── 🧩 MobileHeader
+        ├── 🧩 Footer
+        │   └── 🧩 Container
+        └── 🧩 Container (Wraps page content)
+```
+
+### Architectural Summary
+
+-   **Global Wrapper:** `_app.tsx` wraps the entire application with `ThemeProvider`.
+-   **Core Structure:** Nearly every page utilizes the `Layout` component, which provides the consistent header, footer, and main content area.
+-   **Content Pages:** Public-facing pages (`/`, `/about`, `/projects`, etc.) are composed of a few high-level, presentational components (`Hero`, `Projects`, `Experience`).
+-   **Admin Panel:** The `/admin/dashboard` page is the main hub for the admin section. It acts as a shell that conditionally renders one of several "Manager" components (`BlogManager`, `TaskManager`, etc.), each of which is a self-contained application for its specific domain.
+-   **Component Nesting:** Deeper components, like `BlogEditor` or `AdvancedMarkdownEditor`, are nested within their respective manager components, promoting encapsulation and clear separation of concerns.

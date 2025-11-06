@@ -1,10 +1,4 @@
-/*
-This file is updated for the new design system.
-- The neo-brutalist `border-2`, `rounded-none`, and `shadow-[...]` are replaced with a modern, clean dialog style: a subtle border, rounded corners, and a standard modal shadow.
-- The `bg-black/80` overlay provides a standard, modern backdrop.
-- The component now uses theme variables for colors (`background`, `border`).
-- Font styles are updated to match the new kinetic theme (e.g., `font-bold` is now `font-semibold` for the title).
-*/
+
 "use client";
 
 import * as React from "react";

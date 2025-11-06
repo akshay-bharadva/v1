@@ -1,9 +1,4 @@
-/*
-This file is updated for the "Digital Blueprint" design system.
-- The OTP input and surrounding elements are styled to feel more like a technical security prompt.
-- The color scheme is aligned with the new theme, using the electric blue accent.
-- Headings and text adopt the new typographic standards (Inter/IBM Plex Mono).
-*/
+
 "use client";
 
 import React, { useState, useEffect } from "react";

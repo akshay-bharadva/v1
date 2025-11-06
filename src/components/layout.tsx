@@ -1,4 +1,5 @@
 
+
 import Head from "next/head";
 import { PropsWithChildren, useEffect, useState } from "react";
 import Container from "./container";
@@ -52,8 +53,7 @@ export default function Layout({ children }: LayoutProps) {
         <meta name="twitter:description" content={DEFAULT_OG_DESCRIPTION} />
         <meta name="twitter:image" content={DEFAULT_OG_IMAGE} />
       </Head>
-      <div className="relative flex min-h-screen flex-col justify-between font-sans selection:bg-accent selection:text-accent-foreground bg-grid-pattern">
-        {/* NEW: Interactive "spotlight" background effect */}
+      <div className="relative flex min-h-screen flex-col justify-between font-sans selection:bg-primary selection:text-primary-foreground bg-grid-pattern">
         <motion.div
           className="pointer-events-none fixed inset-0 z-[-1] transition duration-300"
           style={{
@@ -67,9 +67,7 @@ export default function Layout({ children }: LayoutProps) {
         <main className="mt-20 w-full grow md:mt-24">
           <Container>{children}</Container>
         </main>
-        <Container>
-          <Footer />
-        </Container>
+        <Footer />
         <SonnerToaster />
         <ShadcnToaster />
       </div>

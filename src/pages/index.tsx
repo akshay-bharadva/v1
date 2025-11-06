@@ -13,6 +13,7 @@ import { config as appConfig } from "@/lib/config";
 import { useEffect } from "react";
 import Hero from "@/components/hero";
 import Experience from "@/components/experience";
+import Newsletter from "@/components/newsletter";
 
 export default function HomePage() {
   const { site: siteConfig } = appConfig;
@@ -50,7 +51,7 @@ export default function HomePage() {
     }
   }, []);
 
-  return (
+   return (
     <Layout>
       <Head>
         <link rel="canonical" href={siteConfig.url} />
@@ -59,6 +60,7 @@ export default function HomePage() {
         <Hero />
         <Projects />
         <Experience />
+        <Newsletter />
       </div>
     </Layout>
   );
