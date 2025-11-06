@@ -1,9 +1,3 @@
-/*
-This file is updated to align with the new design aesthetic.
-- While the admin panel doesn't use glassmorphism to maintain clarity, the accent colors and typography are updated for consistency.
-- The StatCard component is given a more refined look, with a subtle border gradient on hover to add a touch of polish.
-- The overall structure remains the same as it's highly functional, but the visual details are brought in line with the new theme.
-*/
 "use client";
 
 import { useState, useEffect } from "react";
@@ -18,27 +12,8 @@ import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
-  Banknote,
-  BookText,
-  CheckCircle,
-  ChevronDown,
-  Eye,
-  LayoutTemplate,
-  ListTodo,
-  Lock,
-  LogOut,
-  TrendingDown,
-  TrendingUp,
-  StickyNote,
-  ExternalLink,
-} from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Banknote, BookText, CheckCircle, ChevronDown, Eye, LayoutTemplate, ListTodo, Lock, LogOut, TrendingDown, TrendingUp, StickyNote, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { DashboardData } from "@/pages/admin/dashboard";
 import { Skeleton } from "../ui/skeleton";
@@ -97,33 +72,32 @@ export default function AdminDashboard({
     value: string | number;
     icon?: JSX.Element;
     className?: string;
-    bgColor?: string
-  }> = ({ title, value, icon, className,bgColor = "bg-white" }) => (
-    <Card className={className + " transition-all duration-300 hover:border-accent " + bgColor}>
+  }> = ({ title, value, icon, className }) => (
+    <Card className={className + " bg-secondary/50 transition-all duration-300 hover:border-primary"}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
+        <CardTitle className="font-mono text-sm font-medium uppercase text-muted-foreground">
           {title}
         </CardTitle>
         {icon && <div className="text-muted-foreground">{icon}</div>}
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="font-mono text-2xl font-bold">{value}</div>
       </CardContent>
     </Card>
   );
 
   return (
     <div className="min-h-screen bg-background font-sans">
-      <header className="sticky top-0 z-10 border-b bg-glass">
+      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <h1 className="text-xl font-bold text-foreground sm:text-2xl">
-              Admin
+            <h1 className="font-mono text-xl font-bold text-foreground sm:text-2xl">
+              ADMIN_PANEL
             </h1>
             <div className="flex items-center gap-4">
               {isMfaEnabled && (
-                <Badge variant="secondary" className="border-green-500/50">
-                  <Lock className="mr-1.5 size-3" /> MFA Enabled
+                <Badge variant="outline" className="border-green-500/50 text-green-400">
+                  <Lock className="mr-1.5 size-3" /> AAL2 VERIFIED
                 </Badge>
               )}
               <Button variant="destructive" size="sm" onClick={onLogout}>
@@ -135,13 +109,11 @@ export default function AdminDashboard({
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-            <p className="text-muted-foreground">
-              Manage your portfolio and content.
-            </p>
-          </div>
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <p className="text-muted-foreground">
+            System overview and content management hub.
+          </p>
         </div>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
@@ -288,7 +260,7 @@ export default function AdminDashboard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="rounded-lg border border-border bg-card p-4 sm:p-6"
+                className="rounded-lg border bg-card p-4 sm:p-6"
               >
                 {activeTab === "blogs" && <BlogManager startInCreateMode={initialAction === "createBlogPost"} onActionHandled={handleActionCompleted} />}
                 {activeTab === "content" && <ContentManager />}
