@@ -47,7 +47,8 @@ const mapItemToCalendarEvent = (item: CalendarItem): EventInput => {
         id: item.item_id,
         title: item.title,
         start: item.start_time,
-        end: item.end_time,
+        // If item.end_time is null or undefined, use undefined. Otherwise, use item.end_time.
+        end: item.end_time ?? undefined,
         allDay: item.item_type === 'task' || item.item_type === 'transaction' || item.data.is_all_day,
         extendedProps: { type: item.item_type, transactionType: transactionType, ...restOfData },
         display: 'list-item',
@@ -56,7 +57,7 @@ const mapItemToCalendarEvent = (item: CalendarItem): EventInput => {
 
 const CalendarPopoverContent: React.FC<{ event: EventInput; onEdit: () => void; onNavigate: (tab: any) => void; }> = ({ event, onEdit, onNavigate }) => {
     const { type, transactionType, amount, status, priority, description } = event.extendedProps || {};
-    
+
     // Determine sign and color for financial items
     const isEarning = transactionType === 'earning';
     const sign = isEarning ? '+' : '-';
@@ -66,7 +67,7 @@ const CalendarPopoverContent: React.FC<{ event: EventInput; onEdit: () => void; 
         <PopoverContent className="w-80">
             <div className="space-y-4">
                 <h3 className="font-semibold">{event.title}</h3>
-                <Separator/>
+                <Separator />
                 <div className="space-y-2 text-sm">
                     {type === 'event' && description && <p className="text-muted-foreground">{description}</p>}
                     {type === 'task' && (
@@ -87,11 +88,11 @@ const CalendarPopoverContent: React.FC<{ event: EventInput; onEdit: () => void; 
                         </>
                     )}
                 </div>
-                 <Separator/>
+                <Separator />
                 <div className="flex gap-2">
-                    {type === 'event' && <Button onClick={onEdit} size="sm"><Edit className="mr-2 size-4"/>Edit</Button>}
-                    {type === 'task' && <Button onClick={() => onNavigate('tasks')} size="sm" variant="secondary"><ListTodo className="mr-2 size-4"/>Go to Tasks</Button>}
-                    {type === 'transaction' && <Button onClick={() => onNavigate('finance')} size="sm" variant="secondary"><Banknote className="mr-2 size-4"/>Go to Finance</Button>}
+                    {type === 'event' && <Button onClick={onEdit} size="sm"><Edit className="mr-2 size-4" />Edit</Button>}
+                    {type === 'task' && <Button onClick={() => onNavigate('tasks')} size="sm" variant="secondary"><ListTodo className="mr-2 size-4" />Go to Tasks</Button>}
+                    {type === 'transaction' && <Button onClick={() => onNavigate('finance')} size="sm" variant="secondary"><Banknote className="mr-2 size-4" />Go to Finance</Button>}
                 </div>
             </div>
         </PopoverContent>
@@ -122,16 +123,16 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
                 supabase.rpc('get_calendar_data', { start_date_param: start.toISOString(), end_date_param: end.toISOString() }),
                 supabase.from('recurring_transactions').select('*')
             ]);
-            
+
             if (calendarDataRes.error) throw calendarDataRes.error;
             if (recurringRes.error) throw recurringRes.error;
 
             const baseEvents = (calendarDataRes.data as CalendarItem[]).map(mapItemToCalendarEvent);
-            
+
             const forecastEvents: EventInput[] = [];
             const today = new Date();
             const forecastEndDate = addDays(today, 30);
-            
+
             (recurringRes.data as RecurringTransaction[]).forEach(rule => {
                 let cursor = rule.last_processed_date ? new Date(rule.last_processed_date) : new Date(rule.start_date);
                 if (isBefore(cursor, new Date(rule.start_date))) { cursor = new Date(rule.start_date); }
@@ -143,7 +144,7 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
                 const ruleEndDate = rule.end_date ? new Date(rule.end_date) : null;
                 while (isBefore(nextOccurrence, forecastEndDate)) {
                     if (ruleEndDate && isAfter(nextOccurrence, ruleEndDate)) break;
-                     if ((isAfter(nextOccurrence, today) || isSameDay(nextOccurrence, today))) {
+                    if ((isAfter(nextOccurrence, today) || isSameDay(nextOccurrence, today))) {
                         forecastEvents.push({
                             title: rule.description,
                             start: nextOccurrence,
@@ -187,7 +188,7 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
         // Position the anchor in the middle of the event element.
         const top = eventRect.top - containerRect.top + eventRect.height / 2;
         const left = eventRect.left - containerRect.left + eventRect.width / 2;
-        
+
         setPopoverState({
             open: true,
             anchorProps: { position: 'absolute', top: `${top}px`, left: `${left}px` },
@@ -267,11 +268,18 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
         setEventFormData({
             id: eventToEdit.id!,
             title: eventToEdit.title!,
-            description: eventToEdit.extendedProps.description || '',
-            start_time: eventToEdit.start ? formatISO(new Date(eventToEdit.start)).slice(0, 16) : '',
-            end_time: eventToEdit.end ? formatISO(new Date(eventToEdit.end)).slice(0, 16) : '',
+            description: eventToEdit.extendedProps?.description || '',
+            start_time:
+                eventToEdit.start && !(eventToEdit.start instanceof Array)
+                    ? formatISO(new Date(eventToEdit.start as string | number | Date)).slice(0, 16)
+                    : '',
+            end_time:
+                eventToEdit.end && !(eventToEdit.end instanceof Array)
+                    ? formatISO(new Date(eventToEdit.end as string | number | Date)).slice(0, 16)
+                    : '',
             is_all_day: !!eventToEdit.allDay,
         });
+
 
         setPopoverState({ open: false, anchorProps: { display: 'none' }, event: null });
         setDialogState({ open: true, isNew: false });
@@ -279,7 +287,7 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
 
     const renderEventContent = (eventInfo: EventContentArg) => {
         const { type, priority, transactionType, amount } = eventInfo.event.extendedProps;
-        
+
         if (type === 'event' || type === 'task') {
             const isEvent = type === 'event';
             const icon = isEvent ? <div className="size-2 rounded-full bg-primary" /> : <CheckSquare className="size-3.5 shrink-0" />;
@@ -299,7 +307,7 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
             const amountColor = isEarning ? 'text-green-400' : 'text-red-400';
             const iconColor = isEarning ? 'bg-green-400' : 'bg-red-400';
             return (
-                 <div className={cn("flex w-full items-start gap-2 overflow-hidden p-1 text-xs", isForecast && "opacity-60")}>
+                <div className={cn("flex w-full items-start gap-2 overflow-hidden p-1 text-xs", isForecast && "opacity-60")}>
                     <div className={cn("mt-1.5 size-2 shrink-0 rounded-full", iconColor, isForecast && "opacity-50")} />
                     <div className="flex flex-col overflow-hidden">
                         <span className="truncate text-foreground">{eventInfo.event.title}</span>
@@ -314,20 +322,20 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
     return (
         <div ref={calendarContainerRef} className="relative rounded-lg border bg-card p-4">
             {isLoading && <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/80 backdrop-blur-sm"><Loader2 className="size-6 animate-spin" /></div>}
-            
+
             <Popover open={popoverState.open} onOpenChange={(open) => {
                 if (!open) {
                     setPopoverState({ open: false, anchorProps: { display: 'none' }, event: null });
                 }
             }}>
                 <PopoverAnchor style={popoverState.anchorProps} />
-                {popoverState.event && <CalendarPopoverContent 
-                    event={popoverState.event} 
-                    onEdit={handleEditClick} 
-                    onNavigate={(tab) => { 
-                        setPopoverState({ open: false, anchorProps: { display: 'none' }, event: null }); 
-                        onNavigate(tab); 
-                    }} 
+                {popoverState.event && <CalendarPopoverContent
+                    event={popoverState.event}
+                    onEdit={handleEditClick}
+                    onNavigate={(tab) => {
+                        setPopoverState({ open: false, anchorProps: { display: 'none' }, event: null });
+                        onNavigate(tab);
+                    }}
                 />}
             </Popover>
 
@@ -352,12 +360,12 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
                 <DialogContent>
                     <DialogHeader><DialogTitle>{dialogState.isNew ? 'Create New Event' : 'Edit Event'}</DialogTitle></DialogHeader>
                     <form onSubmit={handleEventFormSubmit} className="space-y-4 pt-4">
-                        <div><Label htmlFor="title">Title</Label><Input id="title" value={eventFormData.title} onChange={(e) => setEventFormData({...eventFormData, title: e.target.value})} required/></div>
-                        <div><Label htmlFor="description">Description</Label><Textarea id="description" value={eventFormData.description} onChange={(e) => setEventFormData({...eventFormData, description: e.target.value})} /></div>
-                        <div className="flex items-center space-x-2"><Switch id="is_all_day" checked={eventFormData.is_all_day} onCheckedChange={(c) => setEventFormData({...eventFormData, is_all_day: c})} /><Label htmlFor="is_all_day">All-day event</Label></div>
+                        <div><Label htmlFor="title">Title</Label><Input id="title" value={eventFormData.title} onChange={(e) => setEventFormData({ ...eventFormData, title: e.target.value })} required /></div>
+                        <div><Label htmlFor="description">Description</Label><Textarea id="description" value={eventFormData.description} onChange={(e) => setEventFormData({ ...eventFormData, description: e.target.value })} /></div>
+                        <div className="flex items-center space-x-2"><Switch id="is_all_day" checked={eventFormData.is_all_day} onCheckedChange={(c) => setEventFormData({ ...eventFormData, is_all_day: c })} /><Label htmlFor="is_all_day">All-day event</Label></div>
                         <div className="grid grid-cols-2 gap-4">
-                           <div><Label htmlFor="start_time">Start</Label><Input id="start_time" type="datetime-local" value={eventFormData.start_time} onChange={(e) => setEventFormData({...eventFormData, start_time: e.target.value})} required/></div>
-                           <div><Label htmlFor="end_time">End</Label><Input id="end_time" type="datetime-local" value={eventFormData.end_time} onChange={(e) => setEventFormData({...eventFormData, end_time: e.target.value})} /></div>
+                            <div><Label htmlFor="start_time">Start</Label><Input id="start_time" type="datetime-local" value={eventFormData.start_time} onChange={(e) => setEventFormData({ ...eventFormData, start_time: e.target.value })} required /></div>
+                            <div><Label htmlFor="end_time">End</Label><Input id="end_time" type="datetime-local" value={eventFormData.end_time} onChange={(e) => setEventFormData({ ...eventFormData, end_time: e.target.value })} /></div>
                         </div>
                         <div className="flex justify-between pt-4">
                             {!dialogState.isNew && <Button type="button" variant="destructive" onClick={handleDeleteEvent}>Delete</Button>}
