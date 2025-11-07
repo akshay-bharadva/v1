@@ -1,18 +1,18 @@
-
 import Layout from "@/components/layout";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
 import type { PortfolioSection, PortfolioItem } from "@/types";
-import { GetStaticProps, InferGetStaticPropsType } from "next";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
-import { ArrowUpRight, Calendar } from "lucide-react";
+import { ArrowUpRight, Calendar, Loader2, AlertTriangle } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/supabase/client";
 import { cn } from "@/lib/utils";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
   const isTimelineItem = item.subtitle && /\d{4}/.test(item.subtitle);
@@ -77,20 +77,37 @@ const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
   );
 };
 
-export const getStaticProps: GetStaticProps<{ sections: PortfolioSection[] }> = async () => {
-  const { data, error } = await supabase
-    .from("portfolio_sections")
-    .select(`*, portfolio_items (*)`)
-    .order("display_order", { ascending: true })
-    .order("display_order", { foreignTable: "portfolio_items", ascending: true });
+// getStaticProps has been removed
 
-  if (error) { console.error("Error fetching all sections:", error.message); }
-
-  return { props: { sections: data || [] }, revalidate: 60 };
-};
-
-export default function ShowcasePage({ sections }: InferGetStaticPropsType<typeof getStaticProps>) {
+export default function ShowcasePage() {
   const { site: siteConfig } = appConfig;
+  const [sections, setSections] = useState<PortfolioSection[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchShowcaseData = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const { data, error: fetchError } = await supabase
+          .from("portfolio_sections")
+          .select(`*, portfolio_items (*)`)
+          .order("display_order", { ascending: true })
+          .order("display_order", { foreignTable: "portfolio_items", ascending: true });
+
+        if (fetchError) {
+          throw new Error(fetchError.message);
+        }
+        setSections(data || []);
+      } catch (err: any) {
+        setError(err.message || "Could not load showcase content.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchShowcaseData();
+  }, []);
 
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
@@ -122,7 +139,21 @@ export default function ShowcasePage({ sections }: InferGetStaticPropsType<typeo
         </motion.header>
 
         <div className="container mx-auto max-w-6xl px-4 space-y-32">
-          {sections.map((section, index) => (
+          {loading && (
+            <div className="flex justify-center items-center py-20">
+              <Loader2 className="size-8 animate-spin text-muted-foreground" />
+            </div>
+          )}
+
+          {error && (
+            <Alert variant="destructive" className="max-w-2xl mx-auto">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Failed to load content</AlertTitle>
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {!loading && !error && sections.map((section, index) => (
             <motion.section 
               key={section.id}
               initial="hidden"
@@ -161,7 +192,7 @@ export default function ShowcasePage({ sections }: InferGetStaticPropsType<typeo
           ))}
         </div>
         
-        {sections.length === 0 && (
+        {!loading && !error && sections.length === 0 && (
           <div className="py-20 text-center text-muted-foreground">
             No content found. Time to add some in the admin panel!
           </div>
