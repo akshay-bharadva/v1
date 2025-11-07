@@ -1,4 +1,3 @@
-
 import Layout from "@/components/layout";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
@@ -8,17 +7,21 @@ import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
-import { ArrowUpRight, Calendar } from "lucide-react";
+import { ArrowUpRight, Calendar, Link as LinkIcon } from "lucide-react";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/supabase/client";
 import { cn } from "@/lib/utils";
 
+// --- NEW VERSATILE CARD DESIGN ---
 const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
+  // Determine if this is likely an "experience" type item based on if it has dates in subtitle
   const isTimelineItem = item.subtitle && /\d{4}/.test(item.subtitle);
 
   return (
-    <Card className="group relative flex h-full flex-col overflow-hidden bg-card/50 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
+    <Card className="group relative flex h-full flex-col overflow-hidden border bg-card/50 text-card-foreground transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:bg-card/80">
+      {/* Optional Image Header */}
       {item.image_url && (
         <div className="relative aspect-[16/9] w-full overflow-hidden border-b bg-muted">
           <img 
@@ -41,6 +44,7 @@ const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
               </div>
             )}
           </div>
+          {/* Link icon indicator if a link exists */}
           {item.link_url && (
              <div className="rounded-full bg-secondary/50 p-2 text-secondary-foreground opacity-0 transition-opacity group-hover:opacity-100">
                 <ArrowUpRight className="size-4" />
@@ -52,6 +56,7 @@ const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
       <CardContent className="flex-grow pb-4">
         {item.description && (
           <div className="prose prose-sm dark:prose-invert text-muted-foreground line-clamp-4">
+             {/* line-clamp-4 keeps cards uniform height-ish. Remove if you want full text. */}
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{item.description}</ReactMarkdown>
           </div>
         )}
@@ -67,6 +72,7 @@ const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
             ))}
           </div>
         )}
+        {/* The whole card acts as a link if a URL exists, using this invisible overlay */}
         {item.link_url && (
           <Link href={item.link_url} target="_blank" rel="noopener noreferrer" className="absolute inset-0 z-10">
             <span className="sr-only">View {item.title}</span>
@@ -77,6 +83,7 @@ const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
   );
 };
 
+// --- DATA FETCHING (UNCHANGED) ---
 export const getStaticProps: GetStaticProps<{ sections: PortfolioSection[] }> = async () => {
   const { data, error } = await supabase
     .from("portfolio_sections")
@@ -92,6 +99,7 @@ export const getStaticProps: GetStaticProps<{ sections: PortfolioSection[] }> = 
 export default function ShowcasePage({ sections }: InferGetStaticPropsType<typeof getStaticProps>) {
   const { site: siteConfig } = appConfig;
 
+  // Animation variants
   const fadeInUp = {
     hidden: { opacity: 0, y: 30 },
     visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } }
@@ -130,6 +138,7 @@ export default function ShowcasePage({ sections }: InferGetStaticPropsType<typeo
               viewport={{ once: true, margin: "-100px" }}
               variants={staggerContainer}
             >
+              {/* --- Modern Section Header --- */}
               <motion.div variants={fadeInUp} className="mb-12 flex items-baseline gap-4 border-b pb-4">
                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/5 text-lg font-bold text-primary font-mono">
                     {String(index + 1).padStart(2, '0')}
@@ -137,6 +146,7 @@ export default function ShowcasePage({ sections }: InferGetStaticPropsType<typeo
                 <h2 className="text-4xl font-bold tracking-tight">{section.title}</h2>
               </motion.div>
 
+              {/* --- Content Area --- */}
               {section.type === "markdown" && section.content && (
                 <motion.div variants={fadeInUp}>
                   <div className="prose dark:prose-invert max-w-3xl rounded-xl border bg-card/30 p-8 md:p-10 shadow-sm backdrop-blur-sm">

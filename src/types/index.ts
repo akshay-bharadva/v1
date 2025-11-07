@@ -74,18 +74,6 @@ export interface GitHubRepo {
 
 // --- NEW TYPES ---
 
-export interface Event {
-  id: string;
-  user_id?: string;
-  title: string;
-  description?: string | null;
-  start_time: string;
-  end_time?: string | null;
-  is_all_day?: boolean;
-  created_at?: string;
-  updated_at?: string;
-}
-
 export interface Note {
   id: string;
   user_id?: string;

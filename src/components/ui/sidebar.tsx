@@ -1,4 +1,11 @@
-
+/*
+This file is conceptually complex, and the redesign focuses on its visual appearance, not its logic.
+- The neo-brutalist styles (`border-2`, `rounded-none`, `shadow-[...]`) are removed from all sidebar components (`Sidebar`, `SidebarHeader`, `SidebarGroup`, etc.).
+- The components are now styled with subtle borders, theme-based background colors, and modern typography.
+- `SidebarMenuButton` is updated to use the new theme's colors for active (`primary`) and hover (`accent`) states.
+- The `SidebarRail` is made more subtle.
+- `SidebarGroup` is restyled to look less like a separate card and more like a logical grouping within the sidebar.
+*/
 "use client";
 
 import * as React from "react";
@@ -8,7 +15,7 @@ import { PanelLeft } from "lucide-react";
 
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent } from "@/components/ui/sheet";

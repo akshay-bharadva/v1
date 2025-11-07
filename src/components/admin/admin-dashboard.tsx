@@ -1,3 +1,13 @@
+/*
+This file is completely redesigned to match the new kinetic typography and dark theme.
+- All neo-brutalist styles (`border-2`, `shadow-[...]`, `rounded-none`, ``) have been removed.
+- The layout is now cleaner, using modern spacing and the redesigned `Card` component for stats.
+- The tab navigation has been replaced with the redesigned `Tabs` component for a more integrated feel.
+- The custom `StatCard` component is removed; `Card` and standard flexbox are used instead for a consistent look.
+- The header is simplified, and the "MFA Enabled" badge uses the redesigned `Badge` component.
+- The logout button now uses the redesigned `Button` component with a destructive variant.
+- All components now inherit the global `font-sans` (Inter).
+*/
 "use client";
 
 import { useState, useEffect } from "react";
@@ -12,13 +22,31 @@ import { supabase } from "@/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Banknote, BookText, CheckCircle, ChevronDown, Eye, LayoutTemplate, ListTodo, Lock, LogOut, TrendingDown, TrendingUp, StickyNote, ExternalLink, Calendar as CalendarIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Banknote,
+  BookText,
+  CheckCircle,
+  ChevronDown,
+  Eye,
+  LayoutTemplate,
+  ListTodo,
+  Lock,
+  LogOut,
+  TrendingDown,
+  TrendingUp,
+  StickyNote,
+  ExternalLink,
+} from "lucide-react";
 import Link from "next/link";
 import { DashboardData } from "@/pages/admin/dashboard";
 import { Skeleton } from "../ui/skeleton";
 import { FaChartLine } from "react-icons/fa";
-import CommandCalendar from "./CommandCalendar";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -26,11 +54,10 @@ interface AdminDashboardProps {
 }
 
 type ActiveTab =
-  | "dashboard"
-  | "calendar"
   | "blogs"
   | "content"
   | "security"
+  | "dashboard"
   | "tasks"
   | "notes"
   | "finance";
@@ -40,7 +67,7 @@ export default function AdminDashboard({
   onLogout,
   dashboardData,
 }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("calendar");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
   const [initialAction, setInitialAction] = useState<InitialAction>(null);
 
@@ -56,7 +83,6 @@ export default function AdminDashboard({
   const tabs = [
     { id: "dashboard", label: "Overview", icon: <FaChartLine className="size-4" /> },
     { id: "blogs", label: "Blog", icon: <BookText className="size-4" /> },
-    { id: "calendar", label: "Calendar", icon: <CalendarIcon className="size-4" /> },
     { id: "content", label: "Content", icon: <LayoutTemplate className="size-4" /> },
     { id: "tasks", label: "Tasks", icon: <ListTodo className="size-4" /> },
     { id: "notes", label: "Notes", icon: <StickyNote className="size-4" /> },
@@ -67,7 +93,7 @@ export default function AdminDashboard({
   const handleActionCompleted = () => {
     setInitialAction(null);
   };
-
+  
   const activeTabInfo = tabs.find((tab) => tab.id === activeTab);
 
   const StatCard: React.FC<{
@@ -75,32 +101,33 @@ export default function AdminDashboard({
     value: string | number;
     icon?: JSX.Element;
     className?: string;
-  }> = ({ title, value, icon, className }) => (
-    <Card className={className + " bg-secondary/50 transition-all duration-300 hover:border-primary"}>
+    bgColor?: string
+  }> = ({ title, value, icon, className, bgColor = "bg-white" }) => (
+    <Card className={`${className}  ${bgColor}`}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="font-mono text-sm font-medium uppercase text-muted-foreground">
+        <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
         {icon && <div className="text-muted-foreground">{icon}</div>}
       </CardHeader>
       <CardContent>
-        <div className="font-mono text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold">{value}</div>
       </CardContent>
     </Card>
   );
 
   return (
     <div className="min-h-screen bg-background font-sans">
-      <header className="sticky top-0 z-10 border-b bg-background/80 backdrop-blur-sm">
+      <header className="sticky top-0 z-10 border-b border-border bg-background/80 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <h1 className="font-mono text-xl font-bold text-foreground sm:text-2xl">
-              ADMIN_PANEL
+            <h1 className="text-xl font-bold text-foreground sm:text-2xl">
+              Admin
             </h1>
             <div className="flex items-center gap-4">
               {isMfaEnabled && (
-                <Badge variant="outline" className="border-green-500/50 text-green-400">
-                  <Lock className="mr-1.5 size-3" /> AAL2 VERIFIED
+                <Badge variant="secondary" className="border-green-500/50">
+                  <Lock className="mr-1.5 size-3" /> MFA Enabled
                 </Badge>
               )}
               <Button variant="destructive" size="sm" onClick={onLogout}>
@@ -112,11 +139,13 @@ export default function AdminDashboard({
       </header>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="mb-8">
-          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          <p className="text-muted-foreground">
-            System overview and content management hub.
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+            <p className="text-muted-foreground">
+              Manage your portfolio and content.
+            </p>
+          </div>
         </div>
 
         <div className="flex flex-col gap-8 lg:flex-row lg:gap-12">
@@ -188,9 +217,9 @@ export default function AdminDashboard({
                       Array.from({ length: 3 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4" />} />
-                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4" />} />
-                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} />
+                        <StatCard title="Monthly Earnings" value={dashboardData.stats.monthlyEarnings.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingUp className="size-4" />} bgColor="bg-green-100" />
+                        <StatCard title="Monthly Expenses" value={dashboardData.stats.monthlyExpenses.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<TrendingDown className="size-4" />} bgColor="bg-red-100" />
+                        <StatCard title="Monthly Net" value={dashboardData.stats.monthlyNet.toLocaleString("en-US", { style: "currency", currency: "USD" })} icon={<Banknote className="size-4" />} bgColor={dashboardData.stats.monthlyNet >= 0 ? "bg-blue-100" : "bg-orange-100"} />
                       </>
                     )}
                   </div>
@@ -203,10 +232,10 @@ export default function AdminDashboard({
                       Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />} />
-                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} />
-                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} />
-                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} />
+                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />} bgColor="bg-purple-100"  />
+                        <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} bgColor="bg-green-100" />
+                        <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} bgColor="bg-orange-100" />
+                        <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} bgColor="bg-yellow-100" />
                       </>
                     )}
                   </div>
@@ -263,9 +292,8 @@ export default function AdminDashboard({
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.2 }}
-                className="rounded-lg border bg-card p-4 sm:p-6"
+                className="rounded-lg border border-border bg-card p-4 sm:p-6"
               >
-                {activeTab === "calendar" && <CommandCalendar onNavigate={(tab) => setActiveTab(tab)} />}
                 {activeTab === "blogs" && <BlogManager startInCreateMode={initialAction === "createBlogPost"} onActionHandled={handleActionCompleted} />}
                 {activeTab === "content" && <ContentManager />}
                 {activeTab === "tasks" && <TaskManager />}

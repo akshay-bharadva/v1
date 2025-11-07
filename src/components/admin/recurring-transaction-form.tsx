@@ -1,6 +1,3 @@
-
-
-
 "use client";
 import { useState, useEffect, FormEvent } from "react";
 import type { RecurringTransaction } from "@/types";
@@ -57,6 +54,7 @@ export default function RecurringTransactionForm({ recurringTransaction, onSucce
       occurrence_day: formData.occurrence_day ? parseInt(formData.occurrence_day) : null,
     };
     
+    // Don't save occurrence_day if it's not relevant for the frequency
     if (dataToSave.frequency === 'daily' || dataToSave.frequency === 'yearly') {
       dataToSave.occurrence_day = null;
     }

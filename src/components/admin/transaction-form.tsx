@@ -1,4 +1,3 @@
-
 "use client";
 import { useState, useEffect, FormEvent } from "react";
 import type { Transaction } from "@/types";
@@ -105,6 +104,7 @@ export default function TransactionForm({
       </div>
       <div>
         <Label htmlFor="category">Category</Label>
+        {/* --- NEW: Input with datalist for suggestions --- */}
         <Input
           id="category"
           value={category}
