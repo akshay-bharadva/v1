@@ -3,6 +3,7 @@
 const repoName = process.env.GITHUB_REPOSITORY ? process.env.GITHUB_REPOSITORY.split('/')[1] : '';
 
 const nextConfig = {
+  output: 'export',
   reactStrictMode: true,
   trailingSlash: true,
   images: {
