@@ -1,33 +1,31 @@
+
+
 import { PropsWithChildren } from "react";
 import Link from "next/link";
-import { BsArrowUpRight } from "react-icons/bs";
+import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 type NotFoundProps = PropsWithChildren;
 
 export default function NotFound({ children }: NotFoundProps) {
-return (
-<section className="my-8 rounded-none border-2 border-black bg-white p-8 py-12 text-center  shadow-[8px_8px_0px_#000]">
-<div className="mx-auto mb-6 w-20 h-20 flex items-center justify-center rounded-none border-2 border-black bg-red-500 text-5xl font-black text-white shadow-[2px_2px_0px_#000]">
-!
-</div>
-<h1 className="mb-3 text-4xl font-black text-black">
-<span className="text-red-600">404</span> | PAGE NOT FOUND
-</h1>
-<p className="mb-4 text-lg leading-relaxed text-gray-700">
-Whoops! Looks like this page took a wrong turn at Albuquerque.
-</p>
-<p className="mb-8 text-gray-700">Let's get you back on track.</p>
+  return (
+    <section className="my-8 rounded-lg bg-blueprint-bg p-8 py-16 text-center">
+      <h1 className="mb-3 font-mono text-6xl font-black text-primary md:text-8xl">
+        404
+      </h1>
+      <h2 className="mb-4 text-3xl font-bold text-foreground">
+        PAGE NOT FOUND
+      </h2>
+      <p className="mb-8 max-w-md mx-auto text-muted-foreground">
+        Looks like you've ventured into uncharted territory. The page you're looking for doesn't exist or has been moved.
+      </p>
 
-{children && <div className="mb-8">{children}</div>}
-  
-  <Link href="/" passHref legacyBehavior>
-    <Button asChild variant="default" size="lg">
-      <a>Go Home <BsArrowUpRight className="ml-1.5 inline" /></a>
-    </Button>
-  </Link>
-</section>
-
-
-);
+      {children && <div className="mb-8">{children}</div>}
+      
+      <Button asChild size="lg">
+        <Link href="/">Return to Homebase <ArrowRight className="ml-1.5 size-4" /></Link>
+      </Button>
+    </section>
+  );
 }
+

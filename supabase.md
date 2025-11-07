@@ -155,6 +155,36 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 These tables power the management tools within the admin dashboard.
 
+#### `events` Table (NEW)
+
+Stores personal calendar events for the Command Calendar.
+```sql
+-- In your Supabase SQL Editor
+CREATE TABLE events (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ,
+  is_all_day BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Enable RLS and add policies (similar to your other tables)
+ALTER TABLE events ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admin can manage their own events"
+ON events FOR ALL
+USING (auth.uid() = user_id)
+WITH CHECK (auth.uid() = user_id);
+
+-- Add the update trigger
+CREATE TRIGGER update_events_updated_at
+BEFORE UPDATE ON events
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+```
+
 #### `notes` Table
 
 ```sql
@@ -279,6 +309,62 @@ FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
 These functions are called from the client to perform specific, safe operations on the database.
 
+#### `get_calendar_data` RPC Function (UPDATED)
+```sql
+-- Creates a function to fetch all items for the calendar view
+CREATE OR REPLACE FUNCTION get_calendar_data(start_date_param date, end_date_param date)
+RETURNS TABLE(
+  item_id UUID,
+  title TEXT,
+  start_time TIMESTAMPTZ,
+  end_time TIMESTAMPTZ,
+  item_type TEXT,
+  data JSONB -- To hold extra info like amount, status, etc.
+) AS $$
+BEGIN
+  RETURN QUERY
+    -- 1. Custom Events
+    SELECT
+      e.id AS item_id,
+      e.title,
+      e.start_time,
+      e.end_time,
+      'event' AS item_type,
+      jsonb_build_object('description', e.description, 'is_all_day', e.is_all_day) AS data
+    FROM events e
+    WHERE e.user_id = auth.uid() AND e.start_time::date BETWEEN start_date_param AND end_date_param
+
+    UNION ALL
+
+    -- 2. Tasks with due dates
+    SELECT
+      t.id AS item_id,
+      t.title,
+      (t.due_date + interval '9 hour')::timestamptz AS start_time, -- Assume tasks are due at 9 AM
+      NULL::timestamptz AS end_time,
+      'task' AS item_type,
+      jsonb_build_object('status', t.status, 'priority', t.priority) AS data
+    FROM tasks t
+    WHERE t.user_id = auth.uid() AND t.due_date BETWEEN start_date_param AND end_date_param
+
+    UNION ALL
+
+    -- 3. Past Transactions
+    SELECT
+      tr.id AS item_id,
+      tr.description AS title,
+      (tr.date + interval '12 hour')::timestamptz AS start_time, -- Assume logged at noon
+      NULL::timestamptz AS end_time,
+      'transaction' AS item_type,
+      -- CORRECTED PAYLOAD WITH FINANCIAL DETAILS
+      jsonb_build_object('amount', tr.amount, 'type', tr.type, 'category', tr.category) AS data
+    FROM transactions tr
+    WHERE tr.user_id = auth.uid() AND tr.date BETWEEN start_date_param AND end_date_param;
+
+END;
+$$ LANGUAGE plpgsql;
+```
+
 ```sql
 -- Safely increments the view count for a given blog post.
 CREATE OR REPLACE FUNCTION increment_blog_post_view (post_id_to_increment UUID)
@@ -343,6 +429,22 @@ CREATE POLICY "Admin can delete files in blog-assets"
 ON storage.objects FOR DELETE
 USING ( bucket_id = 'blog-assets' AND auth.role() = 'authenticated' );
 ```
+---
+### Step 6: Backend Automation (Edge Function) - TODO
+
+To automate recurring transactions, you will need to create a **Supabase Edge Function**.
+
+1.  **Create the Function:** Using the Supabase CLI, run `supabase functions new process-recurring-transactions`.
+2.  **Function Logic:** The function (written in Deno/TypeScript) will query for due recurring transactions, create new entries in the `transactions` table, and then update the `last_processed_date` on the processed rules.
+3.  **Schedule the Function:** In your project's `supabase/config.toml` file, add a cron schedule to run the function daily.
+
+    ```toml
+    # supabase/config.toml
+    [functions.process-recurring-transactions]
+    cron = "0 0 * * *" # Runs every day at midnight UTC
+    ```
+
+---
 
 -- ========= FINANCE V2 SCHEMA UPGRADE =========
 
