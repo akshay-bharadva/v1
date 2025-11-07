@@ -108,7 +108,7 @@ export default function Experience({ children }: ExperienceProps) {
               viewport={{ once: true, amount: 0.3 }}
               transition={{ duration: 0.6, ease: 'easeOut' }}
             >
-              <div className="absolute left-1/2 top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-background bg-border transition-all duration-300 group-hover:bg-primary group-hover:scale-125 group-hover:shadow-[0_0_20px_theme(colors.primary)]" />
+              <div className="absolute left-1/2 top-1/2 z-10 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-background bg-border transition-all duration-300 group-hover:bg-primary group-hover:scale-125" />
               <div
                 className={`w-[calc(50%-2rem)] ${index % 2 === 0 ? 'mr-auto text-right' : 'ml-auto text-left'}`}
               >

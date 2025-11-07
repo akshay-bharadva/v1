@@ -1,5 +1,3 @@
-
-
 "use client";
 import React, { useState, useEffect, useMemo, FormEvent, useCallback } from "react";
 import { supabase } from "@/supabase/client";
@@ -14,12 +12,12 @@ import TransactionForm from "@/components/admin/transaction-form";
 import RecurringTransactionForm from "@/components/admin/recurring-transaction-form";
 import FinancialGoalForm from "@/components/admin/financial-goal-form";
 import { Popover, PopoverContent, PopoverTrigger, } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+// REMOVED a direct import of Calendar here
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, type ChartConfig, } from "@/components/ui/chart";
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis, Pie, PieChart, Cell } from "recharts";
-import { Edit, Trash2, Calendar as CalendarIcon, Search, TrendingUp, TrendingDown, PiggyBank, Target, Plus, Repeat, AlertCircle, } from "lucide-react";
+import { Edit, Trash2, Calendar as CalendarIcon, Search, TrendingUp, TrendingDown, PiggyBank, Target, Plus, Repeat, AlertCircle, Copy } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow, } from "@/components/ui/table";
 import { toast } from "sonner";
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, } from "@/components/ui/dropdown-menu";
@@ -27,6 +25,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { motion } from "framer-motion";
 import { Separator } from "../ui/separator";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../ui/tooltip";
+import { ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger } from "@/components/ui/context-menu";
+import { Menubar, MenubarContent, MenubarItem, MenubarMenu, MenubarTrigger } from "@/components/ui/menubar";
+import dynamic from "next/dynamic";
+
+// DYNAMICALLY IMPORT THE CALENDAR for client-side only rendering
+const Calendar = dynamic(() => import('@/components/ui/calendar').then(mod => mod.Calendar), {
+    ssr: false,
+    loading: () => <div className="p-4">Loading Calendar...</div>
+});
+
 
 const chartConfig = { earning: { label: "Earnings", color: "hsl(var(--chart-2))" }, expense: { label: "Expenses", color: "hsl(var(--chart-5))" } };
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#8884d8", "#82ca9d"];
@@ -206,6 +214,17 @@ export default function FinanceManager() {
     const handleSaveSuccess = () => { loadAllFinancialData(); setDialogState({ type: null }); };
     const handleDelete = async (tableName: string, id: string, message: string) => { if (!confirm(message)) return; const { error } = await supabase.from(tableName).delete().eq("id", id); if (error) { toast.error(`Failed to delete: ${error.message}`); } else { toast.success("Item deleted."); await loadAllFinancialData(); } };
 
+    const handleDuplicateTransaction = (transaction: Transaction) => {
+        const { id, created_at, updated_at, ...duplicatableData } = transaction;
+        const newTransactionData = {
+            ...duplicatableData,
+            date: new Date().toISOString().split('T')[0], // Default to today's date
+            description: `${transaction.description} (Copy)`,
+        };
+        // Open the dialog with this pre-filled data, but without an ID, so it acts as a "new" transaction
+        setDialogState({ type: "transaction", data: newTransactionData });
+    };
+
     const handleAddFunds = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -246,7 +265,30 @@ export default function FinanceManager() {
 
     return (
         <div className="space-y-6">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"><div><h2 className="text-2xl font-bold">Finance Command Center</h2><p className="text-muted-foreground">Strategic overview, planning, and transaction management.</p></div><div className="flex flex-wrap gap-2"><Button onClick={() => setDialogState({ type: "goal" })}> <Target className="mr-2 size-4" /> New Goal</Button><Button onClick={() => setDialogState({ type: "recurring" })}> <Repeat className="mr-2 size-4" /> New Recurring</Button><Button onClick={() => setDialogState({ type: "transaction" })}> <Plus className="mr-2 size-4" /> New Transaction</Button></div></div>
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <div><h2 className="text-2xl font-bold">Finance Command Center</h2><p className="text-muted-foreground">Strategic overview, planning, and transaction management.</p></div>
+                <Menubar>
+                    <MenubarMenu>
+                        <MenubarTrigger>
+                            {/* <Button variant="outline"> */}
+                            <Plus className="size-4" />
+                            {/* New Entry */}
+                            {/* </Button> */}
+                        </MenubarTrigger>
+                        <MenubarContent>
+                            <MenubarItem onSelect={() => setDialogState({ type: "transaction" })}>
+                                <Plus className="mr-2 size-4" /> New Transaction
+                            </MenubarItem>
+                            <MenubarItem onSelect={() => setDialogState({ type: "recurring" })}>
+                                <Repeat className="mr-2 size-4" /> New Recurring
+                            </MenubarItem>
+                            <MenubarItem onSelect={() => setDialogState({ type: "goal" })}>
+                                <Target className="mr-2 size-4" /> New Goal
+                            </MenubarItem>
+                        </MenubarContent>
+                    </MenubarMenu>
+                </Menubar>
+            </div>
             <Tabs defaultValue="dashboard">
                 <TabsList className="grid w-full grid-cols-5"><TabsTrigger value="dashboard">Dashboard</TabsTrigger><TabsTrigger value="transactions">Transactions</TabsTrigger><TabsTrigger value="recurring">Recurring</TabsTrigger><TabsTrigger value="goals">Goals</TabsTrigger><TabsTrigger value="analytics">Analytics</TabsTrigger></TabsList>
                 {/* Dashboard Tab */}
@@ -275,7 +317,30 @@ export default function FinanceManager() {
                 </TabsContent>
                 <TabsContent value="transactions" className="mt-6 space-y-4">
                     <Card><CardContent className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center"><div className="relative flex-grow"><Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" /><Input placeholder="Search descriptions..." className="pl-10" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} /></div><Popover><PopoverTrigger asChild><Button variant="outline" className="w-full justify-start text-left font-normal sm:w-auto"><CalendarIcon className="mr-2 size-4" />{date?.from ? (date.to ? `${format(date.from, "LLL dd, y")} - ${format(date.to, "LLL dd, y")}` : format(date.from, "LLL dd, y")) : <span>Pick a date range</span>}</Button></PopoverTrigger><PopoverContent className="w-auto p-0" align="start"><Calendar initialFocus mode="range" defaultMonth={date?.from} selected={date} onSelect={setDate} numberOfMonths={2} /></PopoverContent></Popover></CardContent></Card>
-                    <Card><Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Description</TableHead><TableHead>Category</TableHead><TableHead className="text-right">Amount</TableHead><TableHead className="w-[100px] text-center">Actions</TableHead></TableRow></TableHeader><TableBody>{filteredTransactions.length > 0 ? (filteredTransactions.map((t) => (<TableRow key={t.id}><TableCell>{format(new Date(t.date), "MMM dd, yyyy")}</TableCell><TableCell className="font-medium">{t.description}</TableCell><TableCell>{t.category || "–"}</TableCell><TableCell className={`text-right font-bold ${t.type === "earning" ? "text-green-600" : "text-red-600"}`}>{t.type === "earning" ? "+" : "-"}${t.amount.toFixed(2)}</TableCell><TableCell className="text-center"><Button variant="ghost" size="icon" className="size-8" onClick={() => setDialogState({ type: "transaction", data: t })}><Edit className="size-4" /></Button><Button variant="ghost" size="icon" className="size-8 hover:bg-destructive/10 hover:text-destructive" onClick={() => handleDelete("transactions", t.id, "Are you sure you want to delete this transaction?")}><Trash2 className="size-4" /></Button></TableCell></TableRow>))) : (<TableRow><TableCell colSpan={5} className="h-24 text-center">No transactions found for the selected filters.</TableCell></TableRow>)}</TableBody></Table></Card>
+                    <Card><Table><TableHeader><TableRow><TableHead>Date</TableHead><TableHead>Description</TableHead><TableHead>Category</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader><TableBody>{filteredTransactions.length > 0 ? (filteredTransactions.map((t) => (
+                        <ContextMenu key={t.id}>
+                            <ContextMenuTrigger asChild>
+                                <TableRow>
+                                    <TableCell>{format(new Date(t.date), "MMM dd, yyyy")}</TableCell>
+                                    <TableCell className="font-medium">{t.description}</TableCell>
+                                    <TableCell>{t.category || "–"}</TableCell>
+                                    <TableCell className={`text-right font-bold ${t.type === "earning" ? "text-green-600" : "text-red-600"}`}>{t.type === "earning" ? "+" : "-"}${t.amount.toFixed(2)}</TableCell>
+                                </TableRow>
+                            </ContextMenuTrigger>
+                            <ContextMenuContent className="w-48">
+                                <ContextMenuItem onSelect={() => setDialogState({ type: "transaction", data: t })}>
+                                    <Edit className="mr-2 size-4" /> Edit
+                                </ContextMenuItem>
+                                <ContextMenuItem onSelect={() => handleDuplicateTransaction(t)}>
+                                    <Copy className="mr-2 size-4" /> Duplicate
+                                </ContextMenuItem>
+                                <ContextMenuSeparator />
+                                <ContextMenuItem className="text-destructive focus:bg-destructive/10 focus:text-destructive" onSelect={() => handleDelete("transactions", t.id, "Are you sure you want to delete this transaction?")}>
+                                    <Trash2 className="mr-2 size-4" /> Delete
+                                </ContextMenuItem>
+                            </ContextMenuContent>
+                        </ContextMenu>
+                    ))) : (<TableRow><TableCell colSpan={4} className="h-24 text-center">No transactions found for the selected filters.</TableCell></TableRow>)}</TableBody></Table></Card>
                 </TabsContent>
                 <TabsContent value="recurring">
                     <Card><CardHeader><CardTitle>Recurring Transactions</CardTitle><CardDescription>Automate your regular income and expenses to forecast cash flow. Due transactions are logged automatically.</CardDescription></CardHeader>
@@ -293,7 +358,7 @@ export default function FinanceManager() {
             </Tabs>
             <Dialog open={!!dialogState.type} onOpenChange={(open) => !open && setDialogState({ type: null })}>
                 <DialogContent>
-                    {dialogState.type === 'transaction' && (<><DialogHeader><DialogTitle>{dialogState.data ? "Edit" : "Add"} Transaction</DialogTitle></DialogHeader><TransactionForm transaction={dialogState.data} onSuccess={handleSaveSuccess} /></>)}
+                    {dialogState.type === 'transaction' && (<><DialogHeader><DialogTitle>{dialogState.data?.id ? "Edit" : "Add"} Transaction</DialogTitle></DialogHeader><TransactionForm transaction={dialogState.data} onSuccess={handleSaveSuccess} /></>)}
                     {dialogState.type === 'recurring' && (<><DialogHeader><DialogTitle>{dialogState.data ? "Edit" : "Create"} Recurring Rule</DialogTitle></DialogHeader><RecurringTransactionForm recurringTransaction={dialogState.data} onSuccess={handleSaveSuccess} /></>)}
                     {dialogState.type === 'goal' && (<><DialogHeader><DialogTitle>{dialogState.data ? "Edit" : "Create"} Financial Goal</DialogTitle></DialogHeader><FinancialGoalForm goal={dialogState.data} onSuccess={handleSaveSuccess} /></>)}
                     {dialogState.type === 'addFunds' && (<><DialogHeader><DialogTitle>Add Funds to "{dialogState.data?.name}"</DialogTitle></DialogHeader><form onSubmit={handleAddFunds} className="space-y-4 pt-4"><div><Label htmlFor="add-funds-amount">Amount</Label><Input id="add-funds-amount" name="amount" type="number" step="1" required autoFocus /></div><div className="flex justify-end gap-2"><DialogClose asChild><Button type="button" variant="ghost">Cancel</Button></DialogClose><Button type="submit">Confirm Contribution</Button></div></form></>)}

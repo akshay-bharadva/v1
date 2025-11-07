@@ -26,6 +26,11 @@ This repository contains the source code for my personal portfolio and blog, com
 - **Secure Authentication:**
   - Email/Password login powered by Supabase Auth.
   - **Mandatory Two-Factor Authentication (MFA/TOTP)** for admin access, ensuring high security.
+- **Command Calendar (New!):**
+  - A unified, interactive calendar view serving as the primary operational dashboard.
+  - Visualizes task deadlines, personal events, and past financial transactions.
+  - **30-Day Cash Flow Forecasting:** Automatically projects future income and expenses from recurring rules onto the calendar.
+  - Demonstrates complex data integration and a user-centric workflow.
 - **Comprehensive Dashboard:**
   - At-a-glance statistics: Monthly earnings/expenses, task progress, total notes, and blog views.
   - Quick access to recently updated blog posts and pinned notes.
@@ -41,7 +46,8 @@ This repository contains the source code for my personal portfolio and blog, com
 - **Personal Management Tools:**
   - **Task Manager:** A Kanban-style board to track tasks with sub-task support, priorities, and due dates.
   - **Notes Manager:** A simple, effective tool for personal notes with pinning functionality.
-  - **Finance Tracker:** Log earnings and expenses and view monthly/yearly summaries.
+  - **Finance Tracker:** Log earnings/expenses, manage recurring transactions, and view monthly/yearly summaries.
+  - **Backend Automation:** Recurring transactions are processed automatically into the ledger via a daily scheduled serverless function.
 - **Security Settings:**
   - Manage MFA authenticators.
   - Securely change the admin account password.

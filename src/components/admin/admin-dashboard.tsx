@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useEffect } from "react";
@@ -14,11 +13,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Banknote, BookText, CheckCircle, ChevronDown, Eye, LayoutTemplate, ListTodo, Lock, LogOut, TrendingDown, TrendingUp, StickyNote, ExternalLink } from "lucide-react";
+import { Banknote, BookText, CheckCircle, ChevronDown, Eye, LayoutTemplate, ListTodo, Lock, LogOut, TrendingDown, TrendingUp, StickyNote, ExternalLink, Calendar as CalendarIcon } from "lucide-react";
 import Link from "next/link";
 import { DashboardData } from "@/pages/admin/dashboard";
 import { Skeleton } from "../ui/skeleton";
 import { FaChartLine } from "react-icons/fa";
+import CommandCalendar from "./CommandCalendar";
 
 interface AdminDashboardProps {
   onLogout: () => void;
@@ -26,10 +26,11 @@ interface AdminDashboardProps {
 }
 
 type ActiveTab =
+  | "dashboard"
+  | "calendar"
   | "blogs"
   | "content"
   | "security"
-  | "dashboard"
   | "tasks"
   | "notes"
   | "finance";
@@ -39,7 +40,7 @@ export default function AdminDashboard({
   onLogout,
   dashboardData,
 }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<ActiveTab>("dashboard");
+  const [activeTab, setActiveTab] = useState<ActiveTab>("calendar");
   const [isMfaEnabled, setIsMfaEnabled] = useState(false);
   const [initialAction, setInitialAction] = useState<InitialAction>(null);
 
@@ -55,6 +56,7 @@ export default function AdminDashboard({
   const tabs = [
     { id: "dashboard", label: "Overview", icon: <FaChartLine className="size-4" /> },
     { id: "blogs", label: "Blog", icon: <BookText className="size-4" /> },
+    { id: "calendar", label: "Calendar", icon: <CalendarIcon className="size-4" /> },
     { id: "content", label: "Content", icon: <LayoutTemplate className="size-4" /> },
     { id: "tasks", label: "Tasks", icon: <ListTodo className="size-4" /> },
     { id: "notes", label: "Notes", icon: <StickyNote className="size-4" /> },
@@ -65,7 +67,7 @@ export default function AdminDashboard({
   const handleActionCompleted = () => {
     setInitialAction(null);
   };
-  
+
   const activeTabInfo = tabs.find((tab) => tab.id === activeTab);
 
   const StatCard: React.FC<{
@@ -201,7 +203,7 @@ export default function AdminDashboard({
                       Array.from({ length: 4 }).map((_, i) => <Skeleton key={i} className="h-28 w-full" />)
                     ) : (
                       <>
-                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />}  />
+                        <StatCard title="Pending Tasks" value={dashboardData.stats.pendingTasks} icon={<ListTodo className="size-4" />} />
                         <StatCard title="Tasks Done (Week)" value={dashboardData.stats.tasksCompletedThisWeek} icon={<CheckCircle className="size-4" />} />
                         <StatCard title="Total Notes" value={dashboardData.stats.totalNotes} icon={<StickyNote className="size-4" />} />
                         <StatCard title="Total Blog Views" value={dashboardData.stats.totalBlogViews} icon={<Eye className="size-4" />} />
@@ -263,6 +265,7 @@ export default function AdminDashboard({
                 transition={{ duration: 0.2 }}
                 className="rounded-lg border bg-card p-4 sm:p-6"
               >
+                {activeTab === "calendar" && <CommandCalendar onNavigate={(tab) => setActiveTab(tab)} />}
                 {activeTab === "blogs" && <BlogManager startInCreateMode={initialAction === "createBlogPost"} onActionHandled={handleActionCompleted} />}
                 {activeTab === "content" && <ContentManager />}
                 {activeTab === "tasks" && <TaskManager />}
