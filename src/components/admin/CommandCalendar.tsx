@@ -4,7 +4,7 @@ import { supabase } from "@/supabase/client";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
-import interactionPlugin, { EventDragStopArg } from "@fullcalendar/interaction";
+import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg, DateSelectArg, EventInput, EventContentArg, EventDropArg } from "@fullcalendar/core";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
@@ -15,9 +15,9 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 import { addDays, addWeeks, isAfter, isBefore, isSameDay, nextDay, setDate, addMonths, addYears, formatISO } from "date-fns";
 import type { RecurringTransaction } from "@/types";
-import { Banknote, Calendar as CalendarIcon, CheckSquare, Edit, ListTodo, Loader2 } from "lucide-react";
+import { Banknote, CheckSquare, Edit, ListTodo, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverTrigger, PopoverAnchor } from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 
 type CalendarItem = {
@@ -29,7 +29,6 @@ type CalendarItem = {
     data: any;
 };
 
-// ... (getNextOccurrence function remains the same)
 const getNextOccurrence = (cursor: Date, rule: RecurringTransaction): Date => {
     let next = new Date(cursor);
     switch (rule.frequency) {
@@ -58,6 +57,11 @@ const mapItemToCalendarEvent = (item: CalendarItem): EventInput => {
 const CalendarPopoverContent: React.FC<{ event: EventInput; onEdit: () => void; onNavigate: (tab: any) => void; }> = ({ event, onEdit, onNavigate }) => {
     const { type, transactionType, amount, status, priority, description } = event.extendedProps || {};
     
+    // Determine sign and color for financial items
+    const isEarning = transactionType === 'earning';
+    const sign = isEarning ? '+' : '-';
+    const amountColor = isEarning ? 'text-green-500' : 'text-red-500';
+
     return (
         <PopoverContent className="w-80">
             <div className="space-y-4">
@@ -74,7 +78,12 @@ const CalendarPopoverContent: React.FC<{ event: EventInput; onEdit: () => void; 
                     {(type === 'transaction' || type === 'forecast') && (
                         <>
                             <p><strong>Type:</strong> <span className="capitalize">{transactionType}</span></p>
-                            <p><strong>Amount:</strong> ${amount?.toFixed(2)}</p>
+                            <p>
+                                <strong>Amount:</strong>{' '}
+                                <span className={cn("font-semibold", amountColor)}>
+                                    {sign}${amount?.toFixed(2)}
+                                </span>
+                            </p>
                         </>
                     )}
                 </div>
@@ -93,7 +102,14 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
     const [events, setEvents] = useState<EventInput[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [dialogState, setDialogState] = useState<{ open: boolean, data?: any, isNew: boolean }>({ open: false, isNew: false });
-    const [popoverState, setPopoverState] = useState<{ open: boolean, target: HTMLElement | null, event: EventInput | null }>({ open: false, target: null, event: null });
+    const [popoverState, setPopoverState] = useState<{ open: boolean, anchorProps: React.CSSProperties, event: EventInput | null }>({
+        open: false,
+        anchorProps: { display: 'none' },
+        event: null,
+    });
+
+    const calendarContainerRef = useRef<HTMLDivElement>(null);
+    const calendarApiRef = useRef<FullCalendar | null>(null);
 
     const [eventFormData, setEventFormData] = useState({
         id: '', title: '', description: '', start_time: '', end_time: '', is_all_day: false
@@ -149,7 +165,7 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
     }, []);
 
     const handleDateSelect = (selectInfo: DateSelectArg) => {
-        setPopoverState({ open: false, target: null, event: null });
+        setPopoverState({ open: false, anchorProps: { display: 'none' }, event: null });
         setEventFormData({
             id: '', title: '', description: '',
             start_time: formatISO(selectInfo.start).slice(0, 16),
@@ -160,10 +176,21 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
     };
 
     const handleEventClick = (clickInfo: EventClickArg) => {
-        clickInfo.jsEvent.preventDefault(); // Prevent default browser action
+        clickInfo.jsEvent.preventDefault();
+        const calendarEl = calendarContainerRef.current;
+        if (!calendarEl) return;
+
+        const eventEl = clickInfo.el;
+        const containerRect = calendarEl.getBoundingClientRect();
+        const eventRect = eventEl.getBoundingClientRect();
+
+        // Position the anchor in the middle of the event element.
+        const top = eventRect.top - containerRect.top + eventRect.height / 2;
+        const left = eventRect.left - containerRect.left + eventRect.width / 2;
+        
         setPopoverState({
             open: true,
-            target: clickInfo.el,
+            anchorProps: { position: 'absolute', top: `${top}px`, left: `${left}px` },
             event: clickInfo.event as EventInput
         });
     };
@@ -195,7 +222,7 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
             toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} rescheduled successfully.`);
         }
     };
-    
+
     const handleEventFormSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const dataToSave = {
@@ -211,8 +238,10 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
         } else {
             toast.success(`Event ${dialogState.isNew ? 'created' : 'updated'} successfully.`);
             setDialogState({ open: false, isNew: false });
-            const calendarApi = (document.querySelector('.fc') as any)?.__fullCalendar;
-            if(calendarApi) loadCalendarData(calendarApi.view.currentStart, calendarApi.view.currentEnd);
+            const api = calendarApiRef.current?.getApi();
+            if (api) {
+                loadCalendarData(api.view.currentStart, api.view.currentEnd);
+            }
         }
     };
 
@@ -224,9 +253,28 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
         } else {
             toast.success("Event deleted.");
             setDialogState({ open: false, isNew: false });
-            const calendarApi = (document.querySelector('.fc') as any)?.__fullCalendar;
-            if(calendarApi) loadCalendarData(calendarApi.view.currentStart, calendarApi.view.currentEnd);
+            const api = calendarApiRef.current?.getApi();
+            if (api) {
+                loadCalendarData(api.view.currentStart, api.view.currentEnd);
+            }
         }
+    };
+
+    const handleEditClick = () => {
+        const eventToEdit = popoverState.event;
+        if (!eventToEdit) return;
+
+        setEventFormData({
+            id: eventToEdit.id!,
+            title: eventToEdit.title!,
+            description: eventToEdit.extendedProps.description || '',
+            start_time: eventToEdit.start ? formatISO(new Date(eventToEdit.start)).slice(0, 16) : '',
+            end_time: eventToEdit.end ? formatISO(new Date(eventToEdit.end)).slice(0, 16) : '',
+            is_all_day: !!eventToEdit.allDay,
+        });
+
+        setPopoverState({ open: false, anchorProps: { display: 'none' }, event: null });
+        setDialogState({ open: true, isNew: false });
     };
 
     const renderEventContent = (eventInfo: EventContentArg) => {
@@ -246,7 +294,7 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
 
         if (type === 'transaction' || type === 'forecast') {
             const isForecast = type === 'forecast';
-            const isEarning = isForecast ? transactionType === 'earning' : eventInfo.event.extendedProps.transactionType === 'earning';
+            const isEarning = transactionType === 'earning';
             const sign = isEarning ? '+' : '-';
             const amountColor = isEarning ? 'text-green-400' : 'text-red-400';
             const iconColor = isEarning ? 'bg-green-400' : 'bg-red-400';
@@ -264,15 +312,27 @@ export default function CommandCalendar({ onNavigate }: { onNavigate: (tab: any)
     };
 
     return (
-        <div className="relative rounded-lg border bg-card p-4">
+        <div ref={calendarContainerRef} className="relative rounded-lg border bg-card p-4">
             {isLoading && <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/80 backdrop-blur-sm"><Loader2 className="size-6 animate-spin" /></div>}
             
-            <Popover open={popoverState.open} onOpenChange={(open) => setPopoverState({ ...popoverState, open })}>
-                <PopoverAnchor asChild>{popoverState.target && <div style={{ top: popoverState.target.offsetTop, left: popoverState.target.offsetLeft, position: 'absolute' }}/>}</PopoverAnchor>
-                {popoverState.event && <CalendarPopoverContent event={popoverState.event} onEdit={() => { setPopoverState({open: false, target: null, event: null}); setDialogState({open: true, isNew: false}); }} onNavigate={(tab) => { setPopoverState({ open: false, target: null, event: null }); onNavigate(tab); }} />}
+            <Popover open={popoverState.open} onOpenChange={(open) => {
+                if (!open) {
+                    setPopoverState({ open: false, anchorProps: { display: 'none' }, event: null });
+                }
+            }}>
+                <PopoverAnchor style={popoverState.anchorProps} />
+                {popoverState.event && <CalendarPopoverContent 
+                    event={popoverState.event} 
+                    onEdit={handleEditClick} 
+                    onNavigate={(tab) => { 
+                        setPopoverState({ open: false, anchorProps: { display: 'none' }, event: null }); 
+                        onNavigate(tab); 
+                    }} 
+                />}
             </Popover>
 
             <FullCalendar
+                ref={calendarApiRef}
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 headerToolbar={{ left: "prev,next today", center: "title", right: "dayGridMonth,timeGridWeek,timeGridDay" }}
                 initialView="dayGridMonth"
