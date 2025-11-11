@@ -1,5 +1,3 @@
-https://drive.google.com/file/d/12HJoxyiScUKGz052lVgv9wBKPd1UQ4Jy/view?usp=sharing, https://drive.google.com/file/d/14pt7ExrFd9sCeRPNBen5_-jU4RorYnZx/view?usp=sharing, https://drive.google.com/file/d/15q6Hb2rIHM2mQxvDb1dxNGiJiA3LYK63/view?usp=sharing, https://aistudio.google.com/app/prompts?state=%7B%22ids%22:%5B%221GeY-OUJY_jEYRQN9PePe1qbG0tfDDCl6%22%5D,%22action%22:%22open%22,%22userId%22:%22103578590830524399760%22,%22resourceKeys%22:%7B%7D%7D&usp=sharing, https://drive.google.com/file/d/1nK_mX_rwwu0GobTmResefpDQA9By-_zB/view?usp=sharing, https://drive.google.com/file/d/1xl-yk-YGzqcdk3tji4xi-kmbYVmCarZB/view?usp=sharing
-
 # Personal Portfolio
 
 This repository contains the source code for my personal portfolio and blog, completely redesigned with a minimalist dark theme. It's a full-stack application built with Next.js and Supabase, featuring a comprehensive, secure admin panel for content management.
