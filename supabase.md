@@ -552,3 +552,98 @@ ALTER TABLE recurring_transactions
 ADD COLUMN IF NOT EXISTS occurrence_day INT;
 
 -- ========= END OF SCRIPT =========
+
+-- ========= KNOWLEDGE HUB SCHEMA =========
+
+-- Step 1: Create the Subject table (high-level categories)
+CREATE TABLE learning_subjects (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+  name TEXT NOT NULL UNIQUE,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE learning_subjects ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admin can manage their own subjects" ON learning_subjects FOR ALL
+USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE TRIGGER update_learning_subjects_updated_at BEFORE UPDATE ON learning_subjects
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+
+-- Step 2: Create the Topic table (specific items to learn)
+CREATE TYPE learning_status AS ENUM ('To Learn', 'Learning', 'Practicing', 'Mastered');
+
+CREATE TABLE learning_topics (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+  subject_id UUID REFERENCES learning_subjects(id) ON DELETE CASCADE,
+  title TEXT NOT NULL,
+  status learning_status DEFAULT 'To Learn',
+  core_notes TEXT, -- The main, persistent notes for the topic
+  resources JSONB, -- To store an array of {name: string, url: string}
+  confidence_score INT2 CHECK (confidence_score BETWEEN 1 AND 5),
+  created_at TIMESTAMPTZ DEFAULT now(),
+  updated_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE learning_topics ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admin can manage their own topics" ON learning_topics FOR ALL
+USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+CREATE TRIGGER update_learning_topics_updated_at BEFORE UPDATE ON learning_topics
+FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+
+-- Step 3: Create the Learning Sessions table (timed entries)
+CREATE TABLE learning_sessions (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE DEFAULT auth.uid(),
+  topic_id UUID NOT NULL REFERENCES learning_topics(id) ON DELETE CASCADE,
+  start_time TIMESTAMPTZ NOT NULL,
+  end_time TIMESTAMPTZ,
+  duration_minutes INT, -- Calculated on stop
+  journal_notes TEXT, -- Ephemeral notes for this specific session
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+ALTER TABLE learning_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Admin can manage their own sessions" ON learning_sessions FOR ALL
+USING (auth.uid() = user_id) WITH CHECK (auth.uid() = user_id);
+
+
+-- Step 4: Create RPC function for the heatmap
+CREATE OR REPLACE FUNCTION get_learning_heatmap_data(start_date DATE, end_date DATE)
+RETURNS TABLE(day DATE, total_minutes INT) AS $$
+BEGIN
+  RETURN QUERY
+    SELECT
+      DATE(s.start_time AT TIME ZONE 'UTC') AS day,
+      COALESCE(SUM(s.duration_minutes), 0)::INT AS total_minutes
+    FROM learning_sessions s
+    WHERE s.user_id = auth.uid()
+      AND s.start_time AT TIME ZONE 'UTC' >= start_date
+      AND s.start_time AT TIME ZONE 'UTC' <= end_date
+    GROUP BY day
+    ORDER BY day;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ========= END KNOWLEDGE HUB SCHEMA =========
+
+
+ALTER TABLE learning_topics
+ADD COLUMN IF NOT EXISTS review_interval INT;
+
+
+-- ========= REVERT KNOWLEDGE HUB V2 (SPACED REPETITION) =========
+
+-- Step 1: Remove the review_interval column from the learning_topics table.
+ALTER TABLE learning_topics
+DROP COLUMN IF EXISTS review_interval;
+
+-- NOTE: This does NOT delete any tasks that were already created.
+-- You can manually delete them from the Task Manager or run the following SQL:
+-- DELETE FROM tasks WHERE title LIKE 'Review:%';
+
+-- ========= END OF SCRIPT =========
