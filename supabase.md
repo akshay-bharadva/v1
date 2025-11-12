@@ -647,3 +647,43 @@ DROP COLUMN IF EXISTS review_interval;
 -- DELETE FROM tasks WHERE title LIKE 'Review:%';
 
 -- ========= END OF SCRIPT =========
+
+-- ========= CATEGORY MANAGEMENT RPC FUNCTIONS =========
+
+-- RPC function to rename a category across all transactions for the user.
+CREATE OR REPLACE FUNCTION rename_transaction_category(
+    old_name TEXT,
+    new_name TEXT
+)
+RETURNS void AS $$
+BEGIN
+    UPDATE transactions
+    SET category = new_name
+    WHERE user_id = auth.uid() AND category = old_name;
+END;
+$$ LANGUAGE plpgsql;
+
+-- RPC function to merge a source category into a target category.
+CREATE OR REPLACE FUNCTION merge_transaction_categories(
+    source_name TEXT,
+    target_name TEXT
+)
+RETURNS void AS $$
+BEGIN
+    UPDATE transactions
+    SET category = target_name
+    WHERE user_id = auth.uid() AND category = source_name;
+END;
+$$ LANGUAGE plpgsql;
+
+-- RPC function to remove a category tag from all transactions (set to null).
+CREATE OR REPLACE FUNCTION delete_transaction_category(
+    category_name TEXT
+)
+RETURNS void AS $$
+BEGIN
+    UPDATE transactions
+    SET category = NULL
+    WHERE user_id = auth.uid() AND category = category_name;
+END;
+$$ LANGUAGE plpgsql;
