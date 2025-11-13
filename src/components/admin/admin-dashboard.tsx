@@ -56,8 +56,7 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
 
   const [activeLearningSession, setActiveLearningSession] = useState<LearningSession | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [learningTopics, setLearningTopics] = useState<LearningTopic[]>([]);
-
+const [learningTopics, setLearningTopics] = useState<Pick<LearningTopic, "id" | "title">[]>([]);
   // **NEW**: Restore session from localStorage on initial load
   useEffect(() => {
     try {

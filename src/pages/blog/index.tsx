@@ -18,6 +18,7 @@ import { formatDate } from "@/lib/utils";
 import { Eye, Clock, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import Image from "next/image";
 
 const calculateReadTime = (content: string = ""): number => {
   const wordsPerMinute = 225;
@@ -118,7 +119,7 @@ export default function BlogIndexPage() {
                   <Card className="overflow-hidden transition-all duration-300 hover:border-accent hover:shadow-lg md:flex">
                     {post.cover_image_url && (
                       <div className="md:w-1/3 overflow-hidden">
-                        <img
+                        <Image
                           src={post.cover_image_url}
                           alt={`Cover image for ${post.title}`}
                           className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105 md:h-full"

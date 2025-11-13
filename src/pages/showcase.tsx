@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/supabase/client";
 import { cn } from "@/lib/utils";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import Image from "next/image";
 
 const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
   const isTimelineItem = item.subtitle && /\d{4}/.test(item.subtitle);
@@ -21,7 +22,7 @@ const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
     <Card className="group relative flex h-full flex-col overflow-hidden bg-card/50 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
       {item.image_url && (
         <div className="relative aspect-[16/9] w-full overflow-hidden border-b bg-muted">
-          <img 
+          <Image 
             src={item.image_url} 
             alt={item.title} 
             className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" 
