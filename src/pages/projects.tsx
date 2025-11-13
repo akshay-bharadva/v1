@@ -1,6 +1,6 @@
 
-import Layout from "@/components/layout";
-import ProjectsComponent from "@/components/projects";
+import Layout from "@/components/layout/Layout";
+import ProjectsComponent from "@/components/features/projects/Projects";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
 

@@ -5,16 +5,11 @@ import React, { useEffect, useState } from "react";
 import { supabase } from "@/supabase/client";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
-import { Button } from "@/components/ui/button";
 import { Loader2, Smartphone, Copy, Eye, EyeOff } from "lucide-react";
 import { config } from "@/lib/config";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import Image from "next/image";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/InputOtp";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
 
 export default function SupabaseMFASetup() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");
@@ -171,7 +166,7 @@ export default function SupabaseMFASetup() {
               </p>
               {qrCodeUrl ? (
                 <div className="flex justify-center rounded-lg bg-white p-2">
-                  <Image src={qrCodeUrl} alt="QR Code for MFA setup" className="size-48" />
+                  <img src={qrCodeUrl} alt="QR Code for MFA setup" className="size-48" />
                 </div>
               ) : (
                 <div className="flex h-48 items-center justify-center rounded-lg bg-secondary">
@@ -219,11 +214,11 @@ export default function SupabaseMFASetup() {
                 </div>
 
                 <AnimatePresence>
-                   {error && (
-                      <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-                         <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
-                      </motion.div>
-                   )}
+                  {error && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
+                      <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
+                    </motion.div>
+                  )}
                 </AnimatePresence>
 
                 <div className="flex flex-col gap-3 sm:flex-row-reverse">

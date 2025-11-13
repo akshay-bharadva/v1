@@ -1,5 +1,5 @@
-import SupabaseMFASetup from "@/components/admin/auth/SupabaseMFASetup";
-import Layout from "@/components/layout";
+import SupabaseMFASetup from "@/components/features/admin/auth/Supabasemfasetup";
+import Layout from "@/components/layout/Layout";
 
 export default function AdminMFASetupPage() {
   return (

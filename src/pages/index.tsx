@@ -6,14 +6,14 @@ This file is heavily redesigned to create a more engaging and professional homep
 - The `Newsletter` section is visually enhanced.
 - A new animated background element is added via the Layout component for a dynamic feel.
 */
-import Layout from "@/components/layout";
-import Projects from "@/components/projects";
+import Layout from "@/components/layout/Layout";
+import Projects from "@/components/features/projects/Projects";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
 import { useEffect } from "react";
-import Hero from "@/components/hero";
-import Experience from "@/components/experience";
-import Newsletter from "@/components/newsletter";
+import Hero from "@/components/features/home/Hero";
+import Experience from "@/components/features/experience/Experience";
+import Newsletter from "@/components/features/home/Newsletter";
 
 export default function HomePage() {
   const { site: siteConfig } = appConfig;

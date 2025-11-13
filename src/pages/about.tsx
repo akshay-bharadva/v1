@@ -1,12 +1,12 @@
 
 
-import Layout from "@/components/layout";
-import Technology from "@/components/technology";
-import Tools from "@/components/tools";
+import Layout from "@/components/layout/Layout";
+import Technology from "@/components/features/about/Technology";
+import Tools from "@/components/features/about/Tools";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
 import { motion } from "framer-motion";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
 
 export default function AboutPage() {
   const { site: siteConfig } = appConfig;

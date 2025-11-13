@@ -284,7 +284,7 @@ export default function BlogEditor({
                     accept="image/*"
                     onChange={(e) => onFileSelected(e, true)}
                   />
-                  {formData.cover_image_url && <Image src={formData.cover_image_url} alt="Cover preview" className="mt-2 max-h-40 w-full rounded-md border object-contain" />}
+                  {formData.cover_image_url && <img src={formData.cover_image_url} alt="Cover preview" className="mt-2 max-h-40 w-full rounded-md border object-contain" />}
                   {errors.cover_image_url && <p className="mt-1 text-xs text-destructive">{errors.cover_image_url}</p>}
                 </div>
               </div>

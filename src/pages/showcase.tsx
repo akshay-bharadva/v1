@@ -1,18 +1,18 @@
-import Layout from "@/components/layout";
+import Layout from "@/components/layout/Layout";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
-import type { PortfolioSection, PortfolioItem } from "@/types";
+import type { PortfolioSection, PortfolioItem } from "@/types/index";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
 import { ArrowUpRight, Calendar, Loader2, AlertTriangle } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { supabase } from "@/supabase/client";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import Image from "next/image";
 
 const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
@@ -22,10 +22,10 @@ const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
     <Card className="group relative flex h-full flex-col overflow-hidden bg-card/50 transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-lg hover:shadow-primary/10">
       {item.image_url && (
         <div className="relative aspect-[16/9] w-full overflow-hidden border-b bg-muted">
-          <Image 
-            src={item.image_url} 
-            alt={item.title} 
-            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105" 
+          <img
+            src={item.image_url}
+            alt={item.title}
+            className="h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
         </div>
@@ -43,9 +43,9 @@ const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
             )}
           </div>
           {item.link_url && (
-             <div className="rounded-full bg-secondary/50 p-2 text-secondary-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                <ArrowUpRight className="size-4" />
-             </div>
+            <div className="rounded-full bg-secondary/50 p-2 text-secondary-foreground opacity-0 transition-opacity group-hover:opacity-100">
+              <ArrowUpRight className="size-4" />
+            </div>
           )}
         </div>
       </CardHeader>
@@ -127,9 +127,9 @@ export default function ShowcasePage() {
       </Head>
 
       <main className="py-16 md:py-24">
-        <motion.header 
-           initial="hidden" animate="visible" variants={fadeInUp}
-           className="container mx-auto mb-24 max-w-4xl px-4 text-center"
+        <motion.header
+          initial="hidden" animate="visible" variants={fadeInUp}
+          className="container mx-auto mb-24 max-w-4xl px-4 text-center"
         >
           <h1 className="text-5xl font-black tracking-tighter md:text-7xl">
             Showcase.
@@ -155,7 +155,7 @@ export default function ShowcasePage() {
           )}
 
           {!loading && !error && sections.map((section, index) => (
-            <motion.section 
+            <motion.section
               key={section.id}
               initial="hidden"
               whileInView="visible"
@@ -163,22 +163,22 @@ export default function ShowcasePage() {
               variants={staggerContainer}
             >
               <motion.div variants={fadeInUp} className="mb-12 flex items-baseline gap-4 border-b pb-4">
-                 <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/5 text-lg font-bold text-primary font-mono">
-                    {String(index + 1).padStart(2, '0')}
-                 </span>
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-primary/5 text-lg font-bold text-primary font-mono">
+                  {String(index + 1).padStart(2, '0')}
+                </span>
                 <h2 className="text-4xl font-bold tracking-tight">{section.title}</h2>
               </motion.div>
 
               {section.type === "markdown" && section.content && (
                 <motion.div variants={fadeInUp}>
                   <div className="prose dark:prose-invert max-w-3xl rounded-xl border bg-card/30 p-8 md:p-10 shadow-sm backdrop-blur-sm">
-                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{section.content}</ReactMarkdown>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{section.content}</ReactMarkdown>
                   </div>
                 </motion.div>
               )}
 
               {section.type === "list_items" && section.portfolio_items && (
-                <motion.div 
+                <motion.div
                   variants={staggerContainer}
                   className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3"
                 >
@@ -192,7 +192,7 @@ export default function ShowcasePage() {
             </motion.section>
           ))}
         </div>
-        
+
         {!loading && !error && sections.length === 0 && (
           <div className="py-20 text-center text-muted-foreground">
             No content found. Time to add some in the admin panel!

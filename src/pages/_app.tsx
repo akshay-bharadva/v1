@@ -4,7 +4,7 @@ import type { AppProps } from "next/app";
 import localFont from "next/font/local";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/router";
-import { ThemeProvider } from "@/components/theme-provider";
+import { ThemeProvider } from "@/context/ThemeProvider";
 
 const tahuFont = localFont({
   src: "./fonts/Tahu.woff2",

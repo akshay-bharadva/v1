@@ -1,6 +1,6 @@
 
-import ExperienceComponent from "@/components/experience";
-import Layout from "@/components/layout";
+import ExperienceComponent from "@/components/features/experience/Experience";
+import Layout from "@/components/layout/Layout";
 import Head from "next/head";
 import { config as appConfig } from "@/lib/config";
 

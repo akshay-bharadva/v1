@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/router";
 import { supabase } from "@/supabase/client";
 import { motion } from "framer-motion";
-import Layout from "@/components/layout";
+import Layout from "@/components/layout/Layout";
 import { Loader2 } from "lucide-react";
 
 export default function AdminIndexPage() {

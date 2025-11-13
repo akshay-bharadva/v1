@@ -8,16 +8,16 @@ This file is redesigned for the kinetic typography theme.
 */
 import Link from "next/link";
 import { supabase } from "@/supabase/client";
-import type { BlogPost } from "@/types";
+import type { BlogPost } from "@/types/index";
 import Head from "next/head";
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
-import Layout from "@/components/layout";
+import Layout from "@/components/layout/Layout";
 import { config as appConfig } from "@/lib/config";
 import { formatDate } from "@/lib/utils";
 import { Eye, Clock, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 import Image from "next/image";
 
 const calculateReadTime = (content: string = ""): number => {
@@ -119,7 +119,7 @@ export default function BlogIndexPage() {
                   <Card className="overflow-hidden transition-all duration-300 hover:border-accent hover:shadow-lg md:flex">
                     {post.cover_image_url && (
                       <div className="md:w-1/3 overflow-hidden">
-                        <Image
+                        <img
                           src={post.cover_image_url}
                           alt={`Cover image for ${post.title}`}
                           className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-105 md:h-full"
@@ -129,7 +129,7 @@ export default function BlogIndexPage() {
                     )}
                     <div className="flex flex-col p-6 md:w-2/3">
                       <div className="flex-grow">
-                         {post.tags && post.tags[0] && <Badge variant="outline" className="mb-2">{post.tags[0]}</Badge>}
+                        {post.tags && post.tags[0] && <Badge variant="outline" className="mb-2">{post.tags[0]}</Badge>}
                         <h2 className="mb-2 text-2xl font-bold tracking-tight text-foreground transition-colors group-hover:text-accent">
                           {post.title}
                         </h2>

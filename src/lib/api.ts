@@ -1,4 +1,4 @@
-import type { BlogPost, PortfolioSection } from "@/types";
+import type { BlogPost, PortfolioSection } from "@/types/index";
 import { supabase } from "@/supabase/client";
 
 export async function fetchPublishedBlogPosts(): Promise<BlogPost[]> {

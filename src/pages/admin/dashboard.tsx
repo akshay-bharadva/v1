@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { supabase, Session } from "@/supabase/client";
-import AdminDashboardComponent from "@/components/admin/admin-dashboard";
+import AdminDashboardComponent from "@/components/features/admin/AdminDashboard";
 import { motion } from "framer-motion";
-import Layout from "@/components/layout";
-import type { BlogPost, Note } from "@/types";
+import Layout from "@/components/layout/Layout";
+import type { BlogPost, Note } from "@/types/index";
 import { Loader2 } from "lucide-react";
 
 export interface DashboardData {

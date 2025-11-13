@@ -1,6 +1,6 @@
 
-import SupabaseLogin from "@/components/admin/auth/SupabaseLogin";
-import Layout from "@/components/layout";
+import SupabaseLogin from "@/components/features/admin/auth/Supabaselogin";
+import Layout from "@/components/layout/Layout";
 
 export default function AdminLoginPage() {
   return (

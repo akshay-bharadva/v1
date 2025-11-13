@@ -9,7 +9,7 @@ This file is heavily redesigned for the kinetic typography theme.
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/supabase/client";
-import type { BlogPost } from "@/types";
+import type { BlogPost } from "@/types/index";
 import Head from "next/head";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -18,14 +18,14 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/cjs/styles/prism";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Layout from "@/components/layout";
+import Layout from "@/components/layout/Layout";
 import { config as appConfig } from "@/lib/config";
 import { formatDate } from "@/lib/utils";
 import { Calendar, Eye, Copy, Check, Loader2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Separator } from "@/components/ui/Separator";
 import Image from "next/image";
 
 const CodeBlock = ({ className, children }: { className?: string, children: React.ReactNode }) => {
@@ -63,7 +63,7 @@ const CodeBlock = ({ className, children }: { className?: string, children: Reac
 const markdownComponents: any = {
   code: (props: any) => <CodeBlock {...props} />,
   img: ({ node, ...props }: any) => (
-    <Image {...props} loading="lazy" className="my-8 h-auto max-h-[80vh] w-full rounded-lg border object-contain" alt={props.alt || "Blog image"} />
+    <img {...props} loading="lazy" className="my-8 h-auto max-h-[80vh] w-full rounded-lg border object-contain" alt={props.alt || "Blog image"} />
   ),
 };
 
@@ -193,7 +193,7 @@ export default function BlogPostPage() {
           <div className="grid grid-cols-1 lg:grid-cols-12 lg:gap-x-12">
             <article className="lg:col-span-9">
               <PostHeader post={post} />
-              {post.cover_image_url && <Image src={post.cover_image_url} alt={post.title} className="my-8 w-full h-auto rounded-lg border object-cover" />}
+              {post.cover_image_url && <img src={post.cover_image_url} alt={post.title} className="my-8 w-full h-auto rounded-lg border object-cover" />}
               <Separator className="my-8" />
               {post.content && <PostContent content={post.content} />}
             </article>
