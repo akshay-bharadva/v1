@@ -158,3 +158,38 @@ export interface FinancialGoal {
   created_at?: string;
   updated_at?: string;
 }
+
+export interface LearningSubject {
+  id: string;
+  user_id?: string;
+  name: string;
+  description?: string | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type LearningStatus = 'To Learn' | 'Learning' | 'Practicing' | 'Mastered';
+
+export interface LearningTopic {
+  id: string;
+  user_id?: string;
+  subject_id: string;
+  title: string;
+  status: LearningStatus;
+  core_notes?: string | null;
+  resources?: { name: string; url: string }[] | null;
+  confidence_score?: number | null;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface LearningSession {
+  id: string;
+  user_id?: string;
+  topic_id: string;
+  start_time: string;
+  end_time?: string | null;
+  duration_minutes?: number | null;
+  journal_notes?: string | null;
+  created_at?: string;
+}
