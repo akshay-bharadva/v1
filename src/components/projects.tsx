@@ -2,9 +2,9 @@
 import { useState, useEffect } from "react";
 import { ArrowUpRight, Github, AlertTriangle, Loader2 } from "lucide-react";
 import ProjectCard from "./project-card";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import type { GitHubRepo } from "@/types";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 import { motion } from "framer-motion";
 
 type ProjectsProps = {};

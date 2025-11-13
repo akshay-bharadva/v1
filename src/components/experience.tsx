@@ -4,7 +4,7 @@ import Link from "next/link";
 import { PropsWithChildren, ReactNode } from "react";
 import { ArrowUpRight } from "lucide-react";
 import { motion } from "framer-motion";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "@/components/ui/Badge";
 
 type ExperienceProps = PropsWithChildren;
 

@@ -6,19 +6,19 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { EventClickArg, DateSelectArg, EventInput, EventContentArg, EventDropArg } from "@fullcalendar/core";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from "@/components/ui/Dialog";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
+import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Textarea";
+import { Switch } from "@/components/ui/Switch";
 import { toast } from "sonner";
 import { addDays, addWeeks, isAfter, isBefore, isSameDay, nextDay, setDate, addMonths, addYears, formatISO } from "date-fns";
 import type { RecurringTransaction } from "@/types";
 import { Banknote, CheckSquare, Edit, ListTodo, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/popover";
-import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverAnchor } from "@/components/ui/Popover";
+import { Separator } from "@/components/ui/Separator";
 
 type CalendarItem = {
     item_id: string;

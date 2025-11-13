@@ -4,8 +4,8 @@
 import React, { useMemo } from "react";
 import type { LearningSession, LearningTopic } from "@/types";
 import { subDays, startOfWeek, format, eachDayOfInterval, startOfDay } from "date-fns";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, CalendarDays, BookOpen } from "lucide-react";
 import { cn } from "@/lib/utils";

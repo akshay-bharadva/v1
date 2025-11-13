@@ -10,10 +10,10 @@ import {
   InputOTPGroup,
   InputOTPSlot,
 } from "@/components/ui/input-otp";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import { Loader2, Smartphone, Copy, Eye, EyeOff } from "lucide-react";
 import { config } from "@/lib/config";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 
 export default function SupabaseMFASetup() {
   const [qrCodeUrl, setQrCodeUrl] = useState("");

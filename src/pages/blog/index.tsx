@@ -16,8 +16,8 @@ import Layout from "@/components/layout";
 import { config as appConfig } from "@/lib/config";
 import { formatDate } from "@/lib/utils";
 import { Eye, Clock, Loader2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/Badge";
+import { Card } from "@/components/ui/Card";
 
 const calculateReadTime = (content: string = ""): number => {
   const wordsPerMinute = 225;

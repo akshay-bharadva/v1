@@ -8,11 +8,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import Link from "next/link";
 import { ArrowUpRight, Calendar, Loader2, AlertTriangle } from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { supabase } from "@/supabase/client";
 import { cn } from "@/lib/utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/Alert";
 
 const ShowcaseItemCard: React.FC<{ item: PortfolioItem }> = ({ item }) => {
   const isTimelineItem = item.subtitle && /\d{4}/.test(item.subtitle);

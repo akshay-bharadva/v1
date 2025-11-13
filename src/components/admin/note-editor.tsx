@@ -3,11 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import type { Note } from "@/types";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { Label } from "../ui/label";
+import { Input } from "@/components/ui/Input";
+import { Textarea } from "@/components/ui/Textarea";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/Card";
+import { Label } from "../ui/Label";
 
 interface NoteEditorProps {
   note: Note | null;

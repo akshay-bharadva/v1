@@ -7,7 +7,7 @@ import type { PortfolioSection } from "@/types";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Check, Mail, Github, Linkedin, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 
 export default function ContactPage() {
   const { site: siteConfig } = appConfig;

@@ -8,14 +8,14 @@ import type { BlogPost } from "@/types";
 import AdvancedMarkdownEditor from "@/components/admin/AdvancedMarkdownEditor";
 import { supabase } from "@/supabase/client";
 import imageCompression from "browser-image-compression";
-import { Button } from "../ui/button";
-import { Input } from "../ui/input";
-import { Label } from "../ui/label";
-import { Switch } from "../ui/switch";
-import { Textarea } from "../ui/textarea";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
+import { Button } from "../ui/Button";
+import { Input } from "../ui/Input";
+import { Label } from "../ui/Label";
+import { Switch } from "../ui/Switch";
+import { Textarea } from "../ui/Textarea";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/Card";
 import { Loader2 } from "lucide-react";
-import { Alert, AlertDescription } from "../ui/alert";
+import { Alert, AlertDescription } from "../ui/Alert";
 
 interface BlogEditorProps {
   post: BlogPost | null;

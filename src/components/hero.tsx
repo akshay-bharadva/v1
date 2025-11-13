@@ -1,9 +1,9 @@
 
+import { Button } from "@/components/ui/Button";
 import { motion } from "framer-motion";
-import { Github, Linkedin, Mail, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowRight, Github, Linkedin, Mail } from "lucide-react";
 import Link from "next/link";
-import { Badge } from "./ui/badge";
+import { Badge } from "./ui/Badge";
 
 const name = "Akshay Bharadva";
 const title = "Full-stack Developer.";

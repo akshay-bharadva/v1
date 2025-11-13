@@ -6,10 +6,10 @@ import { supabase } from "@/supabase/client";
 import type { LearningTopic, LearningStatus, LearningSession } from "@/types";
 import AdvancedMarkdownEditor from "@/components/admin/AdvancedMarkdownEditor";
 import SessionTracker from "./SessionTracker";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/Button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select";
+import { Label } from "@/components/ui/Label";
+import { Input } from "@/components/ui/Input";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2, Link as LinkIcon, Trash2, Plus, Save } from "lucide-react";
 

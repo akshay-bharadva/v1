@@ -5,11 +5,11 @@
 import { useState, useEffect, FormEvent } from "react";
 import type { RecurringTransaction } from "@/types";
 import { supabase } from "@/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/Select";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface RecurringTransactionFormProps {

@@ -22,10 +22,10 @@ import Layout from "@/components/layout";
 import { config as appConfig } from "@/lib/config";
 import { formatDate } from "@/lib/utils";
 import { Calendar, Eye, Copy, Check, Loader2 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/Avatar";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { Separator } from "@/components/ui/Separator";
 
 const CodeBlock = ({ className, children }: { className?: string, children: React.ReactNode }) => {
   const [isCopied, setIsCopied] = useState(false);

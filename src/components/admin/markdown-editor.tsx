@@ -4,7 +4,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import DOMPurify from "dompurify";
-import { Button } from "../ui/button";
+import { Button } from "../ui/Button";
 
 interface MarkdownEditorProps {
   value: string;

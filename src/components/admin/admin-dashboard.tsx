@@ -11,14 +11,14 @@ import NotesManager from "@/components/admin/notes-manager";
 import FinanceManager from "@/components/admin/finance-manager";
 import LearningManager from "@/components/admin/learning-manager";
 import { supabase } from "@/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/Button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Banknote, BookText, CheckCircle, ChevronDown, Eye, LayoutTemplate, ListTodo, Lock, LogOut, TrendingDown, TrendingUp, StickyNote, ExternalLink, Calendar as CalendarIcon, BrainCircuit, Timer } from "lucide-react";
 import Link from "next/link";
 import { DashboardData } from "@/pages/admin/dashboard";
-import { Skeleton } from "../ui/skeleton";
+import { Skeleton } from "../ui/Skeleton";
 import { FaChartLine } from "react-icons/fa";
 import CommandCalendar from "./CommandCalendar";
 import { LearningSession, LearningTopic } from "@/types";
@@ -56,7 +56,8 @@ export default function AdminDashboard({ onLogout, dashboardData }: AdminDashboa
 
   const [activeLearningSession, setActiveLearningSession] = useState<LearningSession | null>(null);
   const [elapsedTime, setElapsedTime] = useState(0);
-  const [learningTopics, setLearningTopics] = useState<LearningTopic[]>([]);
+  const [learningTopics, setLearningTopics] = useState<Pick<LearningTopic, "id" | "title">[]>([]);
+
 
   // **NEW**: Restore session from localStorage on initial load
   useEffect(() => {

@@ -4,9 +4,9 @@
 import { useState, useEffect, FormEvent } from "react";
 import type { Transaction } from "@/types";
 import { supabase } from "@/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Input } from "@/components/ui/Input";
+import { Label } from "@/components/ui/Label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Combobox } from "../ui/combobox"; // Import the new component
 

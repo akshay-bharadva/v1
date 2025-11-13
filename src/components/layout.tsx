@@ -5,7 +5,7 @@ import { PropsWithChildren, useEffect, useState } from "react";
 import Container from "./container";
 import Header from "./header";
 import Footer from "./footer";
-import { Toaster as SonnerToaster } from "@/components/ui/sonner";
+import { Toaster as SonnerToaster } from "@/components/ui/Sonner";
 import { Toaster as ShadcnToaster } from "@/components/ui/toaster";
 import MobileHeader from "./mobile-header";
 import { motion } from "framer-motion";

@@ -5,9 +5,9 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/supabase/client";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/Input";
+import { Button } from "@/components/ui/Button";
+import { Label } from "@/components/ui/Label";
 import { Loader2, Lock } from "lucide-react";
 
 export default function SupabaseLogin() {

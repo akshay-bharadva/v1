@@ -1,8 +1,8 @@
 
 import Link from "next/link";
 import type { GitHubRepo } from "@/types";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card";
+import { Badge } from "@/components/ui/Badge";
 import { Github, Star } from "lucide-react";
 
 type ProjectCardProps = { project: GitHubRepo };

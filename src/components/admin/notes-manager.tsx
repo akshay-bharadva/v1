@@ -7,10 +7,10 @@ import type { Note } from "@/types";
 import NoteEditor from "@/components/admin/note-editor";
 import { supabase } from "@/supabase/client";
 import { Pin, PinOff, Edit, Trash2, Plus, StickyNote, Loader2 } from "lucide-react";
-import { Button } from "../ui/button";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import { Badge } from "../ui/badge";
-import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
+import { Button } from "../ui/Button";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/Card";
+import { Badge } from "../ui/Badge";
+import { Alert, AlertTitle, AlertDescription } from "../ui/Alert";
 
 export default function NotesManager() {
   const [notes, setNotes] = useState<Note[]>([]);

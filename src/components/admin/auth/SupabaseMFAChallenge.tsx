@@ -5,7 +5,7 @@ import React, { useState, useEffect } from "react";
 import { supabase } from "@/supabase/client";
 import { useRouter } from "next/router";
 import { motion, AnimatePresence } from "framer-motion";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui/Button";
 import {
   InputOTP,
   InputOTPGroup,

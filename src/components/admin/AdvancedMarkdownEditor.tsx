@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import MarkdownEditor from "@/components/admin/markdown-editor";
 import { Expand, Shrink, Image as ImageIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Button } from "../ui/button";
+import { Button } from "../ui/Button";
 
 interface AdvancedMarkdownEditorProps {
   value: string;

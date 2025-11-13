@@ -4,9 +4,9 @@
 import React, { useState } from "react";
 import { supabase } from "@/supabase/client";
 import type { LearningSession, LearningTopic } from "@/types";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Textarea";
+import { Label } from "@/components/ui/Label";
 import { Timer, Play, Square, Loader2, X } from "lucide-react";
 import { toast } from "sonner";
 
